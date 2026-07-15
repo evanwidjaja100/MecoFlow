@@ -1,0 +1,39 @@
+{
+  "name": "@mecoflow/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "dev": "tsx watch src/main.ts",
+    "lint": "eslint src --max-warnings=0",
+    "openapi:generate": "tsx src/generate-openapi.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "test:integration": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1086.0",
+    "@mecoflow/config": "workspace:*",
+    "@mecoflow/contracts": "workspace:*",
+    "@mecoflow/database": "workspace:*",
+    "@nestjs/common": "11.1.28",
+    "@nestjs/core": "11.1.28",
+    "@nestjs/platform-express": "11.1.28",
+    "@nestjs/swagger": "11.4.5",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.15.1",
+    "dotenv": "17.2.3",
+    "ioredis": "5.11.1",
+    "pino": "10.3.1",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@mecoflow/typescript-config": "workspace:*",
+    "@types/express": "5.0.5",
+    "tsx": "4.23.1"
+  }
+}

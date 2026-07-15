@@ -1,0 +1,16 @@
+# Test strategy
+
+## Layers
+
+- Unit tests cover pure configuration validation, policies, calculations, workflows, normalization, validation, sanitization and idempotency.
+- Integration tests use isolated disposable PostgreSQL/Redis/object-storage dependencies for repositories, constraints, transactions, audit/outbox effects and operational workflows.
+- Authorization tests exercise every protected command and supplier object with negative identifier manipulation.
+- Playwright tests use accessible roles/labels for critical browser workflows and include accessibility smoke coverage without arbitrary sleeps.
+
+Tests are deterministic, independent of order, use fictional fixtures, and clean up or isolate their state. A failing test is not weakened to obtain green status. Obsolete expectations require a documented behavior decision first.
+
+## Phase 0 gates
+
+`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm build`, Prisma migration/seed, and the Playwright landing-page smoke test form the foundation. CI uses frozen installation, service containers, migration validation, OpenAPI generation, production builds, browser smoke, dependency audit and container build checks.
+
+Environment-blocked commands are reported with exact cause and residual risk; no command is reported successful unless it completed successfully.

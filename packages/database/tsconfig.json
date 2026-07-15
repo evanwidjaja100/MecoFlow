@@ -1,0 +1,19 @@
+{
+  "extends": "@mecoflow/typescript-config/library.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "."
+  },
+  "include": [
+    "src/**/*.ts",
+    "generated/**/*.ts",
+    "prisma/**/*.ts",
+    "prisma.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.integration.test.ts"
+  ]
+}

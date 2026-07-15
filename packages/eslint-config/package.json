@@ -1,0 +1,17 @@
+{
+  "name": "@mecoflow/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.mjs"
+  },
+  "dependencies": {
+    "@eslint/js": "10.0.1",
+    "globals": "17.7.0",
+    "typescript-eslint": "8.64.0"
+  },
+  "peerDependencies": {
+    "eslint": ">=10.0.0"
+  }
+}

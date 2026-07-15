@@ -1,0 +1,49 @@
+{
+  "name": "mecoflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MECO Flow project material readiness platform",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.13.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "clean": "turbo run clean && node scripts/clean.mjs",
+    "compose:down": "docker compose down",
+    "compose:up": "docker compose up -d --wait && docker compose --profile setup run --rm minio-init",
+    "db:deploy": "pnpm --filter @mecoflow/database db:deploy",
+    "db:generate": "pnpm --filter @mecoflow/database db:generate",
+    "db:migrate": "pnpm --filter @mecoflow/database db:migrate",
+    "db:migrate:dev": "pnpm --filter @mecoflow/database db:migrate:dev",
+    "db:reset": "pnpm --filter @mecoflow/database db:reset",
+    "db:seed": "pnpm --filter @mecoflow/database db:seed",
+    "dev": "turbo run dev --parallel",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "turbo run lint",
+    "openapi:generate": "pnpm --filter @mecoflow/api openapi:generate",
+    "prepare": "node scripts/prepare.mjs",
+    "test": "turbo run test",
+    "test:e2e": "playwright test",
+    "test:integration": "turbo run test:integration",
+    "typecheck": "turbo run typecheck",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@mecoflow/eslint-config": "workspace:*",
+    "@playwright/test": "1.61.1",
+    "@types/node": "26.1.1",
+    "eslint": "10.7.0",
+    "globals": "17.7.0",
+    "prettier": "3.9.5",
+    "turbo": "2.10.5",
+    "tsx": "4.23.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.64.0",
+    "vitest": "4.1.10"
+  }
+}

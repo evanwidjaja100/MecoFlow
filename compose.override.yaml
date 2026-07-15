@@ -1,0 +1,9 @@
+services:
+  postgres:
+    stop_grace_period: 30s
+  redis:
+    stop_grace_period: 10s
+  minio:
+    stop_grace_period: 10s
+  keycloak:
+    stop_grace_period: 30s

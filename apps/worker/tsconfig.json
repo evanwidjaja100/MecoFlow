@@ -1,0 +1,11 @@
+{
+  "extends": "@mecoflow/typescript-config/library.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts"]
+}

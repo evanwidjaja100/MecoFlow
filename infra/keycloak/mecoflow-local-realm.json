@@ -1,0 +1,27 @@
+{
+  "realm": "mecoflow-local",
+  "displayName": "MECO Flow Local Development",
+  "enabled": true,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "loginWithEmailAllowed": true,
+  "sslRequired": "external",
+  "clients": [
+    {
+      "clientId": "mecoflow-web",
+      "name": "MECO Flow local web client",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      }
+    }
+  ]
+}

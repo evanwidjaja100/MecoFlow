@@ -1,0 +1,19 @@
+packages:
+  - apps/*
+  - packages/*
+
+autoInstallPeers: false
+engineStrict: true
+saveExact: true
+strictPeerDependencies: true
+
+overrides:
+  "@hono/node-server": 1.19.13
+  postcss: 8.5.10
+
+allowBuilds:
+  "@prisma/engines": true
+  "@scarf/scarf": false
+  esbuild: true
+  prisma: true
+  sharp: true

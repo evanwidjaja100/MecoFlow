@@ -1,0 +1,9 @@
+{
+  "extends": "@mecoflow/typescript-config/nestjs.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts"]
+}

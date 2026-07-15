@@ -1,0 +1,49 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The API process is alive."
+          }
+        },
+        "summary": "Process liveness probe",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Required dependencies are available."
+          },
+          "503": {
+            "description": "At least one required dependency is unavailable."
+          }
+        },
+        "summary": "Required dependency readiness probe",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "MECO Flow API",
+    "description": "Versioned operational API for MECO Flow",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {}
+  }
+}

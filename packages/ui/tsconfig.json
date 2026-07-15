@@ -1,0 +1,10 @@
+{
+  "extends": "@mecoflow/typescript-config/library.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.test.tsx"]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@mecoflow/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "dev": "tsx watch src/main.ts",
+    "lint": "eslint src --max-warnings=0",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "test:integration": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1086.0",
+    "@mecoflow/config": "workspace:*",
+    "@mecoflow/database": "workspace:*",
+    "dotenv": "17.2.3",
+    "ioredis": "5.11.1",
+    "pino": "10.3.1"
+  },
+  "devDependencies": {
+    "@mecoflow/typescript-config": "workspace:*",
+    "tsx": "4.23.1"
+  }
+}

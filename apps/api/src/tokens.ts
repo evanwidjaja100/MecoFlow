@@ -1,0 +1,1 @@
+export const SERVICE_ENVIRONMENT = Symbol("SERVICE_ENVIRONMENT");

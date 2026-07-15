@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --background: #f3f5f7;
+  --surface: #ffffff;
+  --text: #17212b;
+  --muted: #5c6a76;
+  --border: #cbd3da;
+  --brand: #123f5a;
+  --accent: #d26a22;
+  --success: #177245;
+  --danger: #a02d2d;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+}
+main {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+h1 {
+  margin-bottom: 0.5rem;
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  letter-spacing: -0.04em;
+}
+h2 {
+  font-size: 1.35rem;
+}
+.masthead {
+  border-left: 0.45rem solid var(--accent);
+  padding-left: 1.25rem;
+  margin-bottom: 3rem;
+}
+.eyebrow,
+.phase {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.subtitle {
+  color: var(--muted);
+  font-size: 1.15rem;
+  max-width: 42rem;
+}
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.45fr);
+  gap: 2rem;
+  padding: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 0.35rem solid var(--brand);
+  box-shadow: 0 0.5rem 1.5rem rgb(23 33 43 / 8%);
+}
+.panel p,
+.objective p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+.objective {
+  margin-top: 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border);
+}
+.objective p {
+  max-width: 50rem;
+}
+.service-status {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  margin: 0;
+  padding: 1rem;
+  background: #f6f8f9;
+  border: 1px solid var(--border);
+}
+.service-status strong {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+.service-status__indicator {
+  grid-row: span 2;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: #687782;
+}
+.service-status--available .service-status__indicator {
+  background: var(--success);
+}
+.service-status--unavailable .service-status__indicator {
+  background: var(--danger);
+}
+@media (max-width: 700px) {
+  main {
+    padding: 2rem 0;
+  }
+  .panel {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
