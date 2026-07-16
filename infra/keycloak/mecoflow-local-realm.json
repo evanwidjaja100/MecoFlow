@@ -16,12 +16,90 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "redirectUris": ["http://localhost:3000/*"],
+      "redirectUris": ["http://localhost:3001/api/v1/auth/callback"],
       "webOrigins": ["http://localhost:3000"],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:3000/*"
       }
+    }
+  ],
+  "users": [
+    {
+      "id": "30000000-0000-4000-8000-000000000001",
+      "username": "internal.admin@mecoflow.local",
+      "email": "internal.admin@mecoflow.local",
+      "firstName": "Internal",
+      "lastName": "Administrator",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        { "type": "password", "value": "local-only-admin", "temporary": false }
+      ]
+    },
+    {
+      "id": "30000000-0000-4000-8000-000000000002",
+      "username": "finance.readonly@mecoflow.local",
+      "email": "finance.readonly@mecoflow.local",
+      "firstName": "Finance",
+      "lastName": "Readonly",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-only-readonly",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "30000000-0000-4000-8000-000000000003",
+      "username": "supplier.admin@mecoflow.local",
+      "email": "supplier.admin@mecoflow.local",
+      "firstName": "Supplier",
+      "lastName": "Administrator",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-only-supplier",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "30000000-0000-4000-8000-000000000004",
+      "username": "inactive.user@mecoflow.local",
+      "email": "inactive.user@mecoflow.local",
+      "firstName": "Inactive",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-only-inactive",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "30000000-0000-4000-8000-000000000005",
+      "username": "inactive.membership@mecoflow.local",
+      "email": "inactive.membership@mecoflow.local",
+      "firstName": "Inactive",
+      "lastName": "Membership",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-only-inactive",
+          "temporary": false
+        }
+      ]
     }
   ]
 }

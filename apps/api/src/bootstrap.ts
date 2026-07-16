@@ -8,6 +8,7 @@ import { config as loadEnvironment } from "dotenv";
 import { AppModule } from "./app.module.js";
 import { JsonLogger } from "./logger.js";
 import { requestLogging } from "./request-logging.js";
+import { SafeApiExceptionFilter } from "./safe-api-exception.filter.js";
 
 export async function createApplication() {
   loadEnvironment({
@@ -28,17 +29,28 @@ export async function createApplication() {
   app.use(requestLogging(logger));
   app.enableCors({
     credentials: true,
-    methods: ["GET", "HEAD", "OPTIONS"],
+    methods: ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH"],
     origin: environment.CORS_ORIGINS.split(",").map((origin) => origin.trim()),
   });
   app.useGlobalPipes(
-    new ValidationPipe({ forbidUnknownValues: true, transform: false }),
+    new ValidationPipe({
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+      transform: false,
+      whitelist: true,
+    }),
   );
+  app.useGlobalFilters(new SafeApiExceptionFilter());
 
   const openApiConfig = new DocumentBuilder()
     .setTitle("MECO Flow API")
     .setDescription("Versioned operational API for MECO Flow")
     .setVersion(environment.APP_VERSION)
+    .addCookieAuth(
+      "mecoflow_session",
+      { in: "cookie", type: "apiKey" },
+      "session",
+    )
     .build();
   const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
   if (environment.NODE_ENV !== "production")

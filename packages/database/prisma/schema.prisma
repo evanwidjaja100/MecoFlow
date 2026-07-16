@@ -17,3 +17,169 @@ model SystemMetadata {
 
   @@map("system_metadata")
 }
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrganizationType {
+  INTERNAL
+  SUPPLIER
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RoleScope {
+  INTERNAL
+  SUPPLIER
+  ANY
+}
+
+model UserProfile {
+  id            String       @id @default(uuid()) @db.Uuid
+  issuer        String       @db.VarChar(500)
+  subject       String       @db.VarChar(255)
+  email         String       @db.VarChar(320)
+  displayName   String       @db.VarChar(200)
+  locale        String       @default("en") @db.VarChar(10)
+  status        UserStatus   @default(ACTIVE)
+  lastLoginAt   DateTime?    @db.Timestamptz(3)
+  version       Int          @default(1)
+  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(3)
+  memberships   Membership[]
+  sessions      Session[]
+  assignedRoles MembershipRole[] @relation("RoleAssignedBy")
+  auditEvents   AuditEvent[] @relation("AuditActor")
+
+  @@unique([issuer, subject])
+  @@index([email])
+  @@map("user_profiles")
+}
+
+model Organization {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique @db.VarChar(50)
+  name        String           @db.VarChar(200)
+  type        OrganizationType
+  active      Boolean          @default(true)
+  version     Int              @default(1)
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+  memberships Membership[]
+  auditEvents AuditEvent[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @db.Uuid
+  organizationId String           @db.Uuid
+  status         MembershipStatus @default(ACTIVE)
+  version        Int              @default(1)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
+  user           UserProfile      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  roles          MembershipRole[]
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, status])
+  @@map("memberships")
+}
+
+model Role {
+  code        String           @id @db.VarChar(50)
+  name        String           @db.VarChar(100)
+  description String           @db.VarChar(500)
+  scope       RoleScope
+  system      Boolean          @default(true)
+  permissions RolePermission[]
+  memberships MembershipRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  code        String           @id @db.VarChar(100)
+  description String           @db.VarChar(500)
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleCode       String     @db.VarChar(50)
+  permissionCode String     @db.VarChar(100)
+  role           Role       @relation(fields: [roleCode], references: [code], onDelete: Restrict)
+  permission     Permission @relation(fields: [permissionCode], references: [code], onDelete: Restrict)
+
+  @@id([roleCode, permissionCode])
+  @@map("role_permissions")
+}
+
+model MembershipRole {
+  membershipId    String      @db.Uuid
+  roleCode        String      @db.VarChar(50)
+  assignedByUserId String?    @db.Uuid
+  assignedAt      DateTime    @default(now()) @db.Timestamptz(3)
+  membership      Membership  @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  role            Role        @relation(fields: [roleCode], references: [code], onDelete: Restrict)
+  assignedBy      UserProfile? @relation("RoleAssignedBy", fields: [assignedByUserId], references: [id], onDelete: Restrict)
+
+  @@id([membershipId, roleCode])
+  @@index([assignedByUserId])
+  @@map("membership_roles")
+}
+
+model Session {
+  id            String      @id @default(uuid()) @db.Uuid
+  tokenHash     String      @unique @db.Char(64)
+  csrfTokenHash String      @db.Char(64)
+  userId        String      @db.Uuid
+  expiresAt     DateTime    @db.Timestamptz(3)
+  revokedAt     DateTime?   @db.Timestamptz(3)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  lastSeenAt    DateTime    @default(now()) @db.Timestamptz(3)
+  user          UserProfile @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+model OidcAuthTransaction {
+  stateHash    String   @id @db.Char(64)
+  codeVerifier String   @db.VarChar(128)
+  nonce        String   @db.VarChar(128)
+  returnTo     String   @db.VarChar(500)
+  expiresAt    DateTime @db.Timestamptz(3)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@map("oidc_auth_transactions")
+}
+
+model AuditEvent {
+  id              String        @id @default(uuid()) @db.Uuid
+  occurredAt      DateTime      @default(now()) @db.Timestamptz(3)
+  actorUserId     String?       @db.Uuid
+  organizationId  String?       @db.Uuid
+  action          String        @db.VarChar(100)
+  entityType      String        @db.VarChar(100)
+  entityId        String        @db.VarChar(100)
+  requestId       String        @db.VarChar(128)
+  correlationId   String        @db.VarChar(128)
+  outcome         String        @db.VarChar(30)
+  changes         Json
+  actor            UserProfile? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, occurredAt])
+  @@index([entityType, entityId, occurredAt])
+  @@map("audit_events")
+}

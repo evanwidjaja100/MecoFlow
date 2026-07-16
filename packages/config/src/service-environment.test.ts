@@ -21,6 +21,10 @@ const validProductionEnvironment = {
   S3_ACCESS_KEY: "production-access-key",
   S3_ENDPOINT: "https://objects.internal",
   S3_SECRET_KEY: "production-secret-key",
+  WEB_BASE_URL: "https://mecoflow.example.com",
+  OIDC_ISSUER: "https://identity.example.com/realms/mecoflow",
+  OIDC_REDIRECT_URI: "https://api.mecoflow.example.com/api/v1/auth/callback",
+  SESSION_SECRET: "a-production-session-secret-with-at-least-32-characters",
 };
 
 describe("parseServiceEnvironment", () => {
@@ -94,6 +98,16 @@ describe("parseServiceEnvironment", () => {
         CORS_ORIGINS: "http://mecoflow.example.com",
       }),
     ).toThrow("Invalid service environment: CORS_ORIGINS");
+  });
+
+  it("rejects insecure OIDC and session configuration in production", () => {
+    expect(() =>
+      parseServiceEnvironment({
+        ...validProductionEnvironment,
+        OIDC_ISSUER: "http://identity.example.com/realms/mecoflow",
+        SESSION_SECRET: "local_only_session_secret_change_me_32_chars",
+      }),
+    ).toThrow("Invalid service environment: OIDC_ISSUER, SESSION_SECRET");
   });
 
   it("rejects the documented local object-storage credentials in production", () => {

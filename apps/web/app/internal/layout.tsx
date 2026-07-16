@@ -1,0 +1,34 @@
+import type { ReactNode } from "react";
+import { requireMe } from "../lib/api";
+
+export default async function InternalLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const me = await requireMe("INTERNAL");
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <a className="brand" href="/internal">
+          MECO Flow
+        </a>
+        <p className="shell-label">Internal application</p>
+        <nav aria-label="Internal navigation">
+          <a href="/internal">Overview</a>
+          <a href="/internal/administration">Administration</a>
+        </nav>
+      </aside>
+      <div className="shell-content">
+        <header className="topbar">
+          <div>
+            <strong>{me.user.displayName}</strong>
+            <span>{me.user.email}</span>
+          </div>
+          <span className="badge">Internal</span>
+        </header>
+        {children}
+      </div>
+    </div>
+  );
+}

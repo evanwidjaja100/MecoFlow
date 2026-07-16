@@ -1,80 +1,79 @@
 # Current phase
 
-Phase 0 — Architecture and repository foundation (reviewed, remediated, and locally verified on 2026-07-16).
+Phase 1 — Identity and authorization (implemented and locally verified on 2026-07-16). Work stops before Phase 2.
 
 # Completed capabilities
 
-- Master requirements, repository instructions, and ADR-0001 through ADR-0014 reviewed.
-- Baseline product, architecture, domain, security, authorization, API, UX, testing, deployment, recovery, import, pilot, operations, dependency, and change-management documentation established.
-- pnpm/Turborepo strict TypeScript monorepo with Next.js web, NestJS API, and Node worker foundations.
-- Shared configuration, contracts, database, lint, test utility, TypeScript, and UI packages.
-- Validated environment boundaries with production rejection of documented local placeholders/insecure browser origins, structured safe logging, request/correlation IDs, security headers, public health probes, checked OpenAPI generation, and an accessible foundation screen.
-- Local PostgreSQL, Redis, Keycloak, private MinIO, and Mailpit infrastructure with reliable health checks, loopback-only published ports, and an idempotent private-bucket initializer.
-- Prisma client, one technical metadata migration, deterministic idempotent seed, and real PostgreSQL integration tests.
-- Reproducible setup helper with explicit native-command failure propagation and no administrator-only Corepack shim mutation.
-- Unit, integration, browser, formatting, lint, type, build, dependency-audit, Compose, filtered/standalone image-build, and shared local/CI verification foundations.
+- Phase 0 repository, runtime, infrastructure, configuration, health, logging, Prisma, test, CI, and container foundations remain intact.
+- Keycloak OIDC Authorization Code Flow with S256 PKCE, one-time database authorization transactions, browser-bound state, nonce, discovery/JWKS RS256 verification, generic authentication failures, and validated production identity/session configuration.
+- Opaque database-backed sessions use an HttpOnly `SameSite=Lax` cookie (`Secure` in production); access/refresh tokens are discarded after callback and are never written to `localStorage`.
+- Authenticated issuer/subject identities synchronize into `UserProfile`; inactive profiles are denied.
+- Internal/supplier organizations, active/inactive memberships, seeded roles and granular permissions, role assignments, and organization-scope policies are persisted and enforced server-side.
+- Deny-capable project-scope policy/resolver interfaces exist for Phase 2 without creating project data, APIs, or screens.
+- `/api/v1/me` returns only the active profile and scoped authorization context.
+- Separate accessible internal and supplier application shells, generic access-denied handling, internal navigation, and supplier navigation.
+- Internal administration screens and APIs for organization creation/listing, membership creation/activation/deactivation, synchronized user selection, seeded role listing, and atomic role assignment.
+- Supplier and read-only roles cannot enter/write internal administration. Scoped protected identifier attempts use equivalent safe responses.
+- Membership creation/status changes and every actual role-set change create redacted audit events in the same database transaction. PostgreSQL triggers reject audit event update/delete operations.
+- Unsafe administration commands require a session-bound CSRF cookie/header pair, validated DTOs with unknown-property rejection, permission policy, scope policy, and optimistic membership versions.
+- OpenAPI, authorization matrix, domain/security/test/dependency documentation, local Keycloak realm fixtures, positive/negative authorization tests, and OIDC Playwright workflows are updated.
 
 # Partially completed capabilities
 
-- None within the bounded Phase 0 scope.
+- None within the bounded Phase 1 scope.
 
 # Not started
 
-- All Phase 1–9 operational capabilities, including production OIDC integration, identity synchronization, organization/role persistence, business modules, audit persistence, transactional outbox processing, and readiness calculations.
+- Phase 2–9 operational capabilities. In particular, no project, milestone, work-package, procurement, logistics, quality, readiness, notification, reporting, or scorecard entity/API/screen has been added.
 
 # Active technical decisions
 
-- ADR-0001 through ADR-0014 are accepted. Phase 0 intentionally contains no operational domain implementation.
+- ADR-0001 through ADR-0014 remain accepted and governing.
+- The API is the OIDC callback/session and authorization authority; Next.js is a presentation/BFF consumer and never grants business access.
+- Roles grant permissions only. Active membership, organization type/scope, object scope, CSRF, and concurrency are independent mandatory checks.
+- The Phase 1 OIDC profile is public-client Authorization Code + S256 PKCE with RS256 ID tokens. Algorithm/client-authentication expansion requires security review.
 
 # Database migrations
 
-- `20260715000000_phase_0_foundation` creates only the technical `SystemMetadata` table with a UUID primary key, unique metadata key, version, and UTC timestamps.
-- The migration applies through `pnpm db:migrate`; the deterministic seed creates or repairs `seed.version=phase-0` and leaves an already-correct record unchanged.
-- No backfill is required. Rollback is a local environment teardown/recreation; production down-migration is not authorized by Phase 0.
+- `20260715000000_phase_0_foundation` remains unchanged.
+- `20260716000000_phase_1_identity_authorization` adds user profiles, organizations, memberships, roles, permissions, role grants, membership role assignments, opaque sessions, short-lived OIDC transactions, and audit events, with foreign keys, uniqueness/scope indexes, UTC timestamps, and optimistic membership versions.
+- The migration adds database triggers that reject `UPDATE` and `DELETE` against `audit_events`.
+- The deterministic seed always upserts documented roles/permissions. Only explicit `local`, `development`, `test`, or `ci` environments seed two fictional organizations plus Keycloak/test identities and memberships; ambiguous, staging, and production environments create no fixture organizations or profiles.
+- No business-data backfill is required because Phase 0 contained no business entities. Production down-migration is not authorized; restore/redeploy uses the documented backup and migration process.
 
 # Test status
 
-- `pnpm verify` passed on 2026-07-16: formatting, lint, strict typecheck, 15 unit tests, 2 database integration tests, and all production builds.
-- `pnpm test:e2e` passed: 1 Chromium foundation/health workflow.
-- `pnpm security:audit` reports no known moderate-or-higher vulnerabilities after compatible patched transitive overrides.
-- Frozen install, setup helper execution from outside the repository root, Compose validation, all five infrastructure health checks, migration, repeat-seed stability, OpenAPI drift check, API ready/not-ready behavior, worker heartbeat, and web/API/worker runtime image checks passed locally.
-- Runtime images run as the non-root `node` user; review builds were approximately 157 MB (API), 148 MB (worker), and 69 MB (web).
-
-# Phase 0 review defects remediated
-
-- Repeat seeds incremented version/timestamp instead of being idempotent.
-- Object-storage readiness listed account buckets instead of checking the configured private bucket.
-- Production-mode configuration accepted local placeholder credentials, local environment defaults, malformed origins/timezones, and insecure browser origins.
-- Compose exposed local dependency and administrative ports on all host interfaces.
-- The setup helper could report success after a failed native command and implied application processes were started when they were not.
-- CI duplicated the local verification chain, did not compare generated OpenAPI, audited a weaker severity threshold, and left its dependency-review policy unused.
-- Runtime images copied the full development workspace, and tracked Next.js generated types oscillated between development and production builds.
-- Docker contexts did not exclude all environment-file variants or nested generated workspace outputs.
-- The metadata-light API development transpiler did not infer the health-controller dependency, so the documented `pnpm dev` liveness endpoint returned HTTP 500.
-- Nested API and worker watch supervisors under Turbo could leave orphaned Windows processes without a running application child; direct persistent processes now give Turbo sole lifecycle ownership.
-- The previous implementation status incorrectly described a timestamp index that the committed Phase 0 migration does not create.
+- `pnpm db:migrate` and `pnpm db:seed` apply successfully against local PostgreSQL.
+- `pnpm test:authorization` passes policy and live-database positive/negative coverage, including inactive user, inactive membership, supplier denial, read-only denial, identifier equivalence, role audit atomicity, and database immutability.
+- `pnpm test:e2e` passes Chromium login/PKCE, local-storage, access-denied, internal-navigation, and supplier-navigation workflows using a deterministic test-only OIDC provider.
+- Formatting, lint, strict typecheck, unit tests, integration tests, production build, and OpenAPI drift verification are part of the final Phase 1 gate and are reported with exact commands in the implementation handoff.
 
 # Known defects
 
-- None known that block the bounded Phase 0 acceptance criteria after remediation.
+- None known that block the bounded Phase 1 acceptance criteria after local verification.
 
 # Security review status
 
-- Phase 0 trust boundaries are documented and reviewed. Startup configuration is validated without echoing secret values and production mode rejects documented local placeholders; object storage is private; local ports bind to loopback; logs and health responses avoid credentials; dependency build scripts are deny-by-default with an explicit allowlist.
-- Public health endpoints expose only coarse status and opaque dependency names. There are no supplier-facing or business resources yet.
-- Business authorization, production OIDC, persistent audit, CSRF, rate limiting, upload/download controls, and operational field filtering remain intentionally unimplemented and must not be treated as complete.
+- Authentication state is browser-bound, one-time, and expiring. Session and CSRF values are high-entropy; only hashes are persisted. Browser access tokens are not used.
+- Permission and scope decisions occur in API application services/policies before repositories mutate data. Supplier membership cannot satisfy internal-administration policy.
+- Inactive user/membership/organization state is evaluated for every session-backed request. Protected errors do not include token, claim, database, stack, or object-existence detail.
+- Role/membership changes are atomic with audit persistence; audit write failure aborts the business transaction and database triggers prevent normal mutation/deletion.
+- Local realm credentials and deterministic OIDC provider identities are fictional, non-production fixtures. Production rejects documented local session secrets and insecure browser/OIDC URLs.
 
-# Deployment status
+# Concurrency and data integrity
 
-- Local Compose infrastructure is healthy and filtered/standalone web/API/worker production images build and run successfully as non-root.
-- No staging or production deployment has occurred or is authorized by Phase 0. Production secret management, TLS/proxy, backup rehearsal, monitoring, hardening, and deployment approval remain Phase 9 requirements.
+- Membership status and role-set writes use expected versions; stale writes return a safe conflict and do not partially mutate roles or audit evidence.
+- Unique constraints prevent duplicate issuer/subject profiles, organization codes, memberships, permission grants, and role assignments.
+- Role scope is validated against organization type before assignment. Foreign keys use restrictive deletion to preserve identity/audit references.
 
-# Review limitations
+# Deployment status and limitations
 
-- GitHub-hosted CI and pull-request dependency review were inspected but cannot be executed from the local workstation; their commands were executed locally where applicable.
-- Only the documented Chromium foundation workflow exists in Phase 0; broader browser/accessibility workflows belong to later functional phases.
-- Prisma's published client peer closure retains Prisma/TypeScript packages in the filtered API/worker production dependency trees. Playwright, ESLint, Vitest, source trees, and unrelated workspace applications are excluded; further peer pruning must not weaken strict dependency checks.
+- No staging or production deployment has occurred or is authorized by Phase 1.
+- Production Keycloak realm provisioning, redirect/origin configuration, TLS/proxy enforcement, secret injection, MFA policy, session cleanup scheduling, rate limiting, monitoring/alerting, and recovery rehearsal remain deployment/hardening responsibilities.
+- The local deterministic OIDC provider is test-only and is never part of an application runtime image.
+- Audit read/export UI and retention automation are deferred; Phase 1 persists immutable evidence and seeds `audit.read` but exposes no audit browsing endpoint.
+- Supplier self-membership permissions are reserved in the matrix, but supplier self-administration screens/APIs are deferred to the supplier collaboration phase; suppliers cannot use internal administration.
 
 # Next recommended task
 
-- After explicit approval, begin one bounded Phase 1 task: implement the Keycloak OIDC authentication boundary and identity synchronization design with its authorization and negative-test plan. Do not begin operational business modules.
+- Stop here. Begin Phase 2 projects, milestones, and work packages only after explicit user approval and a new bounded implementation request.

@@ -10,8 +10,9 @@
     "lint": "eslint src --max-warnings=0",
     "openapi:generate": "tsx src/generate-openapi.ts",
     "start": "node dist/main.js",
-    "test": "vitest run",
-    "test:integration": "vitest run --passWithNoTests",
+    "test": "vitest run -c vitest.config.ts",
+    "test:authorization": "vitest run -c vitest.authorization.config.ts",
+    "test:integration": "vitest run -c vitest.integration.config.ts --passWithNoTests",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

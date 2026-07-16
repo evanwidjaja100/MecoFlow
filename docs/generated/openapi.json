@@ -33,6 +33,417 @@
           "health"
         ]
       }
+    },
+    "/api/v1/auth/login": {
+      "get": {
+        "operationId": "AuthController_login",
+        "parameters": [
+          {
+            "name": "returnTo",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Begin OIDC authorization code flow with PKCE",
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/callback": {
+      "get": {
+        "operationId": "AuthController_callback",
+        "parameters": [
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Complete the OIDC authorization callback",
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Revoke the current server-side session",
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "MeController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Active profile, memberships, roles, and permissions"
+          },
+          "401": {
+            "description": "No valid server-side session"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Return the active user and authorization context",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/api/v1/administration/organizations": {
+      "get": {
+        "operationId": "AdministrationController_organizations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Authorized organizations"
+          },
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List organizations for internal administration",
+        "tags": [
+          "administration"
+        ]
+      },
+      "post": {
+        "operationId": "AdministrationController_createOrganization",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created"
+          },
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create an organization",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/administration/roles": {
+      "get": {
+        "operationId": "AdministrationController_roles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List seeded roles",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/administration/users": {
+      "get": {
+        "operationId": "AdministrationController_users",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List synchronized user profiles",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/administration/organizations/{organizationId}/memberships": {
+      "get": {
+        "operationId": "AdministrationController_memberships",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List organization memberships and role assignments",
+        "tags": [
+          "administration"
+        ]
+      },
+      "post": {
+        "operationId": "AdministrationController_createMembership",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMembershipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create an active organization membership",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/administration/organizations/{organizationId}/memberships/{membershipId}/status": {
+      "patch": {
+        "operationId": "AdministrationController_updateMembershipStatus",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "membershipId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMembershipStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          },
+          "404": {
+            "description": "Resource is nonexistent or inaccessible"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Activate or deactivate a membership",
+        "tags": [
+          "administration"
+        ]
+      }
+    },
+    "/api/v1/administration/organizations/{organizationId}/memberships/{membershipId}/roles": {
+      "put": {
+        "operationId": "AdministrationController_assignRoles",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "membershipId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignRolesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "403": {
+            "description": "The active principal lacks permission or internal scope"
+          },
+          "404": {
+            "description": "Resource is nonexistent or inaccessible"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Replace membership role assignments atomically",
+        "tags": [
+          "administration"
+        ]
+      }
     }
   },
   "info": {
@@ -44,6 +455,96 @@
   "tags": [],
   "servers": [],
   "components": {
-    "schemas": {}
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "mecoflow_session"
+      }
+    },
+    "schemas": {
+      "CreateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "SUPPLIER-ABC",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "example": "Supplier ABC",
+            "maxLength": 200
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "INTERNAL",
+              "SUPPLIER"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "type"
+        ]
+      },
+      "CreateMembershipDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "UpdateMembershipStatusDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "status"
+        ]
+      },
+      "AssignRolesDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "roleCodes": {
+            "example": [
+              "FINANCE_READONLY"
+            ],
+            "maxItems": 14,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "roleCodes"
+        ]
+      }
+    }
   }
 }

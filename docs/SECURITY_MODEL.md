@@ -20,6 +20,10 @@ Validate path/query/body values and reject unknown sensitive-command properties.
 
 Object storage is private. Uploads use opaque keys, allowlisted extension and verified MIME, size limits, SHA-256, safe filenames, quarantine/scan states and authorization before short-lived downloads. Executables and ZIP are disallowed in MVP. Lockfiles, frozen installs, dependency review, vulnerability review, pinned container majors and non-root application images reduce supply-chain risk.
 
-## Phase 0 status
+## Phase 1 status
 
-Phase 0 validates configuration, keeps only documented local-development placeholders in `.env.example`, rejects those placeholders and insecure browser origins during production-mode service startup, binds local infrastructure ports to loopback, uses private MinIO configuration, and establishes safe logging and health responses. It does not expose business endpoints. OIDC, policy enforcement, persistent audit, rate limiting, CSRF and upload controls remain required in later phases.
+The API implements Keycloak OIDC Authorization Code with S256 PKCE, one-time database-backed authorization transactions, browser-bound state/nonce verification, RS256 ID-token verification against discovery/JWKS, profile synchronization, and opaque server-side sessions. The session cookie is HttpOnly, `SameSite=Lax`, and Secure in production; access and refresh tokens are neither persisted nor exposed to the web application. Unsafe administration requests require a session-bound CSRF cookie/header pair and an allowed browser origin.
+
+Authorization composes active profile, active membership/organization, permission, internal/supplier organization type, and scoped object identifiers. Supplier principals cannot enter internal administration. Protected API errors are stable and generic. Membership and role changes write redacted audit events in the same transaction, and PostgreSQL triggers reject audit update/delete operations.
+
+Rate limiting and upload/download controls remain later hardening/operational-module work. Production Keycloak realm provisioning, TLS/proxy cookie enforcement, secret injection, and MFA policy are deployment responsibilities and are not proven by local Phase 1 tests.

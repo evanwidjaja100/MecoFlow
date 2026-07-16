@@ -1,6 +1,6 @@
 # MECO Flow
 
-MECO Flow is PT Meco Inoxprima's secure project-material-readiness and supplier-collaboration platform. Phase 0 contains architecture and repository foundations only; no operational business module or production authentication is enabled.
+MECO Flow is PT Meco Inoxprima's secure project-material-readiness and supplier-collaboration platform. Phase 1 provides Keycloak identity, organizations, memberships, permission policies, immutable membership/role audit, and separate internal/supplier shells. Project functionality remains intentionally unavailable until Phase 2 is explicitly approved.
 
 ## Prerequisites
 
@@ -76,6 +76,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm test:integration
+pnpm test:authorization
 pnpm build
 pnpm test:e2e
 pnpm openapi:generate
@@ -93,4 +94,4 @@ Read `AGENTS.md` before changes. The authoritative baseline is in `docs/PRODUCT_
 
 ## Current status
 
-See `docs/IMPLEMENTATION_STATUS.md`. Do not begin Phase 1 without explicit instruction.
+See `docs/IMPLEMENTATION_STATUS.md`. Do not begin Phase 2 without explicit instruction.

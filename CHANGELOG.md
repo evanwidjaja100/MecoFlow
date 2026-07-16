@@ -1,5 +1,11 @@
 # Changelog
 
+## Phase 1 — 2026-07-16
+
+- Added Keycloak OIDC Authorization Code with PKCE, browser-bound state/nonce checks, synchronized profiles, opaque server-side sessions, and `/api/v1/me`.
+- Added organizations, memberships, seeded roles/permissions, server-side organization policies, Phase 2 project-policy interfaces, and internal/supplier application shells.
+- Added internal organization/membership/role administration, same-transaction immutable audit events, checked OpenAPI, positive/negative authorization tests, and OIDC browser workflows.
+
 All notable changes follow Keep a Changelog and semantic versioning conventions.
 
 ## [Unreleased]

@@ -8,6 +8,7 @@ const localOnlyValues = new Set([
   "local_only_change_me",
   "local_only_minio_change_me",
   "mecoflow_local",
+  "local_only_session_secret_change_me_32_chars",
 ]);
 
 function hasProtocol(value: string, protocols: readonly string[]): boolean {
@@ -91,6 +92,33 @@ const serviceEnvironmentSchema = z
       .default("IDR"),
     API_PORT: z.coerce.number().int().min(1).max(65535).default(3001),
     CORS_ORIGINS: corsOrigins,
+    WEB_BASE_URL: z
+      .string()
+      .url()
+      .refine((value) => hasProtocol(value, ["http:", "https:"]))
+      .default("http://localhost:3000"),
+    OIDC_ISSUER: z
+      .string()
+      .url()
+      .refine((value) => hasProtocol(value, ["http:", "https:"]))
+      .default("http://localhost:8180/realms/mecoflow-local"),
+    OIDC_CLIENT_ID: z.string().min(1).max(200).default("mecoflow-web"),
+    OIDC_REDIRECT_URI: z
+      .string()
+      .url()
+      .refine((value) => hasProtocol(value, ["http:", "https:"]))
+      .default("http://localhost:3001/api/v1/auth/callback"),
+    SESSION_SECRET: z
+      .string()
+      .min(32)
+      .max(500)
+      .default("local_only_session_secret_change_me_32_chars"),
+    SESSION_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(300)
+      .max(86400)
+      .default(28800),
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace"])
       .default("info"),
@@ -144,6 +172,15 @@ const serviceEnvironmentSchema = z
       )
     )
       context.addIssue({ code: "custom", path: ["CORS_ORIGINS"] });
+
+    if (!isHttpsOrigin(environment.WEB_BASE_URL))
+      context.addIssue({ code: "custom", path: ["WEB_BASE_URL"] });
+    if (!isHttpsOrigin(environment.OIDC_ISSUER))
+      context.addIssue({ code: "custom", path: ["OIDC_ISSUER"] });
+    if (!isHttpsOrigin(environment.OIDC_REDIRECT_URI))
+      context.addIssue({ code: "custom", path: ["OIDC_REDIRECT_URI"] });
+    if (localOnlyValues.has(environment.SESSION_SECRET))
+      context.addIssue({ code: "custom", path: ["SESSION_SECRET"] });
 
     if (localOnlyValues.has(environment.S3_ACCESS_KEY))
       context.addIssue({ code: "custom", path: ["S3_ACCESS_KEY"] });

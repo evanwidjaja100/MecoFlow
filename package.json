@@ -29,6 +29,7 @@
     "prepare": "node scripts/prepare.mjs",
     "security:audit": "pnpm audit --audit-level moderate",
     "test": "turbo run test",
+    "test:authorization": "turbo run test:authorization",
     "test:e2e": "playwright test",
     "test:integration": "turbo run test:integration",
     "typecheck": "turbo run typecheck",

@@ -24,3 +24,7 @@ Every released requirement projects ordered, confirmed, shipped, received, accep
 ## Phase 0 database scope
 
 Phase 0 intentionally creates only `SystemMetadata`, a technical table used to prove migration, connectivity and deterministic seed mechanics. Business entities begin in their designated phases; this avoids creating an unreviewed partial operational schema.
+
+## Phase 1 identity and authorization scope
+
+`UserProfile` mirrors a Keycloak issuer/subject identity without storing passwords. `Organization` and `Membership` establish active internal or supplier scope. Seeded `Role`, `Permission`, `RolePermission`, and `MembershipRole` records provide grants; scope remains a separate policy decision. Opaque `Session` and short-lived `OidcAuthTransaction` records support authentication. `AuditEvent` is append-only and transactionally records membership and role changes. No project aggregate or operational entity is introduced in Phase 1.

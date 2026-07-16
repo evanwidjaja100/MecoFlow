@@ -6,13 +6,18 @@ const serviceEnvironment = {
   CORS_ORIGINS: "http://localhost:3000",
   DATABASE_URL:
     "postgresql://mecoflow_local:local_only_change_me@127.0.0.1:5432/mecoflow?schema=public",
-  NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:3001",
+  NEXT_PUBLIC_API_BASE_URL: "http://localhost:3001",
+  OIDC_CLIENT_ID: "mecoflow-web",
+  OIDC_ISSUER: "http://127.0.0.1:4310",
+  OIDC_REDIRECT_URI: "http://localhost:3001/api/v1/auth/callback",
   REDIS_URL: "redis://127.0.0.1:6379",
   S3_ACCESS_KEY: "mecoflow_local",
   S3_BUCKET: "mecoflow-private",
   S3_ENDPOINT: "http://127.0.0.1:9000",
   S3_REGION: "us-east-1",
   S3_SECRET_KEY: "local_only_minio_change_me",
+  SESSION_SECRET: "local_only_session_secret_change_me_32_chars",
+  WEB_BASE_URL: "http://localhost:3000",
 };
 
 export default defineConfig({
@@ -28,6 +33,12 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
+    {
+      command: "node tests/oidc-mock.mjs",
+      port: 4310,
+      reuseExistingServer: false,
+      timeout: 30_000,
+    },
     {
       command: "pnpm --filter @mecoflow/api start",
       env: serviceEnvironment,

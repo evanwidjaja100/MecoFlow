@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { createDatabaseClient, disconnectDatabaseClient } from "./client.js";
 import { applyPhaseZeroSeed } from "./phase-zero-seed.js";
+import { applyPhaseOneSeed, localFixtures } from "./phase-one-seed.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeWithDatabase = databaseUrl ? describe : describe.skip;
@@ -28,6 +29,52 @@ describeWithDatabase("database integration", () => {
       where: { key: "seed.version" },
     });
 
+    expect(secondResult).toEqual(firstResult);
+  });
+
+  it("applies the Phase 1 roles and local fixtures idempotently", async () => {
+    const database = createDatabaseClient(databaseUrl!);
+    await applyPhaseOneSeed(database);
+    const firstResult = await Promise.all([
+      database.systemMetadata.findUniqueOrThrow({
+        where: { key: "seed.version" },
+      }),
+      database.organization.findUniqueOrThrow({
+        where: { id: localFixtures.internalOrganizationId },
+      }),
+      database.userProfile.findUniqueOrThrow({
+        where: { id: localFixtures.internalAdminUserId },
+      }),
+      database.membership.findUniqueOrThrow({
+        where: {
+          userId_organizationId: {
+            organizationId: localFixtures.internalOrganizationId,
+            userId: localFixtures.internalAdminUserId,
+          },
+        },
+      }),
+    ]);
+
+    await applyPhaseOneSeed(database);
+    const secondResult = await Promise.all([
+      database.systemMetadata.findUniqueOrThrow({
+        where: { key: "seed.version" },
+      }),
+      database.organization.findUniqueOrThrow({
+        where: { id: localFixtures.internalOrganizationId },
+      }),
+      database.userProfile.findUniqueOrThrow({
+        where: { id: localFixtures.internalAdminUserId },
+      }),
+      database.membership.findUniqueOrThrow({
+        where: {
+          userId_organizationId: {
+            organizationId: localFixtures.internalOrganizationId,
+            userId: localFixtures.internalAdminUserId,
+          },
+        },
+      }),
+    ]);
     expect(secondResult).toEqual(firstResult);
   });
 });

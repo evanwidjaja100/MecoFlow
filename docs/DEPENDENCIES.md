@@ -12,4 +12,6 @@ The S3 client is pinned one stable patch behind the registry head because the he
 
 Dependency build scripts are deny-by-default. Prisma engines, Prisma, esbuild, and sharp are explicitly allowed because they provide required generated/native runtime artifacts; Scarf's optional install-time analytics script is explicitly ignored.
 
+Phase 1 adds no third-party runtime dependency. OIDC discovery, code exchange, PKCE, and bounded RS256/JWKS verification use Node's built-in `fetch` and `crypto` APIs; the implementation accepts only the documented Keycloak-compatible RS256 profile and validates issuer, audience, signature, expiry, issued-at, nonce, and browser-bound state. This keeps the supply-chain surface unchanged, but any future algorithm/client-authentication expansion requires a security review and may justify a maintained OIDC library.
+
 Workspace overrides require patched minimum versions of `@hono/node-server` 1.19.13 and PostCSS 8.5.10. These are transitive dependencies of Prisma tooling and Next.js respectively; the overrides remediate their published path-traversal/middleware-bypass and CSS-stringification XSS advisories while remaining within the parent packages' compatible ranges.
