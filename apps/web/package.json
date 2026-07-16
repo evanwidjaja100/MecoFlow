@@ -10,7 +10,7 @@
     "start": "next start --hostname 0.0.0.0 --port 3000",
     "test": "vitest run --passWithNoTests",
     "test:integration": "vitest run --passWithNoTests",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "next typegen && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@mecoflow/contracts": "workspace:*",

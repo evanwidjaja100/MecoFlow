@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { createLivenessResponse } from "./health.service.js";
+import { HeadBucketCommand } from "@aws-sdk/client-s3";
+import {
+  createLivenessResponse,
+  createObjectStorageReadinessCommand,
+} from "./health.service.js";
 
 describe("createLivenessResponse", () => {
   it("returns the stable API liveness shape", () => {
@@ -12,5 +16,11 @@ describe("createLivenessResponse", () => {
       version: "0.1.0",
     });
     vi.useRealTimers();
+  });
+
+  it("checks the configured private object-storage bucket", () => {
+    const command = createObjectStorageReadinessCommand("mecoflow-private");
+    expect(command).toBeInstanceOf(HeadBucketCommand);
+    expect(command.input).toEqual({ Bucket: "mecoflow-private" });
   });
 });

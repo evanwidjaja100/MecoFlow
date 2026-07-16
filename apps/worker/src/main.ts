@@ -1,4 +1,4 @@
-import { ListBucketsCommand, S3Client } from "@aws-sdk/client-s3";
+import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { parseServiceEnvironment } from "@mecoflow/config";
 import {
   createDatabaseClient,
@@ -29,7 +29,13 @@ const logger = pino({
   timestamp: pino.stdTimeFunctions.isoTime,
 });
 const database = createDatabaseClient(environment.DATABASE_URL);
-const redis = new Redis(environment.REDIS_URL, { maxRetriesPerRequest: 1 });
+const redis = new Redis(environment.REDIS_URL, {
+  connectTimeout: 2_000,
+  enableOfflineQueue: false,
+  lazyConnect: true,
+  maxRetriesPerRequest: 0,
+});
+redis.on("error", () => undefined);
 const objectStorage = new S3Client({
   credentials: {
     accessKeyId: environment.S3_ACCESS_KEY,
@@ -38,11 +44,15 @@ const objectStorage = new S3Client({
   endpoint: environment.S3_ENDPOINT,
   forcePathStyle: environment.S3_FORCE_PATH_STYLE,
   region: environment.S3_REGION,
+  requestHandler: { requestTimeout: 2_000 },
 });
 
 await database.$queryRaw`SELECT 1`;
+await redis.connect();
 await redis.ping();
-await objectStorage.send(new ListBucketsCommand({}));
+await objectStorage.send(
+  new HeadBucketCommand({ Bucket: environment.S3_BUCKET }),
+);
 
 async function writeHeartbeat(): Promise<void> {
   await redis.set(
@@ -59,12 +69,9 @@ logger.info(
   "Worker foundation started",
 );
 const heartbeatTimer = setInterval(() => {
-  void writeHeartbeat().catch((error: unknown) => {
+  void writeHeartbeat().catch(() => {
     logger.error(
-      {
-        errorClassification: "dependency_failure",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
+      { errorClassification: "dependency_failure" },
       "Worker heartbeat failed",
     );
   });

@@ -2,9 +2,11 @@
   "$schema": "https://turbo.build/schema.json",
   "globalPassThroughEnv": [
     "API_PORT",
+    "APP_CURRENCY",
     "APP_ENV",
     "APP_TIMEZONE",
     "APP_VERSION",
+    "BUILD_STANDALONE",
     "CORS_ORIGINS",
     "DATABASE_URL",
     "LOG_LEVEL",

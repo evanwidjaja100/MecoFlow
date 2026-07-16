@@ -15,21 +15,23 @@ MECO Flow is PT Meco Inoxprima's secure project-material-readiness and supplier-
 From the repository root:
 
 ```text
-corepack enable
 corepack prepare pnpm@11.13.0 --activate
 Copy-Item .env.example .env
-pnpm install
+pnpm install --frozen-lockfile
 pnpm compose:up
 pnpm db:migrate
 pnpm db:seed
 pnpm dev
 ```
 
-Review `.env` before use. Values in `.env.example` are explicitly local-only and must never be used outside local development. The setup helper performs the same non-destructive sequence and does not overwrite an existing `.env`:
+Review `.env` before use. Values in `.env.example` are explicitly local-only and must never be used outside local development. Production-mode service startup rejects these known local placeholders. The setup helper performs the same non-destructive initialization steps and does not overwrite an existing `.env`:
 
 ```text
 powershell -NoProfile -ExecutionPolicy Bypass -File infra/scripts/setup.ps1
 ```
+
+The helper initializes infrastructure and the database, then exits. Run `pnpm dev` afterward to start the web, API, and worker processes.
+The web process reloads browser-facing changes automatically. Restart `pnpm dev` after changing API or worker source so their direct development processes reload cleanly on Windows and Unix-like systems.
 
 ## Local services
 
@@ -43,7 +45,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File infra/scripts/setup.ps1
 | MinIO console               | http://localhost:9001              |
 | Mailpit                     | http://localhost:8025              |
 
-`/health/live` proves only that the API process runs. `/health/ready` safely checks PostgreSQL, Redis and object storage. The worker writes a short-lived Redis heartbeat and performs no Phase 1+ jobs.
+`/health/live` proves only that the API process runs. `/health/ready` safely checks PostgreSQL, Redis and the configured private object-storage bucket. The worker writes a short-lived Redis heartbeat and performs no Phase 1+ jobs. Compose publishes local dependency ports only on `127.0.0.1`.
 
 ## Repository structure
 
@@ -77,6 +79,8 @@ pnpm test:integration
 pnpm build
 pnpm test:e2e
 pnpm openapi:generate
+pnpm openapi:check
+pnpm security:audit
 pnpm verify
 pnpm compose:down
 ```

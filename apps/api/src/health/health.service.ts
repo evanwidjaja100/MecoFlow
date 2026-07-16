@@ -1,4 +1,4 @@
-import { ListBucketsCommand, S3Client } from "@aws-sdk/client-s3";
+import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { Inject, Injectable, type OnModuleDestroy } from "@nestjs/common";
 import {
   createDatabaseClient,
@@ -17,6 +17,12 @@ export function createLivenessResponse(version: string): HealthResponse {
     timestamp: new Date().toISOString(),
     version,
   };
+}
+
+export function createObjectStorageReadinessCommand(
+  bucket: string,
+): HeadBucketCommand {
+  return new HeadBucketCommand({ Bucket: bucket });
 }
 
 @Injectable()
@@ -57,7 +63,9 @@ export class HealthService implements OnModuleDestroy {
     const checks = await Promise.allSettled([
       this.database.$queryRaw`SELECT 1`,
       this.checkRedis(),
-      this.objectStorage.send(new ListBucketsCommand({})),
+      this.objectStorage.send(
+        createObjectStorageReadinessCommand(this.environment.S3_BUCKET),
+      ),
     ]);
     const names = ["database", "redis", "objectStorage"] as const;
     const statuses = names.reduce<Record<string, "up" | "down">>(

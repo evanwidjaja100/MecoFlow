@@ -22,4 +22,4 @@ Object storage is private. Uploads use opaque keys, allowlisted extension and ve
 
 ## Phase 0 status
 
-Phase 0 validates configuration, keeps only documented local-development placeholders in `.env.example`, uses private MinIO configuration, and establishes safe logging and health responses. It does not expose business endpoints. OIDC, policy enforcement, persistent audit, rate limiting, CSRF and upload controls remain required in later phases.
+Phase 0 validates configuration, keeps only documented local-development placeholders in `.env.example`, rejects those placeholders and insecure browser origins during production-mode service startup, binds local infrastructure ports to loopback, uses private MinIO configuration, and establishes safe logging and health responses. It does not expose business endpoints. OIDC, policy enforcement, persistent audit, rate limiting, CSRF and upload controls remain required in later phases.

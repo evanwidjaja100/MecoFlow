@@ -9,6 +9,16 @@ permissions:
   contents: read
 
 jobs:
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          config-file: ./.github/dependency-review-config.yml
+
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -52,18 +62,13 @@ jobs:
           node-version: 24
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - run: pnpm db:deploy
+      - run: pnpm db:migrate
       - run: pnpm db:seed
-      - run: pnpm format:check
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm test:integration
-      - run: pnpm openapi:generate
-      - run: pnpm build
+      - run: pnpm verify
+      - run: pnpm openapi:check
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
-      - run: pnpm audit --audit-level high
+      - run: pnpm security:audit
       - name: Validate Compose
         run: cp .env.example .env && docker compose config --quiet
       - name: Build application containers

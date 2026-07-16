@@ -1,4 +1,9 @@
-import { Controller, Get, ServiceUnavailableException } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Inject,
+  ServiceUnavailableException,
+} from "@nestjs/common";
 import {
   ApiOkResponse,
   ApiOperation,
@@ -11,7 +16,9 @@ import { HealthService } from "./health.service.js";
 @ApiTags("health")
 @Controller("health")
 export class HealthController {
-  constructor(private readonly healthService: HealthService) {}
+  constructor(
+    @Inject(HealthService) private readonly healthService: HealthService,
+  ) {}
 
   @Get("live")
   @ApiOperation({ summary: "Process liveness probe" })

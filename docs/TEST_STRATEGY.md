@@ -11,6 +11,6 @@ Tests are deterministic, independent of order, use fictional fixtures, and clean
 
 ## Phase 0 gates
 
-`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm build`, Prisma migration/seed, and the Playwright landing-page smoke test form the foundation. CI uses frozen installation, service containers, migration validation, OpenAPI generation, production builds, browser smoke, dependency audit and container build checks.
+`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm build`, Prisma migration/seed, and the Playwright landing-page smoke test form the foundation. `pnpm verify` is the shared local/CI primary quality chain. CI uses frozen installation, service containers, migration validation, checked-in OpenAPI drift detection, production builds, browser smoke, moderate-or-higher dependency audit, pull-request dependency review and container build checks.
 
 Environment-blocked commands are reported with exact cause and residual risk; no command is reported successful unless it completed successfully.
