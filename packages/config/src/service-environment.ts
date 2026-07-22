@@ -144,6 +144,15 @@ const serviceEnvironmentSchema = z
       .regex(/^[a-z0-9][a-z0-9.-]*[a-z0-9]$/)
       .refine((value) => !value.includes("..")),
     S3_FORCE_PATH_STYLE: booleanString.default(true),
+    VIRUS_SCANNER_ENABLED: booleanString.default(false),
+    VIRUS_SCANNER_HOST: z.string().min(1).max(253).default("127.0.0.1"),
+    VIRUS_SCANNER_PORT: z.coerce.number().int().min(1).max(65535).default(3310),
+    VIRUS_SCANNER_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(1000)
+      .max(30000)
+      .default(10000),
   })
   .superRefine((environment, context) => {
     if (environment.NODE_ENV !== "production") return;
@@ -186,6 +195,8 @@ const serviceEnvironmentSchema = z
       context.addIssue({ code: "custom", path: ["S3_ACCESS_KEY"] });
     if (localOnlyValues.has(environment.S3_SECRET_KEY))
       context.addIssue({ code: "custom", path: ["S3_SECRET_KEY"] });
+    if (!environment.VIRUS_SCANNER_ENABLED)
+      context.addIssue({ code: "custom", path: ["VIRUS_SCANNER_ENABLED"] });
   });
 
 export type ServiceEnvironment = z.infer<typeof serviceEnvironmentSchema>;

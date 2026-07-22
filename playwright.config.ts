@@ -40,7 +40,8 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command: "pnpm --filter @mecoflow/api start",
+      command:
+        "pnpm --parallel --filter @mecoflow/api --filter @mecoflow/worker start",
       env: serviceEnvironment,
       port: 3001,
       reuseExistingServer: !process.env.CI,

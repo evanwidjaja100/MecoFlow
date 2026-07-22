@@ -84,6 +84,9 @@ button {
 .button--secondary {
   background: #52636e;
 }
+.button--danger {
+  background: var(--danger);
+}
 .error {
   padding: 0.75rem;
   color: var(--danger) !important;
@@ -176,6 +179,15 @@ button {
   border: 1px solid var(--border);
   border-top: 0.25rem solid var(--brand);
 }
+.panel--danger {
+  border-top-color: var(--danger);
+}
+.notice {
+  padding: 0.75rem;
+  border: 1px solid #d4ab73;
+  color: #70410f !important;
+  background: #fff7e8;
+}
 .card-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -207,7 +219,8 @@ label {
   font-weight: 700;
 }
 input,
-select {
+select,
+textarea {
   min-height: 2.6rem;
   width: 100%;
   padding: 0.55rem;
@@ -218,10 +231,201 @@ select {
 }
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 button:focus-visible,
 a:focus-visible {
   outline: 0.2rem solid #e59862;
   outline-offset: 0.15rem;
+}
+input[readonly] {
+  color: var(--muted);
+  background: #f3f5f7;
+}
+.heading-row,
+.heading-actions,
+.breadcrumbs,
+.pagination,
+.inline-form {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.heading-row {
+  justify-content: space-between;
+}
+.heading-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.breadcrumbs {
+  margin-bottom: 1.5rem;
+  color: var(--muted);
+}
+.pagination {
+  justify-content: space-between;
+  margin-top: 1.25rem;
+}
+.pagination span {
+  color: var(--muted);
+}
+.form-grid--wide {
+  grid-template-columns: repeat(5, minmax(8rem, 1fr));
+}
+.span-all {
+  grid-column: 1 / -1;
+}
+.status {
+  display: inline-block;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #82929e;
+  border-radius: 999px;
+  color: #33444f;
+  background: #edf1f3;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.status--active,
+.status--completed,
+.status--confirmed,
+.status--ready,
+.status--released,
+.status--validated,
+.status--arrived,
+.status--posted,
+.status--awaiting_inspection {
+  color: #14532d;
+  border-color: #79a98a;
+  background: #ecf8f0;
+}
+.status--on_hold,
+.status--planned,
+.status--in_review,
+.status--parsing,
+.status--queued {
+  color: #70410f;
+  border-color: #d4ab73;
+  background: #fff7e8;
+}
+.status--submitted,
+.status--in_transit {
+  color: #70410f;
+  border-color: #d4ab73;
+  background: #fff7e8;
+}
+.status--cancelled {
+  color: #842727;
+  border-color: #d69a9a;
+  background: #fff0f0;
+}
+.status--failed,
+.status--rejected,
+.status--superseded {
+  color: #842727;
+  border-color: #d69a9a;
+  background: #fff0f0;
+}
+.subpanel {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: #fafbfc;
+}
+.validation-error {
+  color: #842727;
+  font-weight: 700;
+}
+.validation-warning {
+  color: #70410f;
+}
+.error-panel {
+  border-color: #d69a9a;
+  background: #fff0f0;
+}
+.inline-lifecycle-form {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+.definition-list {
+  display: grid;
+  gap: 0.5rem;
+}
+.definition-list div {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 1rem;
+}
+.definition-list dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+.definition-list dd {
+  margin: 0;
+}
+.checksum {
+  overflow-wrap: anywhere;
+  font-family: monospace;
+}
+.status--inactive {
+  color: #842727;
+  border-color: #d69a9a;
+  background: #fff0f0;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--border);
+}
+.summary-grid div {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem;
+  background: var(--surface);
+}
+.summary-grid span,
+small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.stack {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+details {
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  background: #fafbfc;
+}
+summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+details[open] summary {
+  margin-bottom: 1rem;
+}
+.timeline {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.timeline article {
+  padding-left: 1rem;
+  border-left: 0.25rem solid var(--brand);
+}
+.timeline article span {
+  display: block;
+  margin: 0.25rem 0;
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 table {
   width: 100%;
@@ -254,6 +458,79 @@ th {
   width: 1rem;
   min-height: 1rem;
 }
+.specification-fields {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+.specification-fields legend {
+  padding: 0 0.4rem;
+  font-weight: 700;
+}
+.specification-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(10rem, 1fr));
+  gap: 1rem;
+}
+.specification-checkbox {
+  min-height: 2.6rem;
+  padding-top: 1.4rem;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.workspace--tablet {
+  width: min(92rem, calc(100% - 2rem));
+}
+.receiving-panel {
+  overflow: visible;
+}
+.receiving-card,
+.receiving-line {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: #fafbfc;
+}
+.receiving-lines {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1rem;
+}
+.receiving-line {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+}
+.receiving-line legend {
+  max-width: 100%;
+  padding: 0 0.4rem;
+  font-weight: 800;
+}
+.tablet-command {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1fr) minmax(10rem, auto);
+  align-items: end;
+  gap: 1rem;
+}
+.workspace--tablet input,
+.workspace--tablet select,
+.workspace--tablet textarea,
+.workspace--tablet button {
+  min-height: 3rem;
+}
+.tablet-primary {
+  min-height: 3.5rem !important;
+  font-size: 1.05rem;
+}
 
 @media (max-width: 800px) {
   .app-shell {
@@ -274,8 +551,37 @@ th {
     padding: 2rem 0;
   }
   .card-grid,
-  .form-grid {
+  .form-grid,
+  .form-grid--wide,
+  .specification-grid,
+  .summary-grid {
     grid-template-columns: 1fr;
+  }
+  .heading-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .heading-actions {
+    justify-content: flex-start;
+  }
+  .tablet-command,
+  .receiving-lines {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (pointer: coarse) {
+  .workspace--tablet input,
+  .workspace--tablet select,
+  .workspace--tablet textarea,
+  .workspace--tablet button,
+  .workspace--tablet a.button {
+    min-height: 3.25rem;
+    padding: 0.8rem;
+  }
+  .workspace--tablet th,
+  .workspace--tablet td {
+    padding: 0.9rem;
   }
 }
 

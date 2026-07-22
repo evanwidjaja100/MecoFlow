@@ -3,6 +3,18 @@ import type { PrismaClient } from "../generated/prisma/client.js";
 const permissions = {
   "administration.access": "Access internal administration",
   "audit.read": "Read authorized audit events",
+  "bom.import": "Upload, validate, and confirm BOM imports",
+  "bom.read": "Read authorized BOM revisions and import results",
+  "bom.release": "Release and supersede authorized BOM revisions",
+  "bom.review": "Submit and cancel authorized BOM revisions",
+  "bom.write": "Create and correct authorized draft BOM revisions",
+  "document.approve": "Approve or reject clean document versions",
+  "document.read": "Read authorized project document metadata",
+  "document.review": "Submit and review clean document versions",
+  "document.upload": "Create document versions through private storage",
+  "item.export": "Export the internal item master",
+  "item.read": "Read the internal item master",
+  "item.write": "Create and change internal item-master records",
   "membership.read": "Read organization memberships",
   "membership.write": "Create and change organization memberships",
   "organization.read": "Read organizations",
@@ -10,6 +22,25 @@ const permissions = {
   "project.read": "Read authorized projects when Phase 2 is enabled",
   "project.write": "Change authorized projects when Phase 2 is enabled",
   "project.membership.manage": "Manage project scope when Phase 2 is enabled",
+  "purchase-order.cancel": "Cancel active purchase orders",
+  "purchase-order.exception.read": "Read late supplier commitment exceptions",
+  "purchase-order.override":
+    "Authorize ordering above approved available quantity",
+  "purchase-order.read": "Read authorized internal purchase orders",
+  "purchase-order.send": "Send authorized purchase order revisions",
+  "purchase-order.write": "Create and revise authorized purchase orders",
+  "requisition.approve": "Approve or reject submitted purchase requisitions",
+  "requisition.cancel": "Cancel active purchase requisitions",
+  "requisition.override": "Authorize requisition quantity above released need",
+  "requisition.read": "Read authorized purchase requisitions and coverage",
+  "requisition.submit": "Submit authorized draft purchase requisitions",
+  "requisition.write": "Create authorized draft purchase requisitions",
+  "shipment.read": "Read authorized advance shipment notices",
+  "shipment.arrive": "Record arrival of authorized shipments",
+  "receiving.read": "Read authorized goods receipts and inventory lots",
+  "receiving.write": "Create authorized draft goods receipts",
+  "receiving.post": "Post authorized goods receipts",
+  "receiving.correct": "Create correcting goods receipt entries",
   "role.read": "Read roles and assignments",
   "role.assign": "Change role assignments",
   "supplier.membership.read":
@@ -17,6 +48,16 @@ const permissions = {
   "supplier.membership.write":
     "Manage memberships in the user's supplier organization",
   "supplier.organization.read": "Read the user's supplier organization",
+  "supplier.purchase-order.acknowledge":
+    "Acknowledge own-organization purchase orders",
+  "supplier.purchase-order.read": "Read own-organization purchase orders",
+  "supplier.commitment.write":
+    "Append commitments to own-organization purchase orders",
+  "supplier.asn.read": "Read own-organization advance shipment notices",
+  "supplier.asn.write": "Create own-organization advance shipment notices",
+  "supplier.asn.transition": "Transition own-organization shipments",
+  "supplier.document.read": "Read own-organization project documents",
+  "supplier.document.upload": "Upload own-organization project documents",
   "user.read": "Read authorized user profiles",
 } as const;
 
@@ -94,27 +135,186 @@ const rolePermissions: Record<(typeof roles)[number][0], readonly string[]> = {
     "user.read",
     "project.read",
     "audit.read",
+    "item.read",
+    "item.export",
+    "bom.read",
+    "document.read",
+    "requisition.read",
+    "purchase-order.read",
+    "purchase-order.exception.read",
+    "shipment.read",
+    "receiving.read",
   ],
   PROJECT_MANAGER: [
     "project.read",
     "project.write",
     "project.membership.manage",
+    "item.read",
+    "bom.read",
+    "bom.write",
+    "bom.import",
+    "bom.review",
+    "bom.release",
+    "document.read",
+    "document.upload",
+    "document.review",
+    "document.approve",
+    "requisition.read",
+    "requisition.write",
+    "requisition.submit",
+    "requisition.approve",
+    "requisition.cancel",
+    "requisition.override",
+    "purchase-order.read",
+    "purchase-order.write",
+    "purchase-order.send",
+    "purchase-order.cancel",
+    "purchase-order.override",
+    "purchase-order.exception.read",
+    "shipment.read",
+    "shipment.arrive",
+    "receiving.read",
+    "receiving.write",
+    "receiving.post",
+    "receiving.correct",
   ],
-  ENGINEERING: ["project.read", "project.write"],
-  PPIC: ["project.read", "project.write"],
-  PURCHASING: ["project.read", "project.write"],
-  WAREHOUSE: ["project.read", "project.write"],
-  QA_QC: ["project.read", "project.write"],
-  PRODUCTION: ["project.read"],
-  FINANCE_READONLY: ["project.read"],
-  AUDITOR_READONLY: ["project.read", "audit.read"],
+  ENGINEERING: [
+    "project.read",
+    "project.write",
+    "item.read",
+    "item.write",
+    "item.export",
+    "bom.read",
+    "bom.write",
+    "bom.import",
+    "bom.review",
+    "document.read",
+    "document.upload",
+    "document.review",
+    "requisition.read",
+    "purchase-order.read",
+    "shipment.read",
+  ],
+  PPIC: [
+    "project.read",
+    "project.write",
+    "item.read",
+    "item.export",
+    "bom.read",
+    "bom.review",
+    "document.read",
+    "document.review",
+    "requisition.read",
+    "purchase-order.read",
+    "purchase-order.exception.read",
+    "shipment.read",
+    "receiving.read",
+  ],
+  PURCHASING: [
+    "project.read",
+    "project.write",
+    "item.read",
+    "item.export",
+    "bom.read",
+    "document.read",
+    "document.upload",
+    "requisition.read",
+    "requisition.write",
+    "requisition.submit",
+    "requisition.cancel",
+    "purchase-order.read",
+    "purchase-order.write",
+    "purchase-order.send",
+    "purchase-order.cancel",
+    "purchase-order.exception.read",
+    "shipment.read",
+  ],
+  WAREHOUSE: [
+    "project.read",
+    "project.write",
+    "item.read",
+    "bom.read",
+    "document.read",
+    "document.upload",
+    "shipment.read",
+    "shipment.arrive",
+    "receiving.read",
+    "receiving.write",
+    "receiving.post",
+    "receiving.correct",
+  ],
+  QA_QC: [
+    "project.read",
+    "project.write",
+    "item.read",
+    "item.export",
+    "bom.read",
+    "document.read",
+    "document.upload",
+    "document.review",
+    "document.approve",
+    "requisition.read",
+    "purchase-order.read",
+    "purchase-order.exception.read",
+    "shipment.read",
+    "receiving.read",
+  ],
+  PRODUCTION: [
+    "project.read",
+    "item.read",
+    "bom.read",
+    "document.read",
+    "shipment.read",
+    "receiving.read",
+  ],
+  FINANCE_READONLY: [
+    "project.read",
+    "item.read",
+    "bom.read",
+    "document.read",
+    "requisition.read",
+    "purchase-order.read",
+    "shipment.read",
+    "receiving.read",
+  ],
+  AUDITOR_READONLY: [
+    "project.read",
+    "audit.read",
+    "item.read",
+    "item.export",
+    "bom.read",
+    "document.read",
+    "requisition.read",
+    "purchase-order.read",
+    "shipment.read",
+    "receiving.read",
+  ],
   SUPPLIER_ADMIN: [
     "supplier.organization.read",
     "supplier.membership.read",
     "supplier.membership.write",
     "project.read",
+    "supplier.purchase-order.read",
+    "supplier.purchase-order.acknowledge",
+    "supplier.commitment.write",
+    "supplier.asn.read",
+    "supplier.asn.write",
+    "supplier.asn.transition",
+    "supplier.document.read",
+    "supplier.document.upload",
   ],
-  SUPPLIER_USER: ["supplier.organization.read", "project.read"],
+  SUPPLIER_USER: [
+    "supplier.organization.read",
+    "project.read",
+    "supplier.purchase-order.read",
+    "supplier.purchase-order.acknowledge",
+    "supplier.commitment.write",
+    "supplier.asn.read",
+    "supplier.asn.write",
+    "supplier.asn.transition",
+    "supplier.document.read",
+    "supplier.document.upload",
+  ],
   CUSTOMER_VIEWER: [],
 };
 
@@ -139,233 +339,236 @@ export function shouldSeedLocalFixtures(
 }
 
 export async function applyPhaseOneSeed(database: PrismaClient): Promise<void> {
-  await database.$transaction(async (transaction) => {
-    const seedLocalFixtures = shouldSeedLocalFixtures(process.env.APP_ENV);
-    for (const [code, description] of Object.entries(permissions)) {
-      await transaction.permission.upsert({
-        create: { code, description },
-        update: { description },
-        where: { code },
-      });
-    }
+  await database.$transaction(
+    async (transaction) => {
+      const seedLocalFixtures = shouldSeedLocalFixtures(process.env.APP_ENV);
+      for (const [code, description] of Object.entries(permissions)) {
+        await transaction.permission.upsert({
+          create: { code, description },
+          update: { description },
+          where: { code },
+        });
+      }
 
-    for (const [code, name, description, scope] of roles) {
-      await transaction.role.upsert({
-        create: { code, name, description, scope },
-        update: { name, description, scope },
-        where: { code },
-      });
-      const expectedPermissions = [...rolePermissions[code]];
-      await transaction.rolePermission.deleteMany({
-        where: {
-          roleCode: code,
-          ...(expectedPermissions.length > 0
-            ? { permissionCode: { notIn: expectedPermissions } }
-            : {}),
-        },
-      });
-      await transaction.rolePermission.createMany({
-        data: expectedPermissions.map((permissionCode) => ({
-          roleCode: code,
-          permissionCode,
-        })),
-        skipDuplicates: true,
-      });
-    }
+      for (const [code, name, description, scope] of roles) {
+        await transaction.role.upsert({
+          create: { code, name, description, scope },
+          update: { name, description, scope },
+          where: { code },
+        });
+        const expectedPermissions = [...rolePermissions[code]];
+        await transaction.rolePermission.deleteMany({
+          where: {
+            roleCode: code,
+            ...(expectedPermissions.length > 0
+              ? { permissionCode: { notIn: expectedPermissions } }
+              : {}),
+          },
+        });
+        await transaction.rolePermission.createMany({
+          data: expectedPermissions.map((permissionCode) => ({
+            roleCode: code,
+            permissionCode,
+          })),
+          skipDuplicates: true,
+        });
+      }
 
-    const organizations = [
-      {
-        id: localFixtures.internalOrganizationId,
-        code: "MECO",
-        name: "PT Meco Inoxprima",
-        type: "INTERNAL" as const,
-      },
-      {
-        id: localFixtures.supplierOrganizationId,
-        code: "SUPPLIER-ALPHA",
-        name: "Supplier Alpha (Local)",
-        type: "SUPPLIER" as const,
-      },
-    ];
-    for (const organization of seedLocalFixtures ? organizations : []) {
-      await transaction.organization.createMany({
-        data: organization,
-        skipDuplicates: true,
-      });
-      await transaction.organization.updateMany({
-        data: {
-          name: organization.name,
-          type: organization.type,
-          active: true,
+      const organizations = [
+        {
+          id: localFixtures.internalOrganizationId,
+          code: "MECO",
+          name: "PT Meco Inoxprima",
+          type: "INTERNAL" as const,
         },
-        where: {
-          code: organization.code,
-          OR: [
-            { name: { not: organization.name } },
-            { type: { not: organization.type } },
-            { active: { not: true } },
-          ],
+        {
+          id: localFixtures.supplierOrganizationId,
+          code: "SUPPLIER-ALPHA",
+          name: "Supplier Alpha (Local)",
+          type: "SUPPLIER" as const,
         },
-      });
-    }
+      ];
+      for (const organization of seedLocalFixtures ? organizations : []) {
+        await transaction.organization.createMany({
+          data: organization,
+          skipDuplicates: true,
+        });
+        await transaction.organization.updateMany({
+          data: {
+            name: organization.name,
+            type: organization.type,
+            active: true,
+          },
+          where: {
+            code: organization.code,
+            OR: [
+              { name: { not: organization.name } },
+              { type: { not: organization.type } },
+              { active: { not: true } },
+            ],
+          },
+        });
+      }
 
-    const users = seedLocalFixtures
-      ? [
-          {
-            id: localFixtures.internalAdminUserId,
-            issuer: localFixtures.issuer,
-            subject: "30000000-0000-4000-8000-000000000001",
-            email: "internal.admin@mecoflow.local",
-            displayName: "Internal Administrator",
-            status: "ACTIVE" as const,
-            organizationId: localFixtures.internalOrganizationId,
-            roleCode: "SYSTEM_ADMIN",
-            membershipStatus: "ACTIVE" as const,
+      const users = seedLocalFixtures
+        ? [
+            {
+              id: localFixtures.internalAdminUserId,
+              issuer: localFixtures.issuer,
+              subject: "30000000-0000-4000-8000-000000000001",
+              email: "internal.admin@mecoflow.local",
+              displayName: "Internal Administrator",
+              status: "ACTIVE" as const,
+              organizationId: localFixtures.internalOrganizationId,
+              roleCode: "SYSTEM_ADMIN",
+              membershipStatus: "ACTIVE" as const,
+            },
+            {
+              id: localFixtures.internalReadonlyUserId,
+              issuer: localFixtures.issuer,
+              subject: "30000000-0000-4000-8000-000000000002",
+              email: "finance.readonly@mecoflow.local",
+              displayName: "Finance Readonly",
+              status: "ACTIVE" as const,
+              organizationId: localFixtures.internalOrganizationId,
+              roleCode: "FINANCE_READONLY",
+              membershipStatus: "ACTIVE" as const,
+            },
+            {
+              id: localFixtures.supplierAdminUserId,
+              issuer: localFixtures.issuer,
+              subject: "30000000-0000-4000-8000-000000000003",
+              email: "supplier.admin@mecoflow.local",
+              displayName: "Supplier Administrator",
+              status: "ACTIVE" as const,
+              organizationId: localFixtures.supplierOrganizationId,
+              roleCode: "SUPPLIER_ADMIN",
+              membershipStatus: "ACTIVE" as const,
+            },
+            {
+              id: localFixtures.inactiveUserId,
+              issuer: localFixtures.issuer,
+              subject: "30000000-0000-4000-8000-000000000004",
+              email: "inactive.user@mecoflow.local",
+              displayName: "Inactive User",
+              status: "INACTIVE" as const,
+              organizationId: localFixtures.internalOrganizationId,
+              roleCode: "SYSTEM_ADMIN",
+              membershipStatus: "ACTIVE" as const,
+            },
+            {
+              id: localFixtures.inactiveMembershipUserId,
+              issuer: localFixtures.issuer,
+              subject: "30000000-0000-4000-8000-000000000005",
+              email: "inactive.membership@mecoflow.local",
+              displayName: "Inactive Membership",
+              status: "ACTIVE" as const,
+              organizationId: localFixtures.internalOrganizationId,
+              roleCode: "SYSTEM_ADMIN",
+              membershipStatus: "INACTIVE" as const,
+            },
+            {
+              id: localFixtures.mockInternalAdminUserId,
+              issuer: localFixtures.mockIssuer,
+              subject: "mock-internal-admin",
+              email: "internal.admin@mecoflow.test",
+              displayName: "Internal Administrator",
+              status: "ACTIVE" as const,
+              organizationId: localFixtures.internalOrganizationId,
+              roleCode: "SYSTEM_ADMIN",
+              membershipStatus: "ACTIVE" as const,
+            },
+            {
+              id: localFixtures.mockSupplierAdminUserId,
+              issuer: localFixtures.mockIssuer,
+              subject: "mock-supplier-admin",
+              email: "supplier.admin@mecoflow.test",
+              displayName: "Supplier Administrator",
+              status: "ACTIVE" as const,
+              organizationId: localFixtures.supplierOrganizationId,
+              roleCode: "SUPPLIER_ADMIN",
+              membershipStatus: "ACTIVE" as const,
+            },
+          ]
+        : [];
+      for (const user of users) {
+        await transaction.userProfile.createMany({
+          data: {
+            id: user.id,
+            issuer: user.issuer,
+            subject: user.subject,
+            email: user.email,
+            displayName: user.displayName,
+            status: user.status,
           },
-          {
-            id: localFixtures.internalReadonlyUserId,
-            issuer: localFixtures.issuer,
-            subject: "30000000-0000-4000-8000-000000000002",
-            email: "finance.readonly@mecoflow.local",
-            displayName: "Finance Readonly",
-            status: "ACTIVE" as const,
-            organizationId: localFixtures.internalOrganizationId,
-            roleCode: "FINANCE_READONLY",
-            membershipStatus: "ACTIVE" as const,
+          skipDuplicates: true,
+        });
+        await transaction.userProfile.updateMany({
+          data: {
+            email: user.email,
+            displayName: user.displayName,
+            issuer: user.issuer,
+            status: user.status,
+            subject: user.subject,
           },
-          {
-            id: localFixtures.supplierAdminUserId,
-            issuer: localFixtures.issuer,
-            subject: "30000000-0000-4000-8000-000000000003",
-            email: "supplier.admin@mecoflow.local",
-            displayName: "Supplier Administrator",
-            status: "ACTIVE" as const,
-            organizationId: localFixtures.supplierOrganizationId,
-            roleCode: "SUPPLIER_ADMIN",
-            membershipStatus: "ACTIVE" as const,
+          where: {
+            id: user.id,
+            OR: [
+              { email: { not: user.email } },
+              { displayName: { not: user.displayName } },
+              { issuer: { not: user.issuer } },
+              { status: { not: user.status } },
+              { subject: { not: user.subject } },
+            ],
           },
-          {
-            id: localFixtures.inactiveUserId,
-            issuer: localFixtures.issuer,
-            subject: "30000000-0000-4000-8000-000000000004",
-            email: "inactive.user@mecoflow.local",
-            displayName: "Inactive User",
-            status: "INACTIVE" as const,
-            organizationId: localFixtures.internalOrganizationId,
-            roleCode: "SYSTEM_ADMIN",
-            membershipStatus: "ACTIVE" as const,
-          },
-          {
-            id: localFixtures.inactiveMembershipUserId,
-            issuer: localFixtures.issuer,
-            subject: "30000000-0000-4000-8000-000000000005",
-            email: "inactive.membership@mecoflow.local",
-            displayName: "Inactive Membership",
-            status: "ACTIVE" as const,
-            organizationId: localFixtures.internalOrganizationId,
-            roleCode: "SYSTEM_ADMIN",
-            membershipStatus: "INACTIVE" as const,
-          },
-          {
-            id: localFixtures.mockInternalAdminUserId,
-            issuer: localFixtures.mockIssuer,
-            subject: "mock-internal-admin",
-            email: "internal.admin@mecoflow.test",
-            displayName: "Internal Administrator",
-            status: "ACTIVE" as const,
-            organizationId: localFixtures.internalOrganizationId,
-            roleCode: "SYSTEM_ADMIN",
-            membershipStatus: "ACTIVE" as const,
-          },
-          {
-            id: localFixtures.mockSupplierAdminUserId,
-            issuer: localFixtures.mockIssuer,
-            subject: "mock-supplier-admin",
-            email: "supplier.admin@mecoflow.test",
-            displayName: "Supplier Administrator",
-            status: "ACTIVE" as const,
-            organizationId: localFixtures.supplierOrganizationId,
-            roleCode: "SUPPLIER_ADMIN",
-            membershipStatus: "ACTIVE" as const,
-          },
-        ]
-      : [];
-    for (const user of users) {
-      await transaction.userProfile.createMany({
-        data: {
-          id: user.id,
-          issuer: user.issuer,
-          subject: user.subject,
-          email: user.email,
-          displayName: user.displayName,
-          status: user.status,
-        },
-        skipDuplicates: true,
-      });
-      await transaction.userProfile.updateMany({
-        data: {
-          email: user.email,
-          displayName: user.displayName,
-          issuer: user.issuer,
-          status: user.status,
-          subject: user.subject,
-        },
-        where: {
-          id: user.id,
-          OR: [
-            { email: { not: user.email } },
-            { displayName: { not: user.displayName } },
-            { issuer: { not: user.issuer } },
-            { status: { not: user.status } },
-            { subject: { not: user.subject } },
-          ],
-        },
-      });
-      await transaction.membership.createMany({
-        data: {
-          userId: user.id,
-          organizationId: user.organizationId,
-          status: user.membershipStatus,
-        },
-        skipDuplicates: true,
-      });
-      await transaction.membership.updateMany({
-        data: { status: user.membershipStatus },
-        where: {
-          userId: user.id,
-          organizationId: user.organizationId,
-          status: { not: user.membershipStatus },
-        },
-      });
-      const membership = await transaction.membership.findUniqueOrThrow({
-        where: {
-          userId_organizationId: {
+        });
+        await transaction.membership.createMany({
+          data: {
             userId: user.id,
             organizationId: user.organizationId,
+            status: user.membershipStatus,
           },
-        },
-      });
-      await transaction.membershipRole.upsert({
-        create: { membershipId: membership.id, roleCode: user.roleCode },
-        update: {},
-        where: {
-          membershipId_roleCode: {
-            membershipId: membership.id,
-            roleCode: user.roleCode,
+          skipDuplicates: true,
+        });
+        await transaction.membership.updateMany({
+          data: { status: user.membershipStatus },
+          where: {
+            userId: user.id,
+            organizationId: user.organizationId,
+            status: { not: user.membershipStatus },
           },
-        },
-      });
-    }
+        });
+        const membership = await transaction.membership.findUniqueOrThrow({
+          where: {
+            userId_organizationId: {
+              userId: user.id,
+              organizationId: user.organizationId,
+            },
+          },
+        });
+        await transaction.membershipRole.upsert({
+          create: { membershipId: membership.id, roleCode: user.roleCode },
+          update: {},
+          where: {
+            membershipId_roleCode: {
+              membershipId: membership.id,
+              roleCode: user.roleCode,
+            },
+          },
+        });
+      }
 
-    await transaction.systemMetadata.createMany({
-      data: { key: "seed.version", value: "phase-1" },
-      skipDuplicates: true,
-    });
-    await transaction.systemMetadata.updateMany({
-      data: { value: "phase-1", version: { increment: 1 } },
-      where: { key: "seed.version", NOT: { value: "phase-1" } },
-    });
-  });
+      await transaction.systemMetadata.createMany({
+        data: { key: "seed.version", value: "phase-1" },
+        skipDuplicates: true,
+      });
+      await transaction.systemMetadata.updateMany({
+        data: { value: "phase-1", version: { increment: 1 } },
+        where: { key: "seed.version", NOT: { value: "phase-1" } },
+      });
+    },
+    { timeout: 20_000 },
+  );
 }
 
 export { localFixtures, permissions, rolePermissions, roles };

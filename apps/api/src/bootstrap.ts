@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { resolve } from "node:path";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { parseServiceEnvironment } from "@mecoflow/config";
 import { config as loadEnvironment } from "dotenv";
@@ -21,10 +22,15 @@ export async function createApplication() {
     environment.APP_ENV,
     environment.LOG_LEVEL,
   );
-  const app = await NestFactory.create(AppModule.register(environment), {
-    bufferLogs: true,
-    logger,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule.register(environment),
+    {
+      bufferLogs: true,
+      logger,
+    },
+  );
+
+  app.useBodyParser("json", { limit: "8mb" });
 
   app.use(requestLogging(logger));
   app.enableCors({

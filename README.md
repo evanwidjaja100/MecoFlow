@@ -1,6 +1,6 @@
 # MECO Flow
 
-MECO Flow is PT Meco Inoxprima's secure project-material-readiness and supplier-collaboration platform. Phase 1 provides Keycloak identity, organizations, memberships, permission policies, immutable membership/role audit, and separate internal/supplier shells. Project functionality remains intentionally unavailable until Phase 2 is explicitly approved.
+MECO Flow is PT Meco Inoxprima's secure project-material-readiness and supplier-collaboration platform. Phase 2 adds scoped projects, milestones, work packages, and explicit project-state transitions. Phase 3A adds the governed internal item master. Phase 3B adds project/work-package BOM aggregates, revision lifecycle and comparison, private CSV/XLSX dry-run imports, background validation, row-level results, explicit draft confirmation, transactional release/supersede, and released-only official requirements. Phase 4A adds project-scoped purchase requisitions, outstanding-need coverage, separately authorized over-need overrides, and explicit submit/approve/reject/cancel history. Phase 4B adds approved-quantity purchase orders, immutable requirement allocations and PO revisions, supplier-scoped acknowledgement, append-only commitment revisions, field filtering, and late-date exceptions. Phase 5A adds private scanned document workflows. Phase 5B adds supplier ASNs, shipment transitions, tablet receiving, immutable idempotent receipt posting, correcting entries, and awaiting-inspection lots. Inspection, NCR, allocation, and later operational modules remain intentionally unavailable.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ The web process reloads browser-facing changes automatically. Restart `pnpm dev`
 | MinIO console               | http://localhost:9001              |
 | Mailpit                     | http://localhost:8025              |
 
-`/health/live` proves only that the API process runs. `/health/ready` safely checks PostgreSQL, Redis and the configured private object-storage bucket. The worker writes a short-lived Redis heartbeat and performs no Phase 1+ jobs. Compose publishes local dependency ports only on `127.0.0.1`.
+`/health/live` proves only that the API process runs. `/health/ready` safely checks PostgreSQL, Redis and the configured private object-storage bucket. The worker writes a short-lived Redis heartbeat and performs no Phase 2 or Phase 3A asynchronous jobs. Compose publishes local dependency ports only on `127.0.0.1`.
 
 ## Repository structure
 
@@ -94,4 +94,4 @@ Read `AGENTS.md` before changes. The authoritative baseline is in `docs/PRODUCT_
 
 ## Current status
 
-See `docs/IMPLEMENTATION_STATUS.md`. Do not begin Phase 2 without explicit instruction.
+See `docs/IMPLEMENTATION_STATUS.md`. Work stops after Phase 5B ASN and receiving; do not begin receiving inspection, NCR, allocation, readiness, or another later phase without explicit instruction.

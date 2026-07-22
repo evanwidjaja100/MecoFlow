@@ -444,6 +444,3025 @@
           "administration"
         ]
       }
+    },
+    "/api/v1/product-categories": {
+      "get": {
+        "operationId": "ProjectsController_productCategories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List product categories",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "operationId": "ProjectsController_createProductCategory",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a product category",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/product-categories/{categoryId}": {
+      "patch": {
+        "operationId": "ProjectsController_updateProductCategory",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit a product category with an expected version",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "operationId": "ProjectsController_listProjects",
+        "parameters": [
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "PLANNED",
+                "ACTIVE",
+                "ON_HOLD",
+                "COMPLETED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "code",
+                "name",
+                "plannedStartDate",
+                "state",
+                "updatedAt"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "direction",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List authorized projects with filtering, sorting, and pagination",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "operationId": "ProjectsController_createProject",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a draft project and assign its creator as project manager",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}": {
+      "get": {
+        "operationId": "ProjectsController_projectOverview",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "The principal lacks project permission"
+          },
+          "404": {
+            "description": "Project is nonexistent or inaccessible"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read an authorized project overview",
+        "tags": [
+          "projects"
+        ]
+      },
+      "patch": {
+        "operationId": "ProjectsController_updateProject",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit project details; state is not patchable",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/transitions": {
+      "post": {
+        "operationId": "ProjectsController_transitionProject",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransitionProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Execute an explicit project-state transition",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/member-candidates": {
+      "get": {
+        "operationId": "ProjectsController_memberCandidates",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List active memberships eligible for project assignment",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/members": {
+      "post": {
+        "operationId": "ProjectsController_addProjectMember",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProjectMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Add an explicit project member",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/members/{memberId}": {
+      "patch": {
+        "operationId": "ProjectsController_updateProjectMember",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Change a project member role or active status",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/milestones": {
+      "post": {
+        "operationId": "ProjectsController_createMilestone",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMilestoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a project milestone",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/milestones/{milestoneId}": {
+      "patch": {
+        "operationId": "ProjectsController_updateMilestone",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "milestoneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMilestoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit a project milestone",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/work-packages": {
+      "post": {
+        "operationId": "ProjectsController_createWorkPackage",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkPackageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a project work package",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/work-packages/{workPackageId}": {
+      "patch": {
+        "operationId": "ProjectsController_updateWorkPackage",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workPackageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkPackageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks project permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit a project work package",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/item-categories": {
+      "get": {
+        "operationId": "ItemsController_itemCategories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List item categories and attribute definitions",
+        "tags": [
+          "item master"
+        ]
+      },
+      "post": {
+        "operationId": "ItemsController_createItemCategory",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create an item category",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/item-categories/{categoryId}": {
+      "patch": {
+        "operationId": "ItemsController_updateItemCategory",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit an item category with an expected version",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/item-categories/{categoryId}/specification-attributes": {
+      "post": {
+        "operationId": "ItemsController_createSpecificationAttribute",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSpecificationAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a structured specification attribute",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/item-categories/{categoryId}/specification-attributes/{attributeId}": {
+      "patch": {
+        "operationId": "ItemsController_updateSpecificationAttribute",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attributeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSpecificationAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit a structured specification attribute",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/units-of-measure": {
+      "get": {
+        "operationId": "ItemsController_unitsOfMeasure",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List units of measure",
+        "tags": [
+          "item master"
+        ]
+      },
+      "post": {
+        "operationId": "ItemsController_createUnitOfMeasure",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnitOfMeasureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a unit of measure",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/units-of-measure/{unitId}": {
+      "patch": {
+        "operationId": "ItemsController_updateUnitOfMeasure",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "unitId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUnitOfMeasureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit a unit of measure with an expected version",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/items/export.csv": {
+      "get": {
+        "operationId": "ItemsController_exportItems",
+        "parameters": [
+          {
+            "name": "unitOfMeasureId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Export the filtered internal item master as CSV",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/items": {
+      "get": {
+        "operationId": "ItemsController_listItems",
+        "parameters": [
+          {
+            "name": "unitOfMeasureId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "code",
+                "name",
+                "updatedAt"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "direction",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Search and list internal item-master records",
+        "tags": [
+          "item master"
+        ]
+      },
+      "post": {
+        "operationId": "ItemsController_createItem",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create an item with structured specifications",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/items/{itemId}": {
+      "get": {
+        "operationId": "ItemsController_itemDetail",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          },
+          "404": {
+            "description": "Item does not exist"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read an internal item detail",
+        "tags": [
+          "item master"
+        ]
+      },
+      "patch": {
+        "operationId": "ItemsController_updateItem",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Edit an active item with an expected version",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/items/{itemId}/deactivate": {
+      "post": {
+        "operationId": "ItemsController_deactivateItem",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeactivateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks the required internal item permission"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Deactivate an item; hard deletion is unavailable",
+        "tags": [
+          "item master"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/boms": {
+      "get": {
+        "operationId": "BomsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List project BOM scopes, revisions, and imports",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/bom-import-template.csv": {
+      "get": {
+        "operationId": "BomsController_csvTemplate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Download the BOM CSV import template",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/bom-import-template.xlsx": {
+      "get": {
+        "operationId": "BomsController_xlsxTemplate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Download the BOM XLSX import template",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/bom-imports": {
+      "post": {
+        "operationId": "BomsController_upload",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBomImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Securely upload and enqueue a BOM dry run",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-imports/{importId}": {
+      "get": {
+        "operationId": "BomsController_importDetail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read BOM import dry-run rows, errors, and warnings",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-imports/{importId}/confirm": {
+      "post": {
+        "operationId": "BomsController_confirm",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmBomImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Explicitly confirm a valid dry run and create a draft revision",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-revisions/{revisionId}": {
+      "get": {
+        "operationId": "BomsController_revision",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read a BOM revision with official-readiness and coverage flags",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-revisions/{revisionId}/lines/{lineId}": {
+      "patch": {
+        "operationId": "BomsController_updateLine",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Correct a draft BOM line",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-revisions/{revisionId}/review": {
+      "post": {
+        "operationId": "BomsController_review",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Submit a draft BOM revision for review",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-revisions/{revisionId}/release": {
+      "post": {
+        "operationId": "BomsController_release",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Transactionally release a reviewed BOM revision",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-revisions/{revisionId}/supersede": {
+      "post": {
+        "operationId": "BomsController_supersede",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Explicitly supersede a released BOM revision",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/bom-revisions/{revisionId}/cancel": {
+      "post": {
+        "operationId": "BomsController_cancel",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Cancel a draft or reviewed BOM revision",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/boms/{bomId}/comparison": {
+      "get": {
+        "operationId": "BomsController_comparison",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Compare two revisions in one BOM scope",
+        "tags": [
+          "BOM and import"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/requisition-requirements": {
+      "get": {
+        "operationId": "RequisitionsController_requirements",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List released BOM requirements with current requisition coverage",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/requisitions": {
+      "get": {
+        "operationId": "RequisitionsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List project purchase requisitions",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      },
+      "post": {
+        "operationId": "RequisitionsController_create",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a draft requisition from released BOM lines",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      }
+    },
+    "/api/v1/purchase-requisitions/{requisitionId}": {
+      "get": {
+        "operationId": "RequisitionsController_detail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read purchase requisition detail and history",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      }
+    },
+    "/api/v1/purchase-requisitions/{requisitionId}/submit": {
+      "post": {
+        "operationId": "RequisitionsController_submit",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Submit a draft purchase requisition",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      }
+    },
+    "/api/v1/purchase-requisitions/{requisitionId}/approve": {
+      "post": {
+        "operationId": "RequisitionsController_approve",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Approve a submitted purchase requisition",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      }
+    },
+    "/api/v1/purchase-requisitions/{requisitionId}/reject": {
+      "post": {
+        "operationId": "RequisitionsController_reject",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Reject a submitted purchase requisition",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      }
+    },
+    "/api/v1/purchase-requisitions/{requisitionId}/cancel": {
+      "post": {
+        "operationId": "RequisitionsController_cancel",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks requisition permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Cancel an active purchase requisition",
+        "tags": [
+          "Purchase requisitions"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/purchase-order-requirements": {
+      "get": {
+        "operationId": "PurchaseOrdersController_requirements",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List approved requisition quantity available to order",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/purchase-orders": {
+      "get": {
+        "operationId": "PurchaseOrdersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List internal project purchase orders",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      },
+      "post": {
+        "operationId": "PurchaseOrdersController_create",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a draft purchase order from approved requisition lines",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{purchaseOrderId}": {
+      "get": {
+        "operationId": "PurchaseOrdersController_detail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read internal purchase order revision and commitment history",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{purchaseOrderId}/revise": {
+      "post": {
+        "operationId": "PurchaseOrdersController_revise",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Append and activate a retained purchase order revision",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{purchaseOrderId}/send": {
+      "post": {
+        "operationId": "PurchaseOrdersController_send",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Send the current purchase order revision",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{purchaseOrderId}/cancel": {
+      "post": {
+        "operationId": "PurchaseOrdersController_cancel",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Cancel an active purchase order",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/purchase-order-exceptions": {
+      "get": {
+        "operationId": "PurchaseOrdersController_exceptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List latest commitments after BOM-required dates",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/supplier/purchase-orders": {
+      "get": {
+        "operationId": "PurchaseOrdersController_supplierList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List supplier-visible own-organization purchase orders",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/supplier/purchase-orders/{purchaseOrderId}": {
+      "get": {
+        "operationId": "PurchaseOrdersController_supplierDetail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read field-filtered own-organization purchase order detail",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/supplier/purchase-orders/{purchaseOrderId}/acknowledge": {
+      "post": {
+        "operationId": "PurchaseOrdersController_acknowledge",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Acknowledge the current own-organization purchase order revision",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/supplier/purchase-orders/{purchaseOrderId}/commitments": {
+      "post": {
+        "operationId": "PurchaseOrdersController_commitment",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Append a supplier commitment revision",
+        "tags": [
+          "Purchase orders and supplier commitments"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/documents": {
+      "get": {
+        "operationId": "DocumentsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List authorized project documents and versions",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/documents/uploads": {
+      "post": {
+        "operationId": "DocumentsController_initiate",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDocumentUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Initiate a private presigned document upload",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{documentId}": {
+      "get": {
+        "operationId": "DocumentsController_detail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read authorized document metadata and history",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{documentId}/supersede": {
+      "post": {
+        "operationId": "DocumentsController_supersede",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Initiate a new immutable document version",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/document-versions/{versionId}/complete": {
+      "post": {
+        "operationId": "DocumentsController_complete",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Verify checksum/content and scan a quarantined upload",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/document-versions/{versionId}/submit-review": {
+      "post": {
+        "operationId": "DocumentsController_submit",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Submit a clean document version for review",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/document-versions/{versionId}/approve": {
+      "post": {
+        "operationId": "DocumentsController_approve",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Approve a clean reviewed document version",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/document-versions/{versionId}/reject": {
+      "post": {
+        "operationId": "DocumentsController_reject",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Reject a reviewed document version",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/document-versions/{versionId}/download-url": {
+      "post": {
+        "operationId": "DocumentsController_download",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Issue an authorized short-lived private download URL",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/supplier/asns": {
+      "get": {
+        "operationId": "ReceivingController_supplierList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List own-organization advance shipment notices",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/supplier/purchase-orders/{purchaseOrderId}/asns": {
+      "post": {
+        "operationId": "ReceivingController_createAsn",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a draft ASN from supplier-owned PO lines",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/supplier/asns/{asnId}": {
+      "get": {
+        "operationId": "ReceivingController_supplierDetail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read an own-organization ASN",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/supplier/asns/{asnId}/submit": {
+      "post": {
+        "operationId": "ReceivingController_submitAsn",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Submit a draft ASN",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/supplier/asns/{asnId}/dispatch": {
+      "post": {
+        "operationId": "ReceivingController_dispatchAsn",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Mark a submitted ASN in transit",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/supplier/asns/{asnId}/cancel": {
+      "post": {
+        "operationId": "ReceivingController_cancelAsn",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Cancel a draft or submitted ASN",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/asns": {
+      "get": {
+        "operationId": "ReceivingController_listAsns",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List internal project ASNs",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/asns/{asnId}": {
+      "get": {
+        "operationId": "ReceivingController_asnDetail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read an internal ASN",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/asns/{asnId}/arrive": {
+      "post": {
+        "operationId": "ReceivingController_arriveAsn",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Record arrival of an in-transit ASN",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/goods-receipts": {
+      "get": {
+        "operationId": "ReceivingController_listReceipts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List project goods receipts",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      },
+      "post": {
+        "operationId": "ReceivingController_createReceipt",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a draft goods receipt for an arrived ASN",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/goods-receipts/{receiptId}": {
+      "get": {
+        "operationId": "ReceivingController_receiptDetail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read a goods receipt and awaiting-inspection lots",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/goods-receipts/{receiptId}/corrections": {
+      "post": {
+        "operationId": "ReceivingController_createCorrection",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a separate draft correcting receipt",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
+    },
+    "/api/v1/goods-receipts/{receiptId}/post": {
+      "post": {
+        "operationId": "ReceivingController_postReceipt",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Idempotently post a receipt and inventory effects",
+        "tags": [
+          "Advance shipment notices and receiving"
+        ]
+      }
     }
   },
   "info": {
@@ -543,6 +3562,840 @@
         "required": [
           "expectedVersion",
           "roleCodes"
+        ]
+      },
+      "CreateProductCategoryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PROCESS-EQUIPMENT",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "UpdateProductCategoryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PROCESS-EQUIPMENT",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "active",
+          "expectedVersion"
+        ]
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "productCategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "PRJ-2026-001",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "plannedStartDate": {
+            "type": "string",
+            "example": "2026-08-03"
+          },
+          "plannedEndDate": {
+            "type": "string",
+            "example": "2026-11-27"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "productCategoryId",
+          "code",
+          "name",
+          "plannedStartDate",
+          "plannedEndDate",
+          "organizationId"
+        ]
+      },
+      "UpdateProjectDto": {
+        "type": "object",
+        "properties": {
+          "productCategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "PRJ-2026-001",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "plannedStartDate": {
+            "type": "string",
+            "example": "2026-08-03"
+          },
+          "plannedEndDate": {
+            "type": "string",
+            "example": "2026-11-27"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "productCategoryId",
+          "code",
+          "name",
+          "plannedStartDate",
+          "plannedEndDate",
+          "expectedVersion"
+        ]
+      },
+      "TransitionProjectDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5
+          },
+          "targetState": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PLANNED",
+              "ACTIVE",
+              "ON_HOLD",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "reason",
+          "targetState"
+        ]
+      },
+      "AddProjectMemberDto": {
+        "type": "object",
+        "properties": {
+          "membershipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "CONTRIBUTOR",
+              "PROJECT_MANAGER",
+              "SUPPLIER",
+              "VIEWER"
+            ]
+          }
+        },
+        "required": [
+          "membershipId",
+          "role"
+        ]
+      },
+      "UpdateProjectMemberDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "CONTRIBUTOR",
+              "PROJECT_MANAGER",
+              "SUPPLIER",
+              "VIEWER"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "role",
+          "status"
+        ]
+      },
+      "CreateMilestoneDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "targetDate": {
+            "type": "string",
+            "example": "2026-09-14"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "targetDate"
+        ]
+      },
+      "UpdateMilestoneDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "targetDate": {
+            "type": "string",
+            "example": "2026-09-14"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "targetDate",
+          "expectedVersion"
+        ]
+      },
+      "CreateWorkPackageDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "milestoneId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "plannedStartDate": {
+            "type": "string",
+            "example": "2026-08-03"
+          },
+          "plannedEndDate": {
+            "type": "string",
+            "example": "2026-09-11"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "plannedStartDate",
+          "plannedEndDate"
+        ]
+      },
+      "UpdateWorkPackageDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "milestoneId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "plannedStartDate": {
+            "type": "string",
+            "example": "2026-08-03"
+          },
+          "plannedEndDate": {
+            "type": "string",
+            "example": "2026-09-11"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "plannedStartDate",
+          "plannedEndDate",
+          "expectedVersion"
+        ]
+      },
+      "CreateItemCategoryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "RAW-MATERIAL",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "UpdateItemCategoryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "RAW-MATERIAL",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "active",
+          "expectedVersion"
+        ]
+      },
+      "CreateSpecificationAttributeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "THICKNESS",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "dataType": {
+            "type": "string",
+            "enum": [
+              "BOOLEAN",
+              "NUMBER",
+              "TEXT"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "unitOfMeasureId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "decimalPrecision": {
+            "type": "number",
+            "maximum": 6,
+            "minimum": 0
+          },
+          "sortOrder": {
+            "type": "number",
+            "maximum": 10000,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "dataType",
+          "required",
+          "sortOrder"
+        ]
+      },
+      "UpdateSpecificationAttributeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "THICKNESS",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "dataType": {
+            "type": "string",
+            "enum": [
+              "BOOLEAN",
+              "NUMBER",
+              "TEXT"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "unitOfMeasureId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "decimalPrecision": {
+            "type": "number",
+            "maximum": 6,
+            "minimum": 0
+          },
+          "sortOrder": {
+            "type": "number",
+            "maximum": 10000,
+            "minimum": 0
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "dataType",
+          "required",
+          "sortOrder",
+          "active",
+          "expectedVersion"
+        ]
+      },
+      "CreateUnitOfMeasureDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "MM",
+            "maxLength": 30
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "symbol": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "decimalPrecision": {
+            "type": "number",
+            "maximum": 6,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "symbol",
+          "decimalPrecision"
+        ]
+      },
+      "UpdateUnitOfMeasureDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "MM",
+            "maxLength": 30
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "symbol": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "decimalPrecision": {
+            "type": "number",
+            "maximum": 6,
+            "minimum": 0
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "symbol",
+          "decimalPrecision",
+          "active",
+          "expectedVersion"
+        ]
+      },
+      "SpecificationValueDto": {
+        "type": "object",
+        "properties": {
+          "attributeDefinitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        "required": [
+          "attributeDefinitionId",
+          "value"
+        ]
+      },
+      "CreateItemDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PLATE-SS304-6MM",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "unitOfMeasureId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "specificationValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecificationValueDto"
+            }
+          },
+          "itemCategoryId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "unitOfMeasureId",
+          "specificationValues",
+          "itemCategoryId"
+        ]
+      },
+      "UpdateItemDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "PLATE-SS304-6MM",
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "unitOfMeasureId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "specificationValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecificationValueDto"
+            }
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "unitOfMeasureId",
+          "specificationValues",
+          "expectedVersion"
+        ]
+      },
+      "DeactivateItemDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "reason"
+        ]
+      },
+      "CreateBomImportDto": {
+        "type": "object",
+        "properties": {
+          "contentBase64": {
+            "type": "string",
+            "description": "Base64 file body; decoded size is limited to 5 MiB"
+          },
+          "fileName": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "mimeType": {
+            "type": "string",
+            "enum": [
+              "application/csv",
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "text/csv",
+              "text/plain"
+            ]
+          },
+          "workPackageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "contentBase64",
+          "fileName",
+          "mimeType"
+        ]
+      },
+      "ConfirmBomImportDto": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "description": "Must be true to create a draft revision"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "confirmed",
+          "expectedVersion",
+          "title"
+        ]
+      },
+      "DocumentAssociationDto": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "ADVANCE_SHIPMENT_NOTICE",
+              "BOM",
+              "GOODS_RECEIPT",
+              "PROJECT",
+              "PURCHASE_ORDER",
+              "PURCHASE_REQUISITION",
+              "WORK_PACKAGE"
+            ]
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "entityType",
+          "entityId"
+        ]
+      },
+      "CreateDocumentUploadDto": {
+        "type": "object",
+        "properties": {
+          "byteSize": {
+            "type": "number",
+            "maximum": 10485760,
+            "minimum": 1
+          },
+          "fileName": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "mimeType": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentAssociationDto"
+            }
+          }
+        },
+        "required": [
+          "byteSize",
+          "fileName",
+          "mimeType",
+          "sha256",
+          "title",
+          "category"
         ]
       }
     }

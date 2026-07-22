@@ -24,7 +24,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "turbo run lint",
-    "openapi:check": "pnpm openapi:generate && git diff --exit-code -- docs/generated/openapi.json",
+    "openapi:check": "node scripts/check-openapi.mjs",
     "openapi:generate": "pnpm --filter @mecoflow/api openapi:generate",
     "prepare": "node scripts/prepare.mjs",
     "security:audit": "pnpm audit --audit-level moderate",

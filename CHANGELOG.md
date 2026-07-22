@@ -13,6 +13,11 @@ All notable changes follow Keep a Changelog and semantic versioning conventions.
 ### Added
 
 - Phase 0 repository, architecture, infrastructure, application, database, testing, and CI foundations.
+- Phase 3B project/work-package BOMs, revision lifecycle/comparison, secure CSV/XLSX templates and uploads, background dry-run validation, explicit confirmation, transactional release/supersede, authorization/audit controls, UI workflows, and automated coverage.
+- Phase 4A purchase requisitions from released BOM requirements, live coverage/outstanding quantities, concurrency-safe quantity bounds, separately permissioned/audited over-need overrides, explicit lifecycle/attribution history, internal screens, OpenAPI, and automated browser/security/integrity coverage.
+- Phase 4B approved-quantity purchase orders with immutable allocations and retained revisions, explicit send/acknowledge/cancel commands, supplier-scoped safe list/detail responses, append-only commitment revisions, original/latest dates, late commitment exceptions, audit evidence, OpenAPI/docs, internal/supplier screens, and automated lifecycle/concurrency/authorization/browser coverage.
+- Fixed the cumulative Phase 3A seed so unchanged item-master fixtures no longer rewrite `updatedAt`, restoring the documented idempotency gate.
+- Kept Phase 1 permission/fixture reconciliation atomic while giving the expanded catalog a bounded 20-second transaction window under parallel integration load.
 
 ### Fixed
 

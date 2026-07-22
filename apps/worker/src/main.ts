@@ -13,6 +13,7 @@ import {
   WORKER_HEARTBEAT_KEY,
   WORKER_HEARTBEAT_TTL_SECONDS,
 } from "./heartbeat.js";
+import { BomImportProcessor } from "./bom-import-processor.js";
 
 loadEnvironment({
   path: resolve(process.cwd(), "../../.env"),
@@ -77,8 +78,50 @@ const heartbeatTimer = setInterval(() => {
   });
 }, 10_000);
 
+const bomImportProcessor = new BomImportProcessor(
+  database,
+  objectStorage,
+  environment.S3_BUCKET,
+);
+let processing = false;
+async function processBomImport(): Promise<void> {
+  if (processing) return;
+  processing = true;
+  try {
+    const event = await bomImportProcessor.claim();
+    if (!event) return;
+    const lockKey = `mecoflow:bom-import:${event.id}`;
+    const lock = await redis.set(lockKey, "processing", "EX", 60, "NX");
+    if (!lock) {
+      await database.outboxEvent.update({
+        data: { lockedAt: null, status: "PENDING" },
+        where: { id: event.id },
+      });
+      return;
+    }
+    try {
+      await bomImportProcessor.process(event);
+    } finally {
+      await redis.del(lockKey);
+    }
+  } finally {
+    processing = false;
+  }
+}
+
+void processBomImport();
+const importTimer = setInterval(() => {
+  void processBomImport().catch(() => {
+    logger.error(
+      { errorClassification: "bom_import_failure" },
+      "BOM import processing cycle failed",
+    );
+  });
+}, 1_000);
+
 async function shutdown(signal: string): Promise<void> {
   clearInterval(heartbeatTimer);
+  clearInterval(importTimer);
   logger.info(
     { event: "worker.stopping", signal },
     "Worker foundation stopping",

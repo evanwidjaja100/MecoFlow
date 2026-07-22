@@ -25,6 +25,7 @@ const validProductionEnvironment = {
   OIDC_ISSUER: "https://identity.example.com/realms/mecoflow",
   OIDC_REDIRECT_URI: "https://api.mecoflow.example.com/api/v1/auth/callback",
   SESSION_SECRET: "a-production-session-secret-with-at-least-32-characters",
+  VIRUS_SCANNER_ENABLED: "true",
 };
 
 describe("parseServiceEnvironment", () => {
@@ -32,6 +33,7 @@ describe("parseServiceEnvironment", () => {
     const result = parseServiceEnvironment(validEnvironment);
     expect(result.APP_TIMEZONE).toBe("Asia/Jakarta");
     expect(result.API_PORT).toBe(3001);
+    expect(result.VIRUS_SCANNER_ENABLED).toBe(false);
   });
 
   it("rejects a missing database URL without echoing secret values", () => {
@@ -118,6 +120,15 @@ describe("parseServiceEnvironment", () => {
         S3_SECRET_KEY: "local_only_minio_change_me",
       }),
     ).toThrow("Invalid service environment: S3_ACCESS_KEY, S3_SECRET_KEY");
+  });
+
+  it("requires virus scanning in production", () => {
+    expect(() =>
+      parseServiceEnvironment({
+        ...validProductionEnvironment,
+        VIRUS_SCANNER_ENABLED: "false",
+      }),
+    ).toThrow("Invalid service environment: VIRUS_SCANNER_ENABLED");
   });
 
   it("reports malformed production URLs as safe field errors", () => {

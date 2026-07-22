@@ -10,6 +10,8 @@ TypeScript 6.0.3 is intentionally pinned instead of the newer 7.x release becaus
 
 The S3 client is pinned one stable patch behind the registry head because the head release was less than one day old at initialization and failed pnpm 11's minimum-release-age supply-chain policy. This keeps the policy enabled rather than bypassing it.
 
+Phase 5A adds the matching exact-version `@aws-sdk/s3-request-presigner` package. It is the AWS-maintained signer for the existing S3 client and avoids implementing or maintaining custom Signature Version 4 cryptography. It adds no alternate storage SDK; version alignment limits compatibility and maintenance risk. Virus scanning uses Node's built-in TCP client and the bounded ClamAV `INSTREAM` protocol, so no additional scanner dependency is introduced.
+
 Dependency build scripts are deny-by-default. Prisma engines, Prisma, esbuild, and sharp are explicitly allowed because they provide required generated/native runtime artifacts; Scarf's optional install-time analytics script is explicitly ignored.
 
 Phase 1 adds no third-party runtime dependency. OIDC discovery, code exchange, PKCE, and bounded RS256/JWKS verification use Node's built-in `fetch` and `crypto` APIs; the implementation accepts only the documented Keycloak-compatible RS256 profile and validates issuer, audience, signature, expiry, issued-at, nonce, and browser-bound state. This keeps the supply-chain surface unchanged, but any future algorithm/client-authentication expansion requires a security review and may justify a maintained OIDC library.

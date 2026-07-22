@@ -9,6 +9,8 @@ loadEnvironment({
 
 export default defineConfig({
   test: {
+    fileParallelism: false,
+    hookTimeout: 30_000,
     include: [
       "src/**/*.authorization.test.ts",
       "src/**/*.authorization.integration.test.ts",

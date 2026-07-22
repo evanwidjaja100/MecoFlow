@@ -16,6 +16,12 @@ export default async function InternalLayout({
         <p className="shell-label">Internal application</p>
         <nav aria-label="Internal navigation">
           <a href="/internal">Overview</a>
+          <a href="/internal/projects">Projects</a>
+          {me.memberships.some((membership) =>
+            membership.permissions.includes("item.read"),
+          ) ? (
+            <a href="/internal/items">Items</a>
+          ) : null}
           <a href="/internal/administration">Administration</a>
         </nav>
       </aside>

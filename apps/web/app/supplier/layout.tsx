@@ -17,6 +17,8 @@ export default async function SupplierLayout({
         <p className="shell-label">Supplier portal</p>
         <nav aria-label="Supplier navigation">
           <a href="/supplier">Overview</a>
+          <a href="/supplier/purchase-orders">Purchase orders</a>
+          <a href="/supplier/asns">Shipment notices</a>
         </nav>
       </aside>
       <div className="shell-content">
