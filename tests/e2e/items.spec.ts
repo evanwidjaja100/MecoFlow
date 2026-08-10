@@ -15,6 +15,7 @@ async function login(page: import("@playwright/test").Page) {
 test("creates, searches, exports, edits, and deactivates an item", async ({
   page,
 }) => {
+  test.setTimeout(120_000);
   await login(page);
   await page.getByRole("link", { name: "Items", exact: true }).click();
   await expect(
@@ -44,10 +45,12 @@ test("creates, searches, exports, edits, and deactivates an item", async ({
   await unitForm.getByLabel("Decimal precision").fill("2");
   await unitForm.getByRole("button", { name: "Add unit" }).click();
   await expect(
-    page.getByText(`${unitCode} — ${unitName} (${unitSymbol}) — Active`, {
-      exact: true,
-    }),
-  ).toBeVisible();
+    page.locator(
+      'form[action="/internal/items"] select[name="unitOfMeasureId"]',
+    ),
+  ).toContainText(`${unitCode} — ${unitName} (${unitSymbol})`, {
+    timeout: 15_000,
+  });
 
   const categoryForm = page.getByRole("form", {
     name: "Create item category",

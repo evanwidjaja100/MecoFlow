@@ -7,6 +7,7 @@ import {
 } from "@mecoflow/database";
 import type { HealthResponse, ReadinessResponse } from "@mecoflow/contracts";
 import type { ServiceEnvironment } from "@mecoflow/config";
+import { isFreshHeartbeat, WORKER_HEARTBEAT_KEY } from "@mecoflow/contracts";
 import { Redis } from "ioredis";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
 
@@ -87,6 +88,14 @@ export class HealthService implements OnModuleDestroy {
   private async checkRedis(): Promise<void> {
     if (this.redis.status === "wait") await this.redis.connect();
     await this.redis.ping();
+  }
+
+  async workerHeartbeatFresh(): Promise<boolean> {
+    await this.checkRedis();
+    return isFreshHeartbeat(
+      await this.redis.get(WORKER_HEARTBEAT_KEY),
+      this.environment.APP_VERSION,
+    );
   }
 
   async onModuleDestroy(): Promise<void> {

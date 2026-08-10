@@ -15,17 +15,32 @@ COPY apps/api/package.json apps/api/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/database/package.json packages/database/package.json
+COPY packages/readiness/package.json packages/readiness/package.json
 RUN pnpm install --prod --frozen-lockfile --filter @mecoflow/api...
 
 FROM node:24-alpine AS runtime
+ARG APP_VERSION=0.0.0-unknown
+ARG BUILD_DATE=unknown
+ARG VCS_REF=unknown
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.title="MECO Flow API" \
+      org.opencontainers.image.version=$APP_VERSION
+ENV APP_VERSION=$APP_VERSION
 ENV NODE_ENV=production
 WORKDIR /workspace
-COPY --from=production-dependencies --chown=node:node /workspace /workspace
-COPY --from=build --chown=node:node /workspace/apps/api/dist apps/api/dist
-COPY --from=build --chown=node:node /workspace/packages/config/dist packages/config/dist
-COPY --from=build --chown=node:node /workspace/packages/contracts/dist packages/contracts/dist
-COPY --from=build --chown=node:node /workspace/packages/database/dist packages/database/dist
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v* && \
+    rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+      /usr/local/bin/yarn /usr/local/bin/yarnpkg /usr/local/bin/pnpm /usr/local/bin/pnpx
+COPY --from=production-dependencies /workspace /workspace
+COPY --from=build /workspace/apps/api/dist apps/api/dist
+COPY --from=build /workspace/packages/config/dist packages/config/dist
+COPY --from=build /workspace/packages/contracts/dist packages/contracts/dist
+COPY --from=build /workspace/packages/database/dist packages/database/dist
+COPY --from=build /workspace/packages/readiness/dist packages/readiness/dist
+COPY infra/staging/load-secrets.mjs /usr/local/bin/load-secrets.mjs
 USER node
 WORKDIR /workspace/apps/api
 EXPOSE 3001
+ENTRYPOINT ["node", "/usr/local/bin/load-secrets.mjs"]
 CMD ["node", "dist/main.js"]

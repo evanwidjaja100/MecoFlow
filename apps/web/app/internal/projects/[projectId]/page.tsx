@@ -94,6 +94,25 @@ export default async function ProjectOverviewPage({
       </section>
 
       {me.memberships.some((membership) =>
+        membership.permissions.includes("readiness.read"),
+      ) ? (
+        <section className="panel">
+          <h2>Material readiness</h2>
+          <p>
+            Review the persisted project and work-package scores together with
+            their critical gates, blockers, explanations, and recommended
+            actions.
+          </p>
+          <Link
+            className="button"
+            href={`/internal/projects/${project.id}/readiness`}
+          >
+            Open readiness overview
+          </Link>
+        </section>
+      ) : null}
+
+      {me.memberships.some((membership) =>
         membership.permissions.includes("bom.read"),
       ) ? (
         <section className="panel">
@@ -179,6 +198,42 @@ export default async function ProjectOverviewPage({
             href={`/internal/projects/${project.id}/receiving`}
           >
             Open receiving workspace
+          </Link>
+        </section>
+      ) : null}
+
+      {me.memberships.some((membership) =>
+        membership.permissions.includes("inspection.read"),
+      ) ? (
+        <section className="panel">
+          <h2>Receiving inspections</h2>
+          <p>
+            Work the QA/QC queue, capture checklist and measurement results,
+            review approved certificate evidence, and finalize lot disposition.
+          </p>
+          <Link
+            className="button"
+            href={`/internal/projects/${project.id}/inspections`}
+          >
+            Open inspection work queue
+          </Link>
+        </section>
+      ) : null}
+
+      {me.memberships.some((membership) =>
+        membership.permissions.includes("ncr.read"),
+      ) ? (
+        <section className="panel">
+          <h2>NCR and material allocation</h2>
+          <p>
+            Coordinate supplier corrective responses and allocate accepted,
+            traceable inventory to released BOM requirements.
+          </p>
+          <Link
+            className="button"
+            href={`/internal/projects/${project.id}/quality`}
+          >
+            Open quality and allocation workspace
           </Link>
         </section>
       ) : null}

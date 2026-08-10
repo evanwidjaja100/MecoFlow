@@ -2,6 +2,8 @@
 .env.*
 !.env.example
 .corepack/
+.pnpm-store/
+.runtime/
 .next/
 next-env.d.ts
 .turbo/
@@ -17,3 +19,4 @@ test-results/
 .vscode/
 Thumbs.db
 .DS_Store
+repomix-output.md

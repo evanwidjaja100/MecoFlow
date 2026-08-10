@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "replace-me",
+  "testedAt": "replace-me",
+  "provider": "replace-me",
+  "receiverReference": "replace-me",
+  "testAlertName": "MecoFlowPagingDrill",
+  "firingDelivered": false,
+  "resolvedDelivered": false,
+  "primaryAcknowledged": false,
+  "secondaryEscalationTested": false,
+  "deliverySeconds": 0,
+  "acknowledgementSeconds": 0,
+  "incidentEvidenceReference": "replace-me"
+}

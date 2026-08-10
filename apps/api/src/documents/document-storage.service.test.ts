@@ -53,6 +53,39 @@ describe("document presigned URL security", () => {
     expect(url.searchParams.get("X-Amz-Expires")).toBe("300");
     expect(url.searchParams.get("x-amz-checksum-sha256")).toBeDefined();
     expect(url.searchParams.get("x-amz-meta-sha256")).toBe(sha256);
+    expect(url.searchParams.get("X-Amz-SignedHeaders")).toContain(
+      "content-type",
+    );
+    storage.onModuleDestroy();
+  });
+
+  it("returns every production encryption header required by the signature", async () => {
+    const storage = new DocumentStorageService({
+      ...environment,
+      APP_ENV: "production",
+      NODE_ENV: "production",
+      S3_KMS_KEY_ID: "kms://production/object-storage-key",
+      S3_SERVER_SIDE_ENCRYPTION: "aws:kms",
+    });
+    const signed = await storage.uploadUrl({
+      byteSize: 12,
+      mimeType: "text/plain",
+      sha256: "b".repeat(64),
+      storageKey: "documents/00000000-0000-4000-8000-000000000002",
+    });
+    const url = new URL(signed.url);
+    expect(signed.headers).toMatchObject({
+      "content-type": "text/plain",
+      "x-amz-server-side-encryption": "aws:kms",
+      "x-amz-server-side-encryption-aws-kms-key-id":
+        "kms://production/object-storage-key",
+    });
+    expect(url.searchParams.get("X-Amz-SignedHeaders")).toContain(
+      "x-amz-server-side-encryption",
+    );
+    expect(url.searchParams.get("X-Amz-SignedHeaders")).toContain(
+      "x-amz-server-side-encryption-aws-kms-key-id",
+    );
     storage.onModuleDestroy();
   });
 

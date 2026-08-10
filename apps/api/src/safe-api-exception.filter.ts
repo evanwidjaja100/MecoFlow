@@ -33,7 +33,29 @@ const errors: Record<number, { code: string; message: string }> = {
     code: "IDENTITY_PROVIDER_UNAVAILABLE",
     message: "Identity provider is unavailable",
   },
+  [HttpStatus.PAYLOAD_TOO_LARGE]: {
+    code: "REQUEST_TOO_LARGE",
+    message: "The request body exceeds the allowed size",
+  },
+  [HttpStatus.TOO_MANY_REQUESTS]: {
+    code: "RATE_LIMIT_EXCEEDED",
+    message: "Too many requests",
+  },
 };
+
+function statusFor(exception: unknown): number {
+  if (exception instanceof HttpException) return exception.getStatus();
+  if (
+    typeof exception === "object" &&
+    exception !== null &&
+    "status" in exception &&
+    exception.status === HttpStatus.PAYLOAD_TOO_LARGE &&
+    "type" in exception &&
+    exception.type === "entity.too.large"
+  )
+    return HttpStatus.PAYLOAD_TOO_LARGE;
+  return HttpStatus.INTERNAL_SERVER_ERROR;
+}
 
 @Catch()
 export class SafeApiExceptionFilter implements ExceptionFilter {
@@ -42,10 +64,7 @@ export class SafeApiExceptionFilter implements ExceptionFilter {
     const request = http.getRequest<Request>();
     const response = http.getResponse<Response>();
     if (!request.path.startsWith("/api/v1")) {
-      const status =
-        exception instanceof HttpException
-          ? exception.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
+      const status = statusFor(exception);
       response
         .status(status)
         .json(
@@ -55,10 +74,7 @@ export class SafeApiExceptionFilter implements ExceptionFilter {
         );
       return;
     }
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = statusFor(exception);
     const safe = errors[status] ?? {
       code: "INTERNAL_ERROR",
       message: "The request could not be completed",

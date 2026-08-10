@@ -1,6 +1,6 @@
 # Document API
 
-Phase 5A provides project-scoped private document metadata and immutable numbered file versions. Phase 5B extends validated associations to advance shipment notices and goods receipts without adding a second file-storage path. Inspection, NCR, allocation, and readiness records remain absent.
+Phase 5A provides project-scoped private document metadata and immutable numbered file versions. Phase 5B extends validated associations to advance shipment notices and goods receipts without adding a second file-storage path. Phase 6A adds internal receiving-inspection evidence associations. NCR, allocation, and readiness records remain absent.
 
 ## Security and storage
 
@@ -33,3 +33,5 @@ New versions begin `QUARANTINED/PENDING`. Successful checksum, content, and malw
 Database triggers reject non-quarantined inserts, invalid status or scan transitions, file-metadata changes, approved-version changes other than supersede, version/association/history deletion, and history updates. Version predicates and row locks serialize completion, review decisions, and replacement approval.
 
 Phase 5B supplier documents may associate with an `ADVANCE_SHIPMENT_NOTICE` only when the ASN project and supplier organization equal the document scope. `GOODS_RECEIPT` associations are internal-only. Packing lists, certificates, and receipt photographs therefore inherit the same private storage, scanning, workflow, owner filtering, and download authorization as every other document.
+
+Phase 6A `RECEIVING_INSPECTION` associations are internal-only and must resolve to an inspection in the same project as the document. A certificate check can reference only the current `APPROVED` and `CLEAN` version of a document carrying that exact inspection association. Upload, association, or certificate selection alone never changes scan state, document approval, inspection disposition, or lot availability.

@@ -27,15 +27,38 @@ function readCookie(request: Request, name: string): string | undefined {
   for (const part of cookieHeader.split(";")) {
     const separator = part.indexOf("=");
     if (separator < 0) continue;
-    if (part.slice(0, separator).trim() === name)
-      return decodeURIComponent(part.slice(separator + 1).trim());
+    if (part.slice(0, separator).trim() === name) {
+      try {
+        return decodeURIComponent(part.slice(separator + 1).trim());
+      } catch {
+        return undefined;
+      }
+    }
   }
   return undefined;
 }
 
 function safeReturnTo(value: string | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
-  return value.slice(0, 500);
+  if (!value) return "/";
+  const candidate = value.slice(0, 500);
+  const hasControlCharacter = [...candidate].some((character) => {
+    const code = character.charCodeAt(0);
+    return code < 32 || code === 127;
+  });
+  if (
+    !candidate.startsWith("/") ||
+    candidate.startsWith("//") ||
+    candidate.includes("\\") ||
+    hasControlCharacter
+  )
+    return "/";
+  try {
+    const sentinel = new URL("https://mecoflow.invalid");
+    const resolved = new URL(candidate, sentinel);
+    return resolved.origin === sentinel.origin ? candidate : "/";
+  } catch {
+    return "/";
+  }
 }
 
 @Injectable()
@@ -172,6 +195,9 @@ export class IdentityService {
   }
 
   webUrl(path: string): string {
-    return new URL(path, this.environment.WEB_BASE_URL).toString();
+    return new URL(
+      safeReturnTo(path),
+      this.environment.WEB_BASE_URL,
+    ).toString();
   }
 }

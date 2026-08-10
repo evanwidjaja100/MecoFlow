@@ -10,6 +10,7 @@ import { applyPhaseThreeBSeed } from "../src/phase-three-b-seed.js";
 import { applyPhaseFourASeed } from "../src/phase-four-a-seed.js";
 import { applyPhaseFourBSeed } from "../src/phase-four-b-seed.js";
 import { applyPhaseFiveBSeed } from "../src/phase-five-b-seed.js";
+import { applyPhaseSixASeed } from "../src/phase-six-a-seed.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl)
@@ -25,5 +26,6 @@ await applyPhaseThreeBSeed(database);
 await applyPhaseFourASeed(database);
 await applyPhaseFourBSeed(database);
 await applyPhaseFiveBSeed(database);
+await applyPhaseSixASeed(database);
 
 await disconnectDatabaseClient();

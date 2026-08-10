@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "environment": "production",
+  "candidate": {
+    "applicationVersion": "replace-me",
+    "sourceRevision": "replace-with-40-character-git-revision"
+  },
+  "monitoring": {
+    "evidenceFile": "monitoring-evidence.json",
+    "maximumEvidenceAgeHours": 24,
+    "minimumRetentionDays": 30,
+    "minimumAlertRuleCount": 17
+  },
+  "onCall": {
+    "evidenceFile": "oncall-evidence.json",
+    "maximumDrillAgeDays": 90,
+    "primaryScheduleReference": "https://replace-me.invalid/primary",
+    "secondaryScheduleReference": "https://replace-me.invalid/secondary",
+    "escalationPolicyReference": "https://replace-me.invalid/escalation",
+    "owners": {
+      "service": "replace-me",
+      "operations": "replace-me",
+      "security": "replace-me",
+      "incidentCommander": "replace-me"
+    }
+  },
+  "capacity": {
+    "evidenceFile": "capacity-evidence.json",
+    "maximumEvidenceAgeDays": 30,
+    "minimumDurationSeconds": 1800,
+    "minimumRequests": 10000,
+    "minimumConcurrency": 10,
+    "maximumErrorRate": 0.01,
+    "maximumP95Milliseconds": 1000,
+    "maximumP99Milliseconds": 2000,
+    "minimumResourceHeadroomPercent": 30
+  }
+}

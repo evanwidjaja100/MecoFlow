@@ -21,6 +21,22 @@ Quantities are positive decimals. Received quantity cannot exceed valid ordered 
 
 Every released requirement projects ordered, confirmed, shipped, received, accepted, allocated, document-complete and shortage quantities plus dates, stage, risk and blocker explanations. Stage scores are criticality weighted (`CRITICAL=8`, `HIGH=4`, `NORMAL=2`, `LOW=1`). RED/AMBER/GREEN/COMPLETE gates override aggregate percentages when critical conditions require it. Calculations are pure, versioned, deterministic, independently tested, and retain explanations and recommended actions.
 
+Phase 7A implements only the prerequisite per-requirement status projection, versioned as `material-requirement-status-v1`. It adds active requisition quantity and uses certificate-complete as the implemented document-complete definition. Scores, weights, risk colors, recommendations, persisted snapshots, and aggregate readiness remain unimplemented.
+
+Phase 7B implements `ReadinessSnapshot` as immutable project aggregate history with project or work-package scope, batch identity, explicit calculation date, material/calculator/rule versions, input hash, minimized reproducible inputs, weighted score, overriding status, counts, blockers, reasons, actions, and line explanations. `readiness-calculator-v1` uses stage scores and criticality weights `8/4/2/1`; `readiness-rules-v1` applies documented critical gates before score bands. Full rules are in `READINESS_API.md`.
+
+## Phase 8A notification scope
+
+`NotificationPreference` is a versioned per-user/per-type choice whose defaults are in-app enabled and email disabled. `Notification` is a retained per-user projection of one source outbox event and project; `(sourceOutboxEventId, userId)` is unique. In-app visibility and email creation are decided from the preference snapshot when the event is processed.
+
+`NotificationEmailDelivery` retains a unique notification/message identity and bounded `PENDING`, `PROCESSING`, `SENT`, `SKIPPED`, or `DEAD_LETTER` lifecycle. A stale `PROCESSING` delivery is not automatically resent because SMTP cannot prove whether the remote server accepted it; it enters dead letter to prevent duplicates and permit controlled recovery. Daily reminders are derived only from the existing once-per-date changed scheduled project readiness snapshot.
+
+## Phase 8B report and scorecard scope
+
+Reports and supplier scorecards are read models, not new aggregates. They read retained readiness snapshots and authoritative PO, commitment, ASN, inspection, and NCR history. `supplier-scorecard-calculator-v1` produces separate exact required-date, original-commitment, latest-commitment, commitment-revision, first-pass-acceptance, usable-acceptance, and NCR-response rates plus monthly trends.
+
+Current acknowledged lines represent outstanding obligations. Noncurrent lines contribute only with retained arrived history. Zero-denominator rates are null and no composite grade is persisted. Report generation creates only immutable audit evidence for successful exports; no report row, score, workbook, or generated file is persisted.
+
 ## Phase 0 database scope
 
 Phase 0 intentionally creates only `SystemMetadata`, a technical table used to prove migration, connectivity and deterministic seed mechanics. Business entities begin in their designated phases; this avoids creating an unreviewed partial operational schema.
@@ -80,3 +96,21 @@ Each version retains opaque storage identity, safe original name, extension, dec
 `AdvanceShipmentNotice` belongs to one project, addressed supplier organization, acknowledged purchase order, and exact current PO revision. Its positive lines reference only PO lines in that revision and active non-cancelled ASN quantity cannot exceed ordered quantity. The retained lifecycle is `DRAFT`, `SUBMITTED`, `IN_TRANSIT`, `ARRIVED`, or `CANCELLED`; transitions and lines are immutable.
 
 `GoodsReceipt` is either an original `RECEIPT` or a `CORRECTION`. Draft originals contain positive ASN-line quantities and traceability metadata. Posting is a one-way idempotent command. It creates positive `AWAITING_INSPECTION` lots in the same transaction. A correction references one posted original and uses non-zero signed line deltas; posting appends `InventoryLotAdjustment` records without changing the original receipt or lot. Effective received/lot quantity cannot be negative or exceed shipped quantity. Inspection disposition and allocation do not exist in Phase 5B.
+
+## Phase 6A receiving-inspection scope
+
+`InspectionCheckDefinition` is item-scoped configuration. Active definitions make that item inspection-required and are snapshotted as immutable `ReceivingInspectionCheck` children when the one-per-lot `ReceivingInspection` is created. Definition changes affect future inspections only. Checks are required or optional checklist, configured-precision measurement, or certificate-review shapes. Certificate completion references an approved clean `Document` associated with that inspection.
+
+An inspection is `OPEN` or `FINALIZED` and carries an optimistic version. Finalization records one of `ACCEPTED`, `CONDITIONALLY_ACCEPTED`, `QUARANTINED`, or `REJECTED`, immutable inspector/conditional-authorizer attribution, effective received quantity, accepted/rejected quantities, and the derived quarantined remainder. The matching inventory lot receives the same disposition and quantity buckets in the same transaction. Accepted plus rejected cannot exceed effective received quantity, and corrections cannot alter a dispositioned lot. NCR and allocation relationships remain absent in Phase 6A.
+
+## Phase 6B NCR and material-allocation scope
+
+`Ncr` is a project and supplier scoped aggregate with one source (`PROJECT`, `INVENTORY_LOT`, or `RECEIVING_INSPECTION`), per-project numbering, an optimistic version, retained lifecycle actors/timestamps, immutable transitions, and append-only numbered `NcrSupplierResponse` revisions. Its lifecycle is draft, issued, supplier responded, closed, or cancelled. Internal disposition notes and the share decision remain internal fields; a supplier read model conditionally maps the text to a separate shared field.
+
+`MaterialAllocation` links one accepted inventory lot to one matching current released BOM line with a positive precision-valid quantity. It is `ALLOCATED`, `RELEASED`, or `CONSUMED`; release returns quantity to lot availability while consumption remains committed. Core identity/quantity, conditional-use reason/authorizer, creator, and transition quantity snapshots are immutable. Lot availability is accepted quantity minus all allocated and consumed history and can never be negative. Rejected, quarantined, and awaiting-inspection material contributes zero allocatable quantity.
+
+## Phase 7A material-requirement status scope
+
+The Phase 7A projection is not a new aggregate. It is a pure live read over released `BomLine` roots and retained trace records. Active requisition lines aggregate by exact BOM-line identity. Current sent/acknowledged PO revisions aggregate through explicit requirement allocations. Physical ASN, corrected lot, inspection, and material-allocation history follows retained identities even after a PO revision changes.
+
+When a PO line supplies several requirements, all of its allocation capacities are grouped by BOM line and consumed in earliest-required-date order with UUID tie-breaking. Receipt lots use creation/UUID order and partition accepted, rejected, quarantined, and unresolved quantities without exceeding their effective corrected receipt. Required accepted certificate checks define certificate completeness; no required certificate check is vacuously complete for accepted quantity. Full definitions are in `MATERIAL_REQUIREMENT_STATUS_API.md`.

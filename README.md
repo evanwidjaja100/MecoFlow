@@ -1,6 +1,6 @@
 # MECO Flow
 
-MECO Flow is PT Meco Inoxprima's secure project-material-readiness and supplier-collaboration platform. Phase 2 adds scoped projects, milestones, work packages, and explicit project-state transitions. Phase 3A adds the governed internal item master. Phase 3B adds project/work-package BOM aggregates, revision lifecycle and comparison, private CSV/XLSX dry-run imports, background validation, row-level results, explicit draft confirmation, transactional release/supersede, and released-only official requirements. Phase 4A adds project-scoped purchase requisitions, outstanding-need coverage, separately authorized over-need overrides, and explicit submit/approve/reject/cancel history. Phase 4B adds approved-quantity purchase orders, immutable requirement allocations and PO revisions, supplier-scoped acknowledgement, append-only commitment revisions, field filtering, and late-date exceptions. Phase 5A adds private scanned document workflows. Phase 5B adds supplier ASNs, shipment transitions, tablet receiving, immutable idempotent receipt posting, correcting entries, and awaiting-inspection lots. Inspection, NCR, allocation, and later operational modules remain intentionally unavailable.
+MECO Flow is PT Meco Inoxprima's secure project-material-readiness and supplier-collaboration platform. Phase 2 adds scoped projects, milestones, work packages, and explicit project-state transitions. Phase 3A adds the governed internal item master. Phase 3B adds project/work-package BOM aggregates and secure revision imports. Phases 4–6 add traceable requisitions, purchase orders, commitments, shipments, receiving, documents, inspections, NCRs, and concurrency-safe material allocation. Phase 7 adds exact material projection, versioned readiness snapshots, and internal dashboards. Phase 8A adds transactional readiness notifications. Phase 8B adds scoped operational reports, secure audited CSV/XLSX exports, exact supplier KPIs, own-supplier scorecards, and accessible trends.
 
 ## Prerequisites
 
@@ -40,12 +40,13 @@ The web process reloads browser-facing changes automatically. Restart `pnpm dev`
 | Web                         | http://localhost:3000              |
 | API liveness                | http://localhost:3001/health/live  |
 | API readiness               | http://localhost:3001/health/ready |
+| API metrics (local/private) | http://localhost:3001/metrics      |
 | OpenAPI UI (non-production) | http://localhost:3001/api/docs     |
 | Keycloak                    | http://localhost:8180              |
 | MinIO console               | http://localhost:9001              |
 | Mailpit                     | http://localhost:8025              |
 
-`/health/live` proves only that the API process runs. `/health/ready` safely checks PostgreSQL, Redis and the configured private object-storage bucket. The worker writes a short-lived Redis heartbeat and performs no Phase 2 or Phase 3A asynchronous jobs. Compose publishes local dependency ports only on `127.0.0.1`.
+`/health/live` proves only that the API process runs. `/health/ready` safely checks PostgreSQL, Redis and the configured private object-storage bucket. The worker writes a short-lived Redis heartbeat and processes BOM imports, readiness recalculation, and Phase 8A notifications. Local SMTP is captured by Mailpit; per-user email delivery defaults off. Compose publishes local dependency ports only on `127.0.0.1`.
 
 ## Repository structure
 
@@ -53,12 +54,13 @@ The web process reloads browser-facing changes automatically. Restart `pnpm dev`
 apps/
   api/                 NestJS REST, OpenAPI, probes and request logging
   web/                 Next.js App Router foundation screen
-  worker/              validated worker/heartbeat foundation
+  worker/              outbox import/readiness/notification processing and heartbeat
 packages/
   config/              startup environment validation
   contracts/           shared trust-boundary schemas
   database/            Prisma client, migration and seed framework
   eslint-config/       shared strict lint rules
+  readiness/           pure versioned material/readiness calculators
   test-utils/          deterministic fixture helpers
   typescript-config/   strict shared compiler settings
   ui/                  local accessible UI primitives
@@ -81,7 +83,17 @@ pnpm build
 pnpm test:e2e
 pnpm openapi:generate
 pnpm openapi:check
+pnpm performance:measure
+pnpm capacity:test
+pnpm capacity:run
+pnpm monitoring:config
+pnpm monitoring:validate
+pnpm operations:preflight:test
+pnpm operations:preflight
 pnpm security:audit
+pnpm staging:config
+pnpm staging:build
+pnpm test:staging-smoke
 pnpm verify
 pnpm compose:down
 ```
@@ -92,6 +104,13 @@ Build before `pnpm test:e2e`; Playwright starts the built API and web processes.
 
 Read `AGENTS.md` before changes. The authoritative baseline is in `docs/PRODUCT_REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/DOMAIN_MODEL.md`, `docs/SECURITY_MODEL.md`, `docs/AUTHORIZATION_MATRIX.md`, and accepted records under `docs/adr/`. Secrets, tokens, production realm exports and customer data must not be committed.
 
+API documentation files are at `docs/PROJECTS_API.md`, `docs/ITEM_MASTER_API.md`, `docs/BOM_API.md`, `docs/PURCHASE_REQUISITIONS_API.md`, `docs/PURCHASE_ORDERS_API.md`, `docs/DOCUMENTS_API.md`, `docs/ASN_RECEIVING_API.md`, `docs/RECEIVING_INSPECTIONS_API.md`, `docs/NCR_MATERIAL_ALLOCATION_API.md`, `docs/MATERIAL_REQUIREMENT_STATUS_API.md`, `docs/READINESS_API.md`, and `docs/NOTIFICATIONS_API.md`.
+
 ## Current status
 
-See `docs/IMPLEMENTATION_STATUS.md`. Work stops after Phase 5B ASN and receiving; do not begin receiving inspection, NCR, allocation, readiness, or another later phase without explicit instruction.
+See `docs/IMPLEMENTATION_STATUS.md`, `docs/SECURITY_REVIEW.md`, and
+`docs/PERFORMANCE_REVIEW.md`. Phase 9C staging preparation and smoke testing
+are implemented; see `docs/DEPLOYMENT.md`, `docs/BACKUP_RESTORE.md`,
+`docs/ROLLBACK_RUNBOOK.md`, and `docs/RELEASE_CHECKLIST.md`. This is not a
+production-readiness claim. Do not begin restore acceptance, production
+release, or another later phase without explicit instruction.

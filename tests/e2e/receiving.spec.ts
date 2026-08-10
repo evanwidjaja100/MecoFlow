@@ -12,7 +12,7 @@ async function login(
   await page.getByRole("button", { name: persona }).click();
 }
 
-test("creates an ASN and posts a traceable receipt in the tablet workflow", async ({
+test("receives and finalizes an automatically created inspection in the tablet workflow", async ({
   browser,
 }) => {
   test.setTimeout(120_000);
@@ -104,6 +104,28 @@ test("creates an ASN and posts a traceable receipt in the tablet workflow", asyn
     ).toBeVisible();
     await expect(
       internalPage.getByText("BATCH-TABLET-7", { exact: true }),
+    ).toBeVisible();
+    await internalPage
+      .getByRole("button", { name: "Open receiving inspection" })
+      .click();
+    await expect(internalPage).toHaveURL(/\/inspections\/[0-9a-f-]{36}$/i);
+    await expect(
+      internalPage.getByRole("heading", {
+        name: "PLATE-SS304-6MM — Stainless steel plate 304, 6 mm",
+      }),
+    ).toBeVisible();
+    await internalPage
+      .getByRole("button", { name: "Save inspection results" })
+      .click();
+    await expect(internalPage.getByText(/Recorded · conforming/)).toBeVisible();
+    await internalPage
+      .getByRole("button", { name: "Finalize inspection" })
+      .click();
+    await expect(
+      internalPage.getByRole("heading", { name: "Final disposition" }),
+    ).toBeVisible();
+    await expect(
+      internalPage.getByText("ACCEPTED", { exact: true }),
     ).toBeVisible();
   } finally {
     await supplierContext.close();

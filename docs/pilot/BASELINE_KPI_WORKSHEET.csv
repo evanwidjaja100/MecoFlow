@@ -1,0 +1,8 @@
+kpi_id,kpi_name,definition,unit,source_report,baseline_period_start,baseline_period_end,baseline_value,target_value,owner,evidence_reference,review_frequency,notes
+KPI-01,Critical readiness before fabrication,Critical lines ready divided by critical lines due,percent,Project readiness report,,,,,,,Daily,
+KPI-02,Open blocker count,Explained open readiness blockers,count,Material exceptions report,,,,,,,Daily,
+KPI-03,PO acknowledgement latency,Sent timestamp to acknowledgement timestamp,hours,Supplier performance report,,,,,,,Daily,
+KPI-04,Original commitment on-time rate,Lines delivered by original commitment date,percent,Supplier performance report,,,,,,,Daily,
+KPI-05,Certificate completeness,Required certificate checks completed with approved clean evidence,percent,Material readiness board,,,,,,,Daily,
+KPI-06,Inspection lead time,Receipt posting to finalized inspection,hours,Inspection work queue,,,,,,,Daily,
+KPI-07,NCR response lead time,NCR issue to retained supplier response,hours,Supplier performance report,,,,,,,Daily,

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "replace-me",
+  "generatedAt": "replace-me",
+  "environment": "staging",
+  "productionEquivalent": false,
+  "applicationVersion": "replace-me",
+  "sourceRevision": "replace-me",
+  "targetOrigin": "https://replace-me.invalid",
+  "datasetProfile": "replace-me",
+  "durationSeconds": 0,
+  "concurrency": 0,
+  "requestCount": 0,
+  "errorRate": 1,
+  "p95Milliseconds": 0,
+  "p99Milliseconds": 0,
+  "allScenariosPassed": false,
+  "resourceHeadroomPercent": 0,
+  "queueRecoverySeconds": 0,
+  "resourceEvidenceReference": "replace-me",
+  "scenarioResults": [],
+  "statusCounts": {},
+  "thresholds": {
+    "maximumErrorRate": 0.01,
+    "maximumP95Milliseconds": 1000,
+    "maximumP99Milliseconds": 2000
+  },
+  "result": "failed"
+}

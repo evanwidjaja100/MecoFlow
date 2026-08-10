@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "replace-me",
+  "observedAt": "replace-me",
+  "applicationVersion": "replace-me",
+  "sourceRevision": "replace-me",
+  "prometheusHealthy": false,
+  "alertmanagerHealthy": false,
+  "blackboxHealthy": false,
+  "retentionDays": 0,
+  "metricsPrivate": false,
+  "publicMetricsStatus": 0,
+  "loadedAlertRuleCount": 0,
+  "jobsUp": [],
+  "dashboardReviewed": false,
+  "testAlertFired": false,
+  "testAlertResolved": false,
+  "collectionGapTested": false,
+  "evidenceReference": "replace-me"
+}

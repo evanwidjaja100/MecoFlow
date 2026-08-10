@@ -2,29 +2,12 @@
 
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { apiRequest } from "../../lib/api";
+import { writeApi } from "../../lib/api";
 
 function field(formData: FormData, name: string): string {
   const value = formData.get(name);
   return typeof value === "string" ? value.trim() : "";
-}
-
-async function write<T>(path: string, body: unknown): Promise<T> {
-  const csrf = (await cookies()).get("mecoflow_csrf")?.value;
-  const response = await apiRequest(path, {
-    body: JSON.stringify(body),
-    headers: { "content-type": "application/json", "x-csrf-token": csrf ?? "" },
-    method: "POST",
-  });
-  if (!response.ok) {
-    const error = (await response.json().catch(() => null)) as {
-      error?: { message?: string };
-    } | null;
-    throw new Error(error?.error?.message ?? "Shipment operation failed");
-  }
-  return (await response.json()) as T;
 }
 
 export async function createAsn(formData: FormData) {
@@ -32,20 +15,22 @@ export async function createAsn(formData: FormData) {
   const lineIds = formData
     .getAll("purchaseOrderLineId")
     .filter((value): value is string => typeof value === "string");
-  const created = await write<{ id: string }>(
+  const created = await writeApi<{ id: string }>(
     `/api/v1/supplier/purchase-orders/${purchaseOrderId}/asns`,
     {
-      carrier: field(formData, "carrier"),
-      estimatedArrivalDate:
-        field(formData, "estimatedArrivalDate") || undefined,
-      lines: lineIds.map((purchaseOrderLineId) => ({
-        packageReference: field(formData, `package-${purchaseOrderLineId}`),
-        purchaseOrderLineId,
-        shippedQuantity: field(formData, `quantity-${purchaseOrderLineId}`),
-      })),
-      notes: field(formData, "notes"),
-      supplierReference: field(formData, "supplierReference"),
-      trackingNumber: field(formData, "trackingNumber"),
+      body: {
+        carrier: field(formData, "carrier"),
+        estimatedArrivalDate:
+          field(formData, "estimatedArrivalDate") || undefined,
+        lines: lineIds.map((purchaseOrderLineId) => ({
+          packageReference: field(formData, `package-${purchaseOrderLineId}`),
+          purchaseOrderLineId,
+          shippedQuantity: field(formData, `quantity-${purchaseOrderLineId}`),
+        })),
+        notes: field(formData, "notes"),
+        supplierReference: field(formData, "supplierReference"),
+        trackingNumber: field(formData, "trackingNumber"),
+      },
     },
   );
   revalidatePath("/supplier/asns");
@@ -57,9 +42,11 @@ async function transition(
   command: "cancel" | "dispatch" | "submit",
 ) {
   const id = field(formData, "asnId");
-  await write(`/api/v1/supplier/asns/${id}/${command}`, {
-    expectedVersion: Number(field(formData, "expectedVersion")),
-    reason: field(formData, "reason"),
+  await writeApi(`/api/v1/supplier/asns/${id}/${command}`, {
+    body: {
+      expectedVersion: Number(field(formData, "expectedVersion")),
+      reason: field(formData, "reason"),
+    },
   });
   revalidatePath("/supplier/asns");
   revalidatePath(`/supplier/asns/${id}`);
@@ -84,7 +71,7 @@ export async function uploadAsnDocument(formData: FormData) {
   if (!(file instanceof File) || file.size < 1 || file.size > 10 * 1024 * 1024)
     throw new Error("Select a file up to 10 MiB");
   const bytes = Buffer.from(await file.arrayBuffer());
-  const initiated = await write<{
+  const initiated = await writeApi<{
     upload: {
       headers: Record<string, string>;
       url: string;
@@ -92,14 +79,18 @@ export async function uploadAsnDocument(formData: FormData) {
       versionId: string;
     };
   }>(`/api/v1/projects/${projectId}/documents/uploads`, {
-    associations: [{ entityId: asnId, entityType: "ADVANCE_SHIPMENT_NOTICE" }],
-    byteSize: file.size,
-    category: field(formData, "category"),
-    description: `Secure supplier shipment attachment for ASN ${asnId}`,
-    fileName: file.name,
-    mimeType: file.type,
-    sha256: createHash("sha256").update(bytes).digest("hex"),
-    title: field(formData, "title"),
+    body: {
+      associations: [
+        { entityId: asnId, entityType: "ADVANCE_SHIPMENT_NOTICE" },
+      ],
+      byteSize: file.size,
+      category: field(formData, "category"),
+      description: `Secure supplier shipment attachment for ASN ${asnId}`,
+      fileName: file.name,
+      mimeType: file.type,
+      sha256: createHash("sha256").update(bytes).digest("hex"),
+      title: field(formData, "title"),
+    },
   });
   const uploaded = await fetch(initiated.upload.url, {
     body: bytes,
@@ -107,11 +98,9 @@ export async function uploadAsnDocument(formData: FormData) {
     method: "PUT",
   });
   if (!uploaded.ok) throw new Error("Private object upload failed");
-  await write(
+  await writeApi(
     `/api/v1/document-versions/${initiated.upload.versionId}/complete`,
-    {
-      expectedVersion: initiated.upload.version,
-    },
+    { body: { expectedVersion: initiated.upload.version } },
   );
   revalidatePath(`/supplier/asns/${asnId}`);
 }

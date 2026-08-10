@@ -85,6 +85,7 @@ export class DocumentsService {
           | "ADVANCE_SHIPMENT_NOTICE"
           | "BOM"
           | "GOODS_RECEIPT"
+          | "RECEIVING_INSPECTION"
           | "PROJECT"
           | "PURCHASE_ORDER"
           | "PURCHASE_REQUISITION"

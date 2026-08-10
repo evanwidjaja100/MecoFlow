@@ -13,6 +13,7 @@ import {
 } from "@mecoflow/database";
 import type { RequestContext } from "../identity/identity.types.js";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
+import { createInspectionForLot } from "../inspections/inspection-creation.js";
 import {
   canTransitionShipment,
   type AdvanceShipmentNoticeStatus,
@@ -1002,7 +1003,7 @@ export class ReceivingRepository {
         let lotNumber = latest?.lotNumber ?? 0;
         for (const line of current.lines) {
           lotNumber += 1;
-          await transaction.inventoryLot.create({
+          const lot = await transaction.inventoryLot.create({
             data: {
               advanceShipmentNoticeLineId: line.advanceShipmentNoticeLineId,
               batchNumber: line.batchNumber,
@@ -1020,6 +1021,17 @@ export class ReceivingRepository {
                   .unitOfMeasureId,
             },
           });
+          await createInspectionForLot(transaction, {
+            actorUserId: input.actorUserId,
+            auditOrganizationId: input.auditOrganizationId,
+            context: input.context,
+            effectiveQuantity: line.quantityDelta,
+            inventoryLotId: lot.id,
+            itemId: line.advanceShipmentNoticeLine.purchaseOrderLine.itemId,
+            projectId: current.projectId,
+            requireDefinitions: false,
+            source: "AUTOMATIC_RECEIPT_POSTING",
+          });
         }
       } else {
         for (const line of current.lines) {
@@ -1028,12 +1040,19 @@ export class ReceivingRepository {
             throw new UnprocessableEntityException(
               "Correction line is missing its original receipt line",
             );
+          await transaction.$queryRaw(
+            Prisma.sql`SELECT id FROM inventory_lots WHERE "goodsReceiptLineId" = ${originalLineId}::uuid FOR UPDATE`,
+          );
           const lot = await transaction.inventoryLot.findUnique({
             where: { goodsReceiptLineId: originalLineId },
           });
           if (!lot)
             throw new UnprocessableEntityException(
               "Original receipt inventory lot is missing",
+            );
+          if (lot.status !== "AWAITING_INSPECTION")
+            throw new ConflictException(
+              "A finalized inventory lot cannot be corrected",
             );
           const priorAdjustments =
             await transaction.inventoryLotAdjustment.aggregate({

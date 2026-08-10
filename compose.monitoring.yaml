@@ -1,0 +1,138 @@
+name: mecoflow-staging
+
+x-monitoring-security: &monitoring-security
+  cap_drop:
+    - ALL
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+
+x-monitoring-logging: &monitoring-logging
+  driver: json-file
+  options:
+    max-file: "5"
+    max-size: 10m
+
+services:
+  prometheus:
+    <<: *monitoring-security
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --storage.tsdb.retention.size=8GB
+      - --web.enable-lifecycle
+      - --web.listen-address=0.0.0.0:9090
+    depends_on:
+      alertmanager:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+      blackbox:
+        condition: service_healthy
+      proxy:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "/dev/null",
+          "http://127.0.0.1:9090/-/ready",
+        ]
+      interval: 10s
+      retries: 20
+      start_period: 10s
+      timeout: 5s
+    image: prom/prometheus:v3.12.0-busybox
+    logging: *monitoring-logging
+    networks:
+      - backend
+      - edge
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    stop_grace_period: 30s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,uid=65534,gid=65534
+    user: "65534:65534"
+    volumes:
+      - ./infra/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/monitoring/recording-rules.yml:/etc/prometheus/recording-rules.yml:ro
+      - ./infra/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-staging-data:/prometheus
+
+  alertmanager:
+    <<: *monitoring-security
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.listen-address=0.0.0.0:9093
+      - --enable-feature=utf8-strict-mode
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "/dev/null",
+          "http://127.0.0.1:9093/-/ready",
+        ]
+      interval: 10s
+      retries: 20
+      start_period: 5s
+      timeout: 5s
+    image: prom/alertmanager:v0.32.1
+    logging: *monitoring-logging
+    networks:
+      - backend
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    stop_grace_period: 30s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,uid=65534,gid=65534
+    user: "65534:65534"
+    volumes:
+      - ${ALERTMANAGER_CONFIG_FILE:-./infra/monitoring/alertmanager.staging.yml}:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-staging-data:/alertmanager
+
+  blackbox:
+    <<: *monitoring-security
+    command:
+      - --config.file=/etc/blackbox/blackbox.yml
+      - --web.listen-address=0.0.0.0:9115
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "/dev/null",
+          "http://127.0.0.1:9115/-/healthy",
+        ]
+      interval: 10s
+      retries: 20
+      start_period: 5s
+      timeout: 5s
+    image: prom/blackbox-exporter:v0.28.0
+    logging: *monitoring-logging
+    networks:
+      - edge
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,uid=65534,gid=65534
+    user: "65534:65534"
+    volumes:
+      - ./infra/monitoring/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+      - ${STAGING_RUNTIME_DIR:-.runtime/staging}/tls/tls.crt:/etc/mecoflow/tls/staging-ca.crt:ro
+
+volumes:
+  alertmanager-staging-data:
+  prometheus-staging-data:

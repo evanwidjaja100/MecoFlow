@@ -10,6 +10,11 @@ import { Inject, Injectable, type OnModuleDestroy } from "@nestjs/common";
 import type { ServiceEnvironment } from "@mecoflow/config";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
 import {
+  objectStorageEncryptionHeaders,
+  objectStorageEncryptionMatches,
+  objectStorageEncryptionRequest,
+} from "../object-storage-encryption.js";
+import {
   detectDocumentMimeType,
   MAX_DOCUMENT_BYTES,
   type AllowedDocumentExtension,
@@ -49,6 +54,7 @@ export class DocumentStorageService implements OnModuleDestroy {
     url: string;
   }> {
     const checksumBase64 = Buffer.from(input.sha256, "hex").toString("base64");
+    const encryption = objectStorageEncryptionRequest(this.environment);
     const command = new PutObjectCommand({
       Bucket: this.environment.S3_BUCKET,
       ChecksumSHA256: checksumBase64,
@@ -56,16 +62,17 @@ export class DocumentStorageService implements OnModuleDestroy {
       ContentType: input.mimeType,
       Key: input.storageKey,
       Metadata: { sha256: input.sha256 },
-      ServerSideEncryption:
-        this.environment.NODE_ENV === "production" ? "AES256" : undefined,
+      ...encryption,
     });
     return {
       expiresInSeconds: UPLOAD_URL_TTL_SECONDS,
       headers: {
         "content-type": input.mimeType,
+        ...objectStorageEncryptionHeaders(encryption),
       },
       url: await getSignedUrl(this.client, command, {
         expiresIn: UPLOAD_URL_TTL_SECONDS,
+        signableHeaders: new Set(["content-type"]),
       }),
     };
   }
@@ -83,12 +90,14 @@ export class DocumentStorageService implements OnModuleDestroy {
         Key: input.storageKey,
       }),
     );
+    const expectedEncryption = objectStorageEncryptionRequest(this.environment);
     if (
       response.ContentLength !== input.byteSize ||
       response.ContentLength < 1 ||
       response.ContentLength > MAX_DOCUMENT_BYTES ||
       response.ContentType?.toLowerCase().split(";", 1)[0] !== input.mimeType ||
       response.Metadata?.sha256 !== input.sha256 ||
+      !objectStorageEncryptionMatches(expectedEncryption, response) ||
       !response.Body
     )
       throw new Error("OBJECT_METADATA_MISMATCH");

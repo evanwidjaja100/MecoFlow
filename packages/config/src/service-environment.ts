@@ -119,6 +119,7 @@ const serviceEnvironmentSchema = z
       .min(300)
       .max(86400)
       .default(28800),
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(0),
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace"])
       .default("info"),
@@ -144,6 +145,8 @@ const serviceEnvironmentSchema = z
       .regex(/^[a-z0-9][a-z0-9.-]*[a-z0-9]$/)
       .refine((value) => !value.includes("..")),
     S3_FORCE_PATH_STYLE: booleanString.default(true),
+    S3_SERVER_SIDE_ENCRYPTION: z.enum(["AES256", "aws:kms"]).optional(),
+    S3_KMS_KEY_ID: z.string().max(2048).optional(),
     VIRUS_SCANNER_ENABLED: booleanString.default(false),
     VIRUS_SCANNER_HOST: z.string().min(1).max(253).default("127.0.0.1"),
     VIRUS_SCANNER_PORT: z.coerce.number().int().min(1).max(65535).default(3310),
@@ -153,6 +156,23 @@ const serviceEnvironmentSchema = z
       .min(1000)
       .max(30000)
       .default(10000),
+    SMTP_ENABLED: booleanString.default(false),
+    SMTP_HOST: z.string().min(1).max(253).default("127.0.0.1"),
+    SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
+    SMTP_SECURE: booleanString.default(false),
+    SMTP_FROM_EMAIL: z
+      .string()
+      .email()
+      .max(320)
+      .default("no-reply@mecoflow.local"),
+    SMTP_USERNAME: z.string().max(320).default(""),
+    SMTP_PASSWORD: z.string().max(500).default(""),
+    SMTP_CONNECT_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(1000)
+      .max(30000)
+      .default(5000),
   })
   .superRefine((environment, context) => {
     if (environment.NODE_ENV !== "production") return;
@@ -195,8 +215,38 @@ const serviceEnvironmentSchema = z
       context.addIssue({ code: "custom", path: ["S3_ACCESS_KEY"] });
     if (localOnlyValues.has(environment.S3_SECRET_KEY))
       context.addIssue({ code: "custom", path: ["S3_SECRET_KEY"] });
+    if (environment.APP_ENV === "production") {
+      if (!isHttpsOrigin(environment.S3_ENDPOINT))
+        context.addIssue({ code: "custom", path: ["S3_ENDPOINT"] });
+      if (!environment.S3_SERVER_SIDE_ENCRYPTION)
+        context.addIssue({
+          code: "custom",
+          path: ["S3_SERVER_SIDE_ENCRYPTION"],
+        });
+      if (
+        environment.S3_SERVER_SIDE_ENCRYPTION === "aws:kms" &&
+        !environment.S3_KMS_KEY_ID
+      )
+        context.addIssue({ code: "custom", path: ["S3_KMS_KEY_ID"] });
+      if (
+        environment.S3_SERVER_SIDE_ENCRYPTION === "AES256" &&
+        (environment.S3_KMS_KEY_ID?.length ?? 0) > 0
+      )
+        context.addIssue({ code: "custom", path: ["S3_KMS_KEY_ID"] });
+    }
     if (!environment.VIRUS_SCANNER_ENABLED)
       context.addIssue({ code: "custom", path: ["VIRUS_SCANNER_ENABLED"] });
+    if (
+      environment.SMTP_ENABLED &&
+      (!environment.SMTP_SECURE ||
+        ["127.0.0.1", "localhost"].includes(
+          environment.SMTP_HOST.toLowerCase(),
+        ) ||
+        environment.SMTP_FROM_EMAIL.endsWith(".local") ||
+        environment.SMTP_USERNAME.length === 0 ||
+        environment.SMTP_PASSWORD.length === 0)
+    )
+      context.addIssue({ code: "custom", path: ["SMTP_ENABLED"] });
   });
 
 export type ServiceEnvironment = z.infer<typeof serviceEnvironmentSchema>;

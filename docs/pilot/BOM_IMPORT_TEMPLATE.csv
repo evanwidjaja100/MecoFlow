@@ -1,0 +1,3 @@
+item_code,item_name,quantity,unit_code,criticality,notes
+PILOT-VALVE-CRIT,,10,EA,CRITICAL,Certificate required before acceptance
+PILOT-GASKET-STD,,4,EA,NORMAL,Visual receiving inspection

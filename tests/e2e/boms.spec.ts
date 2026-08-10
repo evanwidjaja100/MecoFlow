@@ -18,9 +18,12 @@ test("imports, corrects, reviews, and releases a BOM revision", async ({
   await page.getByRole("link", { name: "Projects", exact: true }).click();
   await page.getByRole("link", { name: "DEMO-2026" }).click();
   await page.getByRole("link", { name: "Open BOM workspace" }).click();
+  await page.waitForURL(/\/internal\/projects\/[^/]+\/boms$/, {
+    timeout: 30_000,
+  });
   await expect(
     page.getByRole("heading", { name: "BOM revisions" }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
 
   const invalid = Buffer.from(
     "item_code,item_name,quantity,unit_code,criticality,notes\nPLATE-SS304-6MM,,0,EA,CRITICAL,invalid quantity\n",

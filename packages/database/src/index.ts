@@ -1,6 +1,9 @@
 export { createDatabaseClient, disconnectDatabaseClient } from "./client.js";
 export { Prisma } from "../generated/prisma/client.js";
-export type { PrismaClient } from "../generated/prisma/client.js";
+export type {
+  NotificationType,
+  PrismaClient,
+} from "../generated/prisma/client.js";
 export { applyPhaseOneSeed, localFixtures } from "./phase-one-seed.js";
 export { applyPhaseTwoSeed, phaseTwoFixtures } from "./phase-two-seed.js";
 export {
@@ -14,3 +17,4 @@ export {
   phaseFourBFixtures,
 } from "./phase-four-b-seed.js";
 export { applyPhaseFiveBSeed } from "./phase-five-b-seed.js";
+export { applyPhaseSixASeed } from "./phase-six-a-seed.js";

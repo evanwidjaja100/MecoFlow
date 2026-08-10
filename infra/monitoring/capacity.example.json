@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "environment": "staging",
+  "candidate": {
+    "applicationVersion": "replace-me",
+    "sourceRevision": "replace-with-40-character-git-revision"
+  },
+  "targetOrigin": "https://replace-me.invalid",
+  "datasetProfile": "approved-production-volume-profile",
+  "productionEquivalent": false,
+  "durationSeconds": 1800,
+  "warmupSeconds": 120,
+  "concurrency": 20,
+  "maxRequests": 1000000,
+  "requestTimeoutMs": 10000,
+  "thresholds": {
+    "maximumErrorRate": 0.01,
+    "maximumP95Milliseconds": 1000,
+    "maximumP99Milliseconds": 2000
+  },
+  "resourceObservation": {
+    "resourceHeadroomPercent": 0,
+    "queueRecoverySeconds": 0,
+    "evidenceReference": "replace-me"
+  },
+  "scenarios": [
+    {
+      "name": "health-ready",
+      "kind": "health",
+      "method": "GET",
+      "path": "/health/ready",
+      "weight": 1,
+      "expectedStatuses": [200],
+      "headersFile": null
+    },
+    {
+      "name": "internal-readiness",
+      "kind": "internal",
+      "method": "GET",
+      "path": "/api/v1/readiness/management",
+      "weight": 6,
+      "expectedStatuses": [200],
+      "headersFile": "internal-headers.json"
+    },
+    {
+      "name": "supplier-scorecard",
+      "kind": "supplier",
+      "method": "GET",
+      "path": "/api/v1/supplier/scorecard?from=2026-01-01&to=2026-12-31",
+      "weight": 3,
+      "expectedStatuses": [200],
+      "headersFile": "supplier-headers.json"
+    }
+  ],
+  "outputDirectory": "evidence"
+}

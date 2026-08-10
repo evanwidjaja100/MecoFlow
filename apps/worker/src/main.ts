@@ -14,6 +14,9 @@ import {
   WORKER_HEARTBEAT_TTL_SECONDS,
 } from "./heartbeat.js";
 import { BomImportProcessor } from "./bom-import-processor.js";
+import { ReadinessProcessor } from "./readiness-processor.js";
+import { NotificationProcessor } from "./notification-processor.js";
+import { SmtpEmailSender } from "./smtp-email-sender.js";
 
 loadEnvironment({
   path: resolve(process.cwd(), "../../.env"),
@@ -24,7 +27,18 @@ const logger = pino({
   base: { environment: environment.APP_ENV, service: "worker" },
   level: environment.LOG_LEVEL,
   redact: {
-    paths: ["*.password", "*.token", "*.secret", "*.accessKey", "*.storageKey"],
+    paths: [
+      "password",
+      "token",
+      "secret",
+      "accessKey",
+      "storageKey",
+      "*.password",
+      "*.token",
+      "*.secret",
+      "*.accessKey",
+      "*.storageKey",
+    ],
     censor: "[REDACTED]",
   },
   timestamp: pino.stdTimeFunctions.isoTime,
@@ -83,6 +97,24 @@ const bomImportProcessor = new BomImportProcessor(
   objectStorage,
   environment.S3_BUCKET,
 );
+const readinessProcessor = new ReadinessProcessor(database);
+const emailSender = environment.SMTP_ENABLED
+  ? new SmtpEmailSender({
+      connectTimeoutMs: environment.SMTP_CONNECT_TIMEOUT_MS,
+      from: environment.SMTP_FROM_EMAIL,
+      host: environment.SMTP_HOST,
+      password: environment.SMTP_PASSWORD,
+      port: environment.SMTP_PORT,
+      secure: environment.SMTP_SECURE,
+      username: environment.SMTP_USERNAME,
+    })
+  : null;
+const notificationProcessor = new NotificationProcessor(
+  database,
+  emailSender,
+  environment.SMTP_ENABLED,
+  environment.WEB_BASE_URL,
+);
 let processing = false;
 async function processBomImport(): Promise<void> {
   if (processing) return;
@@ -119,9 +151,121 @@ const importTimer = setInterval(() => {
   });
 }, 1_000);
 
+let readinessProcessing = false;
+async function processReadiness(): Promise<void> {
+  if (readinessProcessing) return;
+  readinessProcessing = true;
+  try {
+    const event = await readinessProcessor.claim();
+    if (event) await readinessProcessor.process(event);
+  } finally {
+    readinessProcessing = false;
+  }
+}
+
+let scheduledReadinessProcessing = false;
+async function recalculateReadinessSafetySweep(): Promise<void> {
+  if (scheduledReadinessProcessing) return;
+  scheduledReadinessProcessing = true;
+  try {
+    const projectIds = await readinessProcessor.scheduledProjectIds();
+    for (const projectId of projectIds)
+      await readinessProcessor.recalculateScheduled(projectId);
+  } finally {
+    scheduledReadinessProcessing = false;
+  }
+}
+
+void processReadiness();
+const readinessTimer = setInterval(() => {
+  void processReadiness().catch(() => {
+    logger.error(
+      { errorClassification: "readiness_calculation_failure" },
+      "Readiness event processing cycle failed",
+    );
+  });
+}, 250);
+
+void recalculateReadinessSafetySweep().catch(() => {
+  logger.error(
+    { errorClassification: "readiness_schedule_failure" },
+    "Initial readiness safety sweep failed",
+  );
+});
+const scheduledReadinessTimer = setInterval(() => {
+  void recalculateReadinessSafetySweep().catch(() => {
+    logger.error(
+      { errorClassification: "readiness_schedule_failure" },
+      "Scheduled readiness safety sweep failed",
+    );
+  });
+}, 5 * 60_000);
+
+let notificationProcessing = false;
+async function processNotification(): Promise<void> {
+  if (notificationProcessing) return;
+  notificationProcessing = true;
+  const startedAt = Date.now();
+  try {
+    const event = await notificationProcessor.claim();
+    if (!event) return;
+    const result = await notificationProcessor.process(event);
+    logger.info(
+      {
+        attempt: event.attempts,
+        created: result.created,
+        deadLettered: result.deadLettered,
+        durationMs: Date.now() - startedAt,
+        event: "notification.processed",
+        eventId: event.eventId,
+        sent: result.sent,
+        skipped: result.skipped,
+      },
+      "Notification event processing completed",
+    );
+  } finally {
+    notificationProcessing = false;
+  }
+}
+
+void processNotification();
+const notificationTimer = setInterval(() => {
+  void processNotification().catch((error: unknown) => {
+    logger.error(
+      {
+        errorClassification: "notification_processing_failure",
+        errorCode: error instanceof Error ? error.name : "UNKNOWN",
+        event: "notification.failed",
+      },
+      "Notification processing cycle failed",
+    );
+  });
+}, 500);
+
+const notificationObservabilityTimer = setInterval(() => {
+  void notificationProcessor
+    .observability()
+    .then((counts) => {
+      logger.info(
+        { counts, event: "notification.queue.snapshot" },
+        "Notification queue state",
+      );
+    })
+    .catch(() => {
+      logger.error(
+        { event: "notification.observability.failed" },
+        "Notification queue observation failed",
+      );
+    });
+}, 60_000);
+
 async function shutdown(signal: string): Promise<void> {
   clearInterval(heartbeatTimer);
   clearInterval(importTimer);
+  clearInterval(readinessTimer);
+  clearInterval(scheduledReadinessTimer);
+  clearInterval(notificationTimer);
+  clearInterval(notificationObservabilityTimer);
   logger.info(
     { event: "worker.stopping", signal },
     "Worker foundation stopping",

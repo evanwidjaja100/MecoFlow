@@ -2,32 +2,12 @@
 
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { apiRequest } from "../../../../lib/api";
+import { writeApi } from "../../../../lib/api";
 
 function field(formData: FormData, name: string): string {
   const value = formData.get(name);
   return typeof value === "string" ? value.trim() : "";
-}
-
-async function write<T>(path: string, body?: unknown): Promise<T> {
-  const csrf = (await cookies()).get("mecoflow_csrf")?.value;
-  const result = await apiRequest(path, {
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    headers: {
-      ...(body === undefined ? {} : { "content-type": "application/json" }),
-      "x-csrf-token": csrf ?? "",
-    },
-    method: "POST",
-  });
-  if (!result.ok) {
-    const error = (await result.json().catch(() => null)) as {
-      error?: { message?: string };
-    } | null;
-    throw new Error(error?.error?.message ?? "Document operation failed");
-  }
-  return (await result.json()) as T;
 }
 
 async function upload(
@@ -45,8 +25,8 @@ async function upload(
     method: "PUT",
   });
   if (!response.ok) throw new Error("Private object upload failed");
-  await write(`/api/v1/document-versions/${session.versionId}/complete`, {
-    expectedVersion: session.version,
+  await writeApi(`/api/v1/document-versions/${session.versionId}/complete`, {
+    body: { expectedVersion: session.version },
   });
 }
 
@@ -56,7 +36,7 @@ export async function uploadDocument(formData: FormData) {
   if (!(file instanceof File) || file.size < 1 || file.size > 10 * 1024 * 1024)
     throw new Error("Select a file up to 10 MiB");
   const body = Buffer.from(await file.arrayBuffer());
-  const initiated = await write<{
+  const initiated = await writeApi<{
     document: { id: string };
     upload: {
       headers: Record<string, string>;
@@ -65,13 +45,15 @@ export async function uploadDocument(formData: FormData) {
       versionId: string;
     };
   }>(`/api/v1/projects/${projectId}/documents/uploads`, {
-    byteSize: file.size,
-    category: field(formData, "category"),
-    description: field(formData, "description"),
-    fileName: file.name,
-    mimeType: file.type,
-    sha256: createHash("sha256").update(body).digest("hex"),
-    title: field(formData, "title"),
+    body: {
+      byteSize: file.size,
+      category: field(formData, "category"),
+      description: field(formData, "description"),
+      fileName: file.name,
+      mimeType: file.type,
+      sha256: createHash("sha256").update(body).digest("hex"),
+      title: field(formData, "title"),
+    },
   });
   await upload(file, initiated.upload);
   revalidatePath(`/internal/projects/${projectId}/documents`);
@@ -83,7 +65,7 @@ export async function supersedeDocument(formData: FormData) {
   if (!(file instanceof File) || file.size < 1 || file.size > 10 * 1024 * 1024)
     throw new Error("Select a file up to 10 MiB");
   const body = Buffer.from(await file.arrayBuffer());
-  const initiated = await write<{
+  const initiated = await writeApi<{
     upload: {
       headers: Record<string, string>;
       url: string;
@@ -91,12 +73,16 @@ export async function supersedeDocument(formData: FormData) {
       versionId: string;
     };
   }>(`/api/v1/documents/${field(formData, "documentId")}/supersede`, {
-    byteSize: file.size,
-    expectedDocumentVersion: Number(field(formData, "expectedDocumentVersion")),
-    fileName: file.name,
-    mimeType: file.type,
-    reason: field(formData, "reason"),
-    sha256: createHash("sha256").update(body).digest("hex"),
+    body: {
+      byteSize: file.size,
+      expectedDocumentVersion: Number(
+        field(formData, "expectedDocumentVersion"),
+      ),
+      fileName: file.name,
+      mimeType: file.type,
+      reason: field(formData, "reason"),
+      sha256: createHash("sha256").update(body).digest("hex"),
+    },
   });
   await upload(file, initiated.upload);
   revalidatePath(`/internal/projects/${projectId}/documents`);
@@ -107,11 +93,13 @@ async function lifecycle(
   command: "approve" | "reject" | "submit-review",
 ) {
   const projectId = field(formData, "projectId");
-  await write(
+  await writeApi(
     `/api/v1/document-versions/${field(formData, "versionId")}/${command}`,
     {
-      expectedVersion: Number(field(formData, "expectedVersion")),
-      reason: field(formData, "reason"),
+      body: {
+        expectedVersion: Number(field(formData, "expectedVersion")),
+        reason: field(formData, "reason"),
+      },
     },
   );
   revalidatePath(`/internal/projects/${projectId}/documents`);
@@ -130,7 +118,7 @@ export async function rejectDocument(formData: FormData) {
 }
 
 export async function downloadDocument(formData: FormData) {
-  const signed = await write<{ url: string }>(
+  const signed = await writeApi<{ url: string }>(
     `/api/v1/document-versions/${field(formData, "versionId")}/download-url`,
   );
   redirect(signed.url);

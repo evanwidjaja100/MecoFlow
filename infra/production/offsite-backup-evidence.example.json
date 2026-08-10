@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "replace-me",
+  "backupId": "replace-me",
+  "applicationVersion": "replace-me",
+  "databaseSchemaVersion": "replace-me",
+  "createdAt": "replace-me",
+  "copiedOffsiteAt": "replace-me",
+  "targetUri": "s3://replace-me-production-backups/mecoflow",
+  "kmsKeyReference": "replace-me",
+  "manifestSha256": "replace-with-lowercase-sha256",
+  "remoteChecksumVerified": true,
+  "restoreRehearsalId": "replace-me",
+  "restoreVerifiedAt": "replace-me"
+}

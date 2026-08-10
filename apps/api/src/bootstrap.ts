@@ -6,8 +6,11 @@ import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { parseServiceEnvironment } from "@mecoflow/config";
 import { config as loadEnvironment } from "dotenv";
+import type { NextFunction, Request, Response } from "express";
+import helmet from "helmet";
 import { AppModule } from "./app.module.js";
 import { JsonLogger } from "./logger.js";
+import { MetricsRegistry } from "./monitoring/metrics-registry.js";
 import { requestLogging } from "./request-logging.js";
 import { SafeApiExceptionFilter } from "./safe-api-exception.filter.js";
 
@@ -30,9 +33,19 @@ export async function createApplication() {
     },
   );
 
+  app.set("trust proxy", environment.TRUST_PROXY_HOPS);
+  app.use(helmet());
   app.useBodyParser("json", { limit: "8mb" });
+  app.use(
+    "/api/v1",
+    (_request: Request, response: Response, next: NextFunction) => {
+      response.setHeader("Cache-Control", "private, no-store");
+      response.setHeader("Pragma", "no-cache");
+      next();
+    },
+  );
 
-  app.use(requestLogging(logger));
+  app.use(requestLogging(logger, app.get(MetricsRegistry)));
   app.enableCors({
     credentials: true,
     methods: ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH"],

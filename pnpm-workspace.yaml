@@ -8,8 +8,10 @@ saveExact: true
 strictPeerDependencies: true
 
 overrides:
-  "@hono/node-server": 1.19.13
-  postcss: 8.5.10
+  find-my-way: 9.7.0
+  postcss: 8.5.23
+  sharp: 0.35.3
+  valibot: 1.4.2
 
 allowBuilds:
   "@prisma/engines": true

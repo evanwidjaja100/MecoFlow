@@ -100,6 +100,20 @@ enum OutboxStatus {
   PROCESSING
   PROCESSED
   FAILED
+  DEAD_LETTER
+}
+
+enum NotificationType {
+  READINESS_ALERT
+  READINESS_REMINDER
+}
+
+enum EmailDeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  SKIPPED
+  DEAD_LETTER
 }
 
 enum PurchaseRequisitionStatus {
@@ -137,6 +151,65 @@ enum GoodsReceiptKind {
 
 enum InventoryLotStatus {
   AWAITING_INSPECTION
+  ACCEPTED
+  CONDITIONALLY_ACCEPTED
+  QUARANTINED
+  REJECTED
+}
+
+enum ReceivingInspectionStatus {
+  OPEN
+  FINALIZED
+}
+
+enum ReceivingInspectionDisposition {
+  ACCEPTED
+  CONDITIONALLY_ACCEPTED
+  QUARANTINED
+  REJECTED
+}
+
+enum NcrStatus {
+  DRAFT
+  ISSUED
+  SUPPLIER_RESPONDED
+  CLOSED
+  CANCELLED
+}
+
+enum NcrSourceType {
+  PROJECT
+  INVENTORY_LOT
+  RECEIVING_INSPECTION
+}
+
+enum MaterialAllocationStatus {
+  ALLOCATED
+  RELEASED
+  CONSUMED
+}
+
+enum ReadinessScopeType {
+  PROJECT
+  WORK_PACKAGE
+}
+
+enum ReadinessStatus {
+  RED
+  AMBER
+  GREEN
+  COMPLETE
+}
+
+enum InspectionCheckType {
+  CHECKLIST
+  MEASUREMENT
+  CERTIFICATE
+}
+
+enum CertificateReviewDecision {
+  ACCEPTED
+  REJECTED
 }
 
 enum DocumentVersionStatus {
@@ -164,48 +237,66 @@ enum DocumentAssociationType {
   PURCHASE_ORDER
   ADVANCE_SHIPMENT_NOTICE
   GOODS_RECEIPT
+  RECEIVING_INSPECTION
 }
 
 model UserProfile {
-  id                       String                            @id @default(uuid()) @db.Uuid
-  issuer                   String                            @db.VarChar(500)
-  subject                  String                            @db.VarChar(255)
-  email                    String                            @db.VarChar(320)
-  displayName              String                            @db.VarChar(200)
-  locale                   String                            @default("en") @db.VarChar(10)
-  status                   UserStatus                        @default(ACTIVE)
-  lastLoginAt              DateTime?                         @db.Timestamptz(3)
-  version                  Int                               @default(1)
-  createdAt                DateTime                          @default(now()) @db.Timestamptz(3)
-  updatedAt                DateTime                          @updatedAt @db.Timestamptz(3)
-  memberships              Membership[]
-  sessions                 Session[]
-  assignedRoles            MembershipRole[]                  @relation("RoleAssignedBy")
-  auditEvents              AuditEvent[]                      @relation("AuditActor")
-  createdProjects          Project[]                         @relation("ProjectCreatedBy")
-  addedProjectMembers      ProjectMember[]                   @relation("ProjectMemberAddedBy")
-  projectTransitions       ProjectTransition[]               @relation("ProjectTransitionActor")
-  createdItems             Item[]                            @relation("ItemCreatedBy")
-  createdBomRevisions      BomRevision[]                     @relation("BomRevisionCreatedBy")
-  bomTransitions           BomRevisionTransition[]           @relation("BomRevisionTransitionActor")
-  requestedBomImports      BomImport[]                       @relation("BomImportRequestedBy")
-  requestedRequisitions    PurchaseRequisition[]             @relation("PurchaseRequisitionRequester")
-  approvedRequisitions     PurchaseRequisition[]             @relation("PurchaseRequisitionApprover")
-  requisitionOverrides     PurchaseRequisitionLine[]         @relation("PurchaseRequisitionOverrideAuthorizer")
-  requisitionTransitions   PurchaseRequisitionTransition[]   @relation("PurchaseRequisitionTransitionActor")
-  createdPurchaseOrders    PurchaseOrder[]                   @relation("PurchaseOrderCreatedBy")
-  createdPoRevisions       PurchaseOrderRevision[]           @relation("PurchaseOrderRevisionCreatedBy")
-  purchaseOrderOverrides   PurchaseOrderAllocation[]         @relation("PurchaseOrderOverrideAuthorizer")
-  purchaseOrderTransitions PurchaseOrderTransition[]         @relation("PurchaseOrderTransitionActor")
-  commitmentRevisions      SupplierCommitmentRevision[]      @relation("SupplierCommitmentSubmittedBy")
-  createdShipmentNotices   AdvanceShipmentNotice[]           @relation("AdvanceShipmentNoticeCreatedBy")
-  shipmentTransitions      AdvanceShipmentNoticeTransition[] @relation("AdvanceShipmentNoticeTransitionActor")
-  createdGoodsReceipts     GoodsReceipt[]                    @relation("GoodsReceiptCreatedBy")
-  postedGoodsReceipts      GoodsReceipt[]                    @relation("GoodsReceiptPostedBy")
-  createdDocuments         Document[]                        @relation("DocumentCreatedBy")
-  createdDocumentVersions  DocumentVersion[]                 @relation("DocumentVersionCreatedBy")
-  reviewedDocumentVersions DocumentVersion[]                 @relation("DocumentVersionReviewedBy")
-  documentTransitions      DocumentVersionTransition[]       @relation("DocumentVersionTransitionActor")
+  id                             String                            @id @default(uuid()) @db.Uuid
+  issuer                         String                            @db.VarChar(500)
+  subject                        String                            @db.VarChar(255)
+  email                          String                            @db.VarChar(320)
+  displayName                    String                            @db.VarChar(200)
+  locale                         String                            @default("en") @db.VarChar(10)
+  status                         UserStatus                        @default(ACTIVE)
+  lastLoginAt                    DateTime?                         @db.Timestamptz(3)
+  version                        Int                               @default(1)
+  createdAt                      DateTime                          @default(now()) @db.Timestamptz(3)
+  updatedAt                      DateTime                          @updatedAt @db.Timestamptz(3)
+  memberships                    Membership[]
+  sessions                       Session[]
+  assignedRoles                  MembershipRole[]                  @relation("RoleAssignedBy")
+  auditEvents                    AuditEvent[]                      @relation("AuditActor")
+  createdProjects                Project[]                         @relation("ProjectCreatedBy")
+  addedProjectMembers            ProjectMember[]                   @relation("ProjectMemberAddedBy")
+  projectTransitions             ProjectTransition[]               @relation("ProjectTransitionActor")
+  createdItems                   Item[]                            @relation("ItemCreatedBy")
+  createdBomRevisions            BomRevision[]                     @relation("BomRevisionCreatedBy")
+  bomTransitions                 BomRevisionTransition[]           @relation("BomRevisionTransitionActor")
+  requestedBomImports            BomImport[]                       @relation("BomImportRequestedBy")
+  requestedRequisitions          PurchaseRequisition[]             @relation("PurchaseRequisitionRequester")
+  approvedRequisitions           PurchaseRequisition[]             @relation("PurchaseRequisitionApprover")
+  requisitionOverrides           PurchaseRequisitionLine[]         @relation("PurchaseRequisitionOverrideAuthorizer")
+  requisitionTransitions         PurchaseRequisitionTransition[]   @relation("PurchaseRequisitionTransitionActor")
+  createdPurchaseOrders          PurchaseOrder[]                   @relation("PurchaseOrderCreatedBy")
+  createdPoRevisions             PurchaseOrderRevision[]           @relation("PurchaseOrderRevisionCreatedBy")
+  purchaseOrderOverrides         PurchaseOrderAllocation[]         @relation("PurchaseOrderOverrideAuthorizer")
+  purchaseOrderTransitions       PurchaseOrderTransition[]         @relation("PurchaseOrderTransitionActor")
+  commitmentRevisions            SupplierCommitmentRevision[]      @relation("SupplierCommitmentSubmittedBy")
+  createdShipmentNotices         AdvanceShipmentNotice[]           @relation("AdvanceShipmentNoticeCreatedBy")
+  shipmentTransitions            AdvanceShipmentNoticeTransition[] @relation("AdvanceShipmentNoticeTransitionActor")
+  createdGoodsReceipts           GoodsReceipt[]                    @relation("GoodsReceiptCreatedBy")
+  postedGoodsReceipts            GoodsReceipt[]                    @relation("GoodsReceiptPostedBy")
+  createdDocuments               Document[]                        @relation("DocumentCreatedBy")
+  createdDocumentVersions        DocumentVersion[]                 @relation("DocumentVersionCreatedBy")
+  reviewedDocumentVersions       DocumentVersion[]                 @relation("DocumentVersionReviewedBy")
+  documentTransitions            DocumentVersionTransition[]       @relation("DocumentVersionTransitionActor")
+  createdInspectionChecks        InspectionCheckDefinition[]       @relation("InspectionCheckDefinitionCreatedBy")
+  createdInspections             ReceivingInspection[]             @relation("ReceivingInspectionCreatedBy")
+  finalizedInspections           ReceivingInspection[]             @relation("ReceivingInspectionFinalizedBy")
+  conditionalInspections         ReceivingInspection[]             @relation("ReceivingInspectionConditionalAuthorizer")
+  createdNcrs                    Ncr[]                             @relation("NcrCreatedBy")
+  issuedNcrs                     Ncr[]                             @relation("NcrIssuedBy")
+  closedNcrs                     Ncr[]                             @relation("NcrClosedBy")
+  cancelledNcrs                  Ncr[]                             @relation("NcrCancelledBy")
+  ncrSupplierResponses           NcrSupplierResponse[]             @relation("NcrSupplierResponseSubmittedBy")
+  ncrTransitions                 NcrTransition[]                   @relation("NcrTransitionActor")
+  createdMaterialAllocations     MaterialAllocation[]              @relation("MaterialAllocationCreatedBy")
+  conditionalMaterialAllocations MaterialAllocation[]              @relation("MaterialAllocationConditionalAuthorizer")
+  releasedMaterialAllocations    MaterialAllocation[]              @relation("MaterialAllocationReleasedBy")
+  consumedMaterialAllocations    MaterialAllocation[]              @relation("MaterialAllocationConsumedBy")
+  materialAllocationTransitions  MaterialAllocationTransition[]    @relation("MaterialAllocationTransitionActor")
+  notifications                  Notification[]
+  notificationPreferences        NotificationPreference[]
 
   @@unique([issuer, subject])
   @@index([email])
@@ -229,6 +320,7 @@ model Organization {
   supplierCommitments SupplierCommitmentRevision[]
   shipmentNotices     AdvanceShipmentNotice[]
   documents           Document[]
+  ncrs                Ncr[]
 
   @@map("organizations")
 }
@@ -294,7 +386,12 @@ model Project {
   shipmentNotices      AdvanceShipmentNotice[]
   goodsReceipts        GoodsReceipt[]
   inventoryLots        InventoryLot[]
+  receivingInspections ReceivingInspection[]
   documents            Document[]
+  ncrs                 Ncr[]
+  materialAllocations  MaterialAllocation[]
+  readinessSnapshots   ReadinessSnapshot[]
+  notifications        Notification[]
 
   @@unique([organizationId, code])
   @@index([organizationId, state, updatedAt])
@@ -340,21 +437,22 @@ model Milestone {
 }
 
 model WorkPackage {
-  id               String      @id @default(uuid()) @db.Uuid
-  projectId        String      @db.Uuid
-  milestoneId      String?     @db.Uuid
-  code             String      @db.VarChar(50)
-  name             String      @db.VarChar(200)
-  description      String      @default("") @db.VarChar(1000)
-  plannedStartDate DateTime    @db.Date
-  plannedEndDate   DateTime    @db.Date
-  version          Int         @default(1)
-  createdAt        DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime    @updatedAt @db.Timestamptz(3)
-  project          Project     @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  milestone        Milestone?  @relation(fields: [milestoneId], references: [id], onDelete: Restrict)
-  boms             Bom[]
-  bomImports       BomImport[]
+  id                 String              @id @default(uuid()) @db.Uuid
+  projectId          String              @db.Uuid
+  milestoneId        String?             @db.Uuid
+  code               String              @db.VarChar(50)
+  name               String              @db.VarChar(200)
+  description        String              @default("") @db.VarChar(1000)
+  plannedStartDate   DateTime            @db.Date
+  plannedEndDate     DateTime            @db.Date
+  version            Int                 @default(1)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime            @updatedAt @db.Timestamptz(3)
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  milestone          Milestone?          @relation(fields: [milestoneId], references: [id], onDelete: Restrict)
+  boms               Bom[]
+  bomImports         BomImport[]
+  readinessSnapshots ReadinessSnapshot[]
 
   @@unique([projectId, code])
   @@unique([id, projectId])
@@ -410,6 +508,8 @@ model UnitOfMeasure {
   bomImportRows           BomImportRow[]
   purchaseOrderLines      PurchaseOrderLine[]
   inventoryLots           InventoryLot[]
+  inspectionDefinitions   InspectionCheckDefinition[]
+  inspectionChecks        ReceivingInspectionCheck[]
 
   @@index([active, name])
   @@map("units_of_measure")
@@ -441,25 +541,26 @@ model SpecificationAttributeDefinition {
 }
 
 model Item {
-  id                  String                   @id @default(uuid()) @db.Uuid
-  code                String                   @unique @db.VarChar(50)
-  name                String                   @db.VarChar(200)
-  description         String                   @default("") @db.VarChar(2000)
-  itemCategoryId      String                   @db.Uuid
-  unitOfMeasureId     String                   @db.Uuid
-  active              Boolean                  @default(true)
-  version             Int                      @default(1)
-  createdByUserId     String                   @db.Uuid
-  createdAt           DateTime                 @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime                 @updatedAt @db.Timestamptz(3)
-  itemCategory        ItemCategory             @relation(fields: [itemCategoryId], references: [id], onDelete: Restrict)
-  unitOfMeasure       UnitOfMeasure            @relation(fields: [unitOfMeasureId], references: [id], onDelete: Restrict)
-  createdBy           UserProfile              @relation("ItemCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
-  specificationValues ItemSpecificationValue[]
-  bomLines            BomLine[]
-  bomImportRows       BomImportRow[]
-  purchaseOrderLines  PurchaseOrderLine[]
-  inventoryLots       InventoryLot[]
+  id                    String                      @id @default(uuid()) @db.Uuid
+  code                  String                      @unique @db.VarChar(50)
+  name                  String                      @db.VarChar(200)
+  description           String                      @default("") @db.VarChar(2000)
+  itemCategoryId        String                      @db.Uuid
+  unitOfMeasureId       String                      @db.Uuid
+  active                Boolean                     @default(true)
+  version               Int                         @default(1)
+  createdByUserId       String                      @db.Uuid
+  createdAt             DateTime                    @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime                    @updatedAt @db.Timestamptz(3)
+  itemCategory          ItemCategory                @relation(fields: [itemCategoryId], references: [id], onDelete: Restrict)
+  unitOfMeasure         UnitOfMeasure               @relation(fields: [unitOfMeasureId], references: [id], onDelete: Restrict)
+  createdBy             UserProfile                 @relation("ItemCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  specificationValues   ItemSpecificationValue[]
+  bomLines              BomLine[]
+  bomImportRows         BomImportRow[]
+  purchaseOrderLines    PurchaseOrderLine[]
+  inventoryLots         InventoryLot[]
+  inspectionDefinitions InspectionCheckDefinition[]
 
   @@index([active, code])
   @@index([itemCategoryId, active])
@@ -622,21 +723,22 @@ model BomRevision {
 }
 
 model BomLine {
-  id               String                    @id @default(uuid()) @db.Uuid
-  bomRevisionId    String                    @db.Uuid
-  lineNumber       Int
-  itemId           String                    @db.Uuid
-  unitOfMeasureId  String                    @db.Uuid
-  quantity         Decimal                   @db.Decimal(30, 6)
-  criticality      BomLineCriticality        @default(NORMAL)
-  notes            String                    @default("") @db.VarChar(1000)
-  version          Int                       @default(1)
-  createdAt        DateTime                  @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime                  @updatedAt @db.Timestamptz(3)
-  bomRevision      BomRevision               @relation(fields: [bomRevisionId], references: [id], onDelete: Restrict)
-  item             Item                      @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  unitOfMeasure    UnitOfMeasure             @relation(fields: [unitOfMeasureId], references: [id], onDelete: Restrict)
-  requisitionLines PurchaseRequisitionLine[]
+  id                  String                    @id @default(uuid()) @db.Uuid
+  bomRevisionId       String                    @db.Uuid
+  lineNumber          Int
+  itemId              String                    @db.Uuid
+  unitOfMeasureId     String                    @db.Uuid
+  quantity            Decimal                   @db.Decimal(30, 6)
+  criticality         BomLineCriticality        @default(NORMAL)
+  notes               String                    @default("") @db.VarChar(1000)
+  version             Int                       @default(1)
+  createdAt           DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime                  @updatedAt @db.Timestamptz(3)
+  bomRevision         BomRevision               @relation(fields: [bomRevisionId], references: [id], onDelete: Restrict)
+  item                Item                      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  unitOfMeasure       UnitOfMeasure             @relation(fields: [unitOfMeasureId], references: [id], onDelete: Restrict)
+  requisitionLines    PurchaseRequisitionLine[]
+  materialAllocations MaterialAllocation[]
 
   @@unique([bomRevisionId, lineNumber])
   @@index([itemId, bomRevisionId])
@@ -1001,6 +1103,9 @@ model InventoryLot {
   unitOfMeasureId             String                    @db.Uuid
   lotNumber                   Int
   quantity                    Decimal                   @db.Decimal(30, 6)
+  acceptedQuantity            Decimal                   @default(0) @db.Decimal(30, 6)
+  rejectedQuantity            Decimal                   @default(0) @db.Decimal(30, 6)
+  quarantinedQuantity         Decimal                   @default(0) @db.Decimal(30, 6)
   status                      InventoryLotStatus        @default(AWAITING_INSPECTION)
   heatNumber                  String                    @default("") @db.VarChar(200)
   batchNumber                 String                    @default("") @db.VarChar(200)
@@ -1014,11 +1119,108 @@ model InventoryLot {
   item                        Item                      @relation(fields: [itemId], references: [id], onDelete: Restrict)
   unitOfMeasure               UnitOfMeasure             @relation(fields: [unitOfMeasureId], references: [id], onDelete: Restrict)
   adjustments                 InventoryLotAdjustment[]
+  receivingInspection         ReceivingInspection?
+  ncrs                        Ncr[]
+  materialAllocations         MaterialAllocation[]
 
   @@unique([projectId, lotNumber])
   @@index([projectId, status, createdAt])
   @@index([advanceShipmentNoticeLineId])
   @@map("inventory_lots")
+}
+
+model InspectionCheckDefinition {
+  id               String                     @id @default(uuid()) @db.Uuid
+  itemId           String                     @db.Uuid
+  code             String                     @db.VarChar(50)
+  name             String                     @db.VarChar(200)
+  description      String                     @default("") @db.VarChar(1000)
+  checkType        InspectionCheckType
+  required         Boolean                    @default(true)
+  unitOfMeasureId  String?                    @db.Uuid
+  decimalPrecision Int?
+  minimumValue     Decimal?                   @db.Decimal(30, 6)
+  maximumValue     Decimal?                   @db.Decimal(30, 6)
+  active           Boolean                    @default(true)
+  version          Int                        @default(1)
+  createdByUserId  String                     @db.Uuid
+  createdAt        DateTime                   @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime                   @updatedAt @db.Timestamptz(3)
+  item             Item                       @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  unitOfMeasure    UnitOfMeasure?             @relation(fields: [unitOfMeasureId], references: [id], onDelete: Restrict)
+  createdBy        UserProfile                @relation("InspectionCheckDefinitionCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  inspectionChecks ReceivingInspectionCheck[]
+
+  @@unique([itemId, code])
+  @@index([itemId, active, code])
+  @@index([unitOfMeasureId])
+  @@map("inspection_check_definitions")
+}
+
+model ReceivingInspection {
+  id                                      String                          @id @default(uuid()) @db.Uuid
+  projectId                               String                          @db.Uuid
+  inventoryLotId                          String                          @unique @db.Uuid
+  status                                  ReceivingInspectionStatus       @default(OPEN)
+  disposition                             ReceivingInspectionDisposition?
+  version                                 Int                             @default(1)
+  receivedQuantityAtCreation              Decimal                         @db.Decimal(30, 6)
+  finalizedReceivedQuantity               Decimal?                        @db.Decimal(30, 6)
+  acceptedQuantity                        Decimal                         @default(0) @db.Decimal(30, 6)
+  rejectedQuantity                        Decimal                         @default(0) @db.Decimal(30, 6)
+  quarantinedQuantity                     Decimal                         @default(0) @db.Decimal(30, 6)
+  reason                                  String                          @default("") @db.VarChar(500)
+  createdByUserId                         String                          @db.Uuid
+  finalizedByUserId                       String?                         @db.Uuid
+  conditionalAcceptanceAuthorizedByUserId String?                         @db.Uuid
+  createdAt                               DateTime                        @default(now()) @db.Timestamptz(3)
+  updatedAt                               DateTime                        @updatedAt @db.Timestamptz(3)
+  finalizedAt                             DateTime?                       @db.Timestamptz(3)
+  project                                 Project                         @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  inventoryLot                            InventoryLot                    @relation(fields: [inventoryLotId], references: [id], onDelete: Restrict)
+  createdBy                               UserProfile                     @relation("ReceivingInspectionCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  finalizedBy                             UserProfile?                    @relation("ReceivingInspectionFinalizedBy", fields: [finalizedByUserId], references: [id], onDelete: Restrict)
+  conditionalAcceptanceAuthorizedBy       UserProfile?                    @relation("ReceivingInspectionConditionalAuthorizer", fields: [conditionalAcceptanceAuthorizedByUserId], references: [id], onDelete: Restrict)
+  checks                                  ReceivingInspectionCheck[]
+  ncrs                                    Ncr[]
+
+  @@index([projectId, status, createdAt])
+  @@map("receiving_inspections")
+}
+
+model ReceivingInspectionCheck {
+  id                    String                     @id @default(uuid()) @db.Uuid
+  receivingInspectionId String                     @db.Uuid
+  definitionId          String                     @db.Uuid
+  lineNumber            Int
+  code                  String                     @db.VarChar(50)
+  name                  String                     @db.VarChar(200)
+  description           String                     @default("") @db.VarChar(1000)
+  checkType             InspectionCheckType
+  required              Boolean                    @default(true)
+  unitOfMeasureId       String?                    @db.Uuid
+  decimalPrecision      Int?
+  minimumValue          Decimal?                   @db.Decimal(30, 6)
+  maximumValue          Decimal?                   @db.Decimal(30, 6)
+  checklistPassed       Boolean?
+  measuredValue         Decimal?                   @db.Decimal(30, 6)
+  certificateDecision   CertificateReviewDecision?
+  evidenceDocumentId    String?                    @db.Uuid
+  conforming            Boolean?
+  notes                 String                     @default("") @db.VarChar(1000)
+  completedAt           DateTime?                  @db.Timestamptz(3)
+  createdAt             DateTime                   @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime                   @updatedAt @db.Timestamptz(3)
+  receivingInspection   ReceivingInspection        @relation(fields: [receivingInspectionId], references: [id], onDelete: Restrict)
+  definition            InspectionCheckDefinition  @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+  unitOfMeasure         UnitOfMeasure?             @relation(fields: [unitOfMeasureId], references: [id], onDelete: Restrict)
+  evidenceDocument      Document?                  @relation(fields: [evidenceDocumentId], references: [id], onDelete: Restrict)
+
+  @@unique([receivingInspectionId, lineNumber])
+  @@unique([receivingInspectionId, definitionId])
+  @@index([definitionId])
+  @@index([evidenceDocumentId])
+  @@map("receiving_inspection_checks")
 }
 
 model InventoryLotAdjustment {
@@ -1032,6 +1234,164 @@ model InventoryLotAdjustment {
 
   @@index([inventoryLotId, createdAt])
   @@map("inventory_lot_adjustments")
+}
+
+model Ncr {
+  id                       String                @id @default(uuid()) @db.Uuid
+  projectId                String                @db.Uuid
+  supplierOrganizationId   String                @db.Uuid
+  sourceType               NcrSourceType
+  receivingInspectionId    String?               @db.Uuid
+  inventoryLotId           String?               @db.Uuid
+  ncrNumber                Int
+  title                    String                @db.VarChar(200)
+  description              String                @db.VarChar(4000)
+  internalDispositionNotes String                @default("") @db.VarChar(4000)
+  shareInternalNotes       Boolean               @default(false)
+  status                   NcrStatus             @default(DRAFT)
+  version                  Int                   @default(1)
+  createdByUserId          String                @db.Uuid
+  issuedByUserId           String?               @db.Uuid
+  closedByUserId           String?               @db.Uuid
+  cancelledByUserId        String?               @db.Uuid
+  createdAt                DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime              @updatedAt @db.Timestamptz(3)
+  issuedAt                 DateTime?             @db.Timestamptz(3)
+  closedAt                 DateTime?             @db.Timestamptz(3)
+  cancelledAt              DateTime?             @db.Timestamptz(3)
+  project                  Project               @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  supplierOrganization     Organization          @relation(fields: [supplierOrganizationId], references: [id], onDelete: Restrict)
+  receivingInspection      ReceivingInspection?  @relation(fields: [receivingInspectionId], references: [id], onDelete: Restrict)
+  inventoryLot             InventoryLot?         @relation(fields: [inventoryLotId], references: [id], onDelete: Restrict)
+  createdBy                UserProfile           @relation("NcrCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  issuedBy                 UserProfile?          @relation("NcrIssuedBy", fields: [issuedByUserId], references: [id], onDelete: Restrict)
+  closedBy                 UserProfile?          @relation("NcrClosedBy", fields: [closedByUserId], references: [id], onDelete: Restrict)
+  cancelledBy              UserProfile?          @relation("NcrCancelledBy", fields: [cancelledByUserId], references: [id], onDelete: Restrict)
+  supplierResponses        NcrSupplierResponse[]
+  transitions              NcrTransition[]
+
+  @@unique([projectId, ncrNumber])
+  @@index([projectId, status, updatedAt])
+  @@index([supplierOrganizationId, status, updatedAt])
+  @@index([receivingInspectionId])
+  @@index([inventoryLotId])
+  @@map("ncrs")
+}
+
+model NcrSupplierResponse {
+  id                String      @id @default(uuid()) @db.Uuid
+  ncrId             String      @db.Uuid
+  revisionNumber    Int
+  message           String      @db.VarChar(4000)
+  rootCause         String      @default("") @db.VarChar(4000)
+  correctiveAction  String      @default("") @db.VarChar(4000)
+  submittedByUserId String      @db.Uuid
+  createdAt         DateTime    @default(now()) @db.Timestamptz(3)
+  ncr               Ncr         @relation(fields: [ncrId], references: [id], onDelete: Restrict)
+  submittedBy       UserProfile @relation("NcrSupplierResponseSubmittedBy", fields: [submittedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([ncrId, revisionNumber])
+  @@index([ncrId, createdAt])
+  @@map("ncr_supplier_responses")
+}
+
+model NcrTransition {
+  id           String      @id @default(uuid()) @db.Uuid
+  ncrId        String      @db.Uuid
+  actorUserId  String      @db.Uuid
+  sourceStatus NcrStatus
+  targetStatus NcrStatus
+  reason       String      @db.VarChar(500)
+  occurredAt   DateTime    @default(now()) @db.Timestamptz(3)
+  ncr          Ncr         @relation(fields: [ncrId], references: [id], onDelete: Restrict)
+  actor        UserProfile @relation("NcrTransitionActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([ncrId, occurredAt])
+  @@map("ncr_transitions")
+}
+
+model MaterialAllocation {
+  id                               String                         @id @default(uuid()) @db.Uuid
+  projectId                        String                         @db.Uuid
+  inventoryLotId                   String                         @db.Uuid
+  bomLineId                        String                         @db.Uuid
+  quantity                         Decimal                        @db.Decimal(30, 6)
+  status                           MaterialAllocationStatus       @default(ALLOCATED)
+  version                          Int                            @default(1)
+  conditionalUseReason             String?                        @db.VarChar(500)
+  conditionalUseAuthorizedByUserId String?                        @db.Uuid
+  createdByUserId                  String                         @db.Uuid
+  releasedByUserId                 String?                        @db.Uuid
+  consumedByUserId                 String?                        @db.Uuid
+  createdAt                        DateTime                       @default(now()) @db.Timestamptz(3)
+  updatedAt                        DateTime                       @updatedAt @db.Timestamptz(3)
+  releasedAt                       DateTime?                      @db.Timestamptz(3)
+  consumedAt                       DateTime?                      @db.Timestamptz(3)
+  project                          Project                        @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  inventoryLot                     InventoryLot                   @relation(fields: [inventoryLotId], references: [id], onDelete: Restrict)
+  bomLine                          BomLine                        @relation(fields: [bomLineId], references: [id], onDelete: Restrict)
+  conditionalUseAuthorizedBy       UserProfile?                   @relation("MaterialAllocationConditionalAuthorizer", fields: [conditionalUseAuthorizedByUserId], references: [id], onDelete: Restrict)
+  createdBy                        UserProfile                    @relation("MaterialAllocationCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  releasedBy                       UserProfile?                   @relation("MaterialAllocationReleasedBy", fields: [releasedByUserId], references: [id], onDelete: Restrict)
+  consumedBy                       UserProfile?                   @relation("MaterialAllocationConsumedBy", fields: [consumedByUserId], references: [id], onDelete: Restrict)
+  transitions                      MaterialAllocationTransition[]
+
+  @@index([projectId, status, updatedAt])
+  @@index([inventoryLotId, status])
+  @@index([bomLineId, status])
+  @@map("material_allocations")
+}
+
+model MaterialAllocationTransition {
+  id                   String                   @id @default(uuid()) @db.Uuid
+  materialAllocationId String                   @db.Uuid
+  actorUserId          String                   @db.Uuid
+  sourceStatus         MaterialAllocationStatus
+  targetStatus         MaterialAllocationStatus
+  quantitySnapshot     Decimal                  @db.Decimal(30, 6)
+  reason               String                   @db.VarChar(500)
+  occurredAt           DateTime                 @default(now()) @db.Timestamptz(3)
+  materialAllocation   MaterialAllocation       @relation(fields: [materialAllocationId], references: [id], onDelete: Restrict)
+  actor                UserProfile              @relation("MaterialAllocationTransitionActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([materialAllocationId, occurredAt])
+  @@map("material_allocation_transitions")
+}
+
+model ReadinessSnapshot {
+  id                        String             @id @default(uuid()) @db.Uuid
+  batchId                   String             @db.Uuid
+  projectId                 String             @db.Uuid
+  workPackageId             String?            @db.Uuid
+  scopeType                 ReadinessScopeType
+  scopeKey                  String             @db.VarChar(100)
+  calculatorVersion         String             @db.VarChar(100)
+  ruleVersion               String             @db.VarChar(100)
+  materialProjectionVersion String             @db.VarChar(100)
+  calculationDate           DateTime           @db.Date
+  inputHash                 String             @db.Char(64)
+  trigger                   String             @db.VarChar(50)
+  score                     Decimal            @db.Decimal(5, 2)
+  status                    ReadinessStatus
+  lineCount                 Int
+  criticalLineCount         Int
+  readyCriticalLineCount    Int
+  blockerCount              Int
+  inputs                    Json
+  blockers                  Json
+  reasonCodes               Json
+  recommendedActions        Json
+  explanation               Json
+  calculatedAt              DateTime           @default(now()) @db.Timestamptz(3)
+  project                   Project            @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  workPackage               WorkPackage?       @relation(fields: [workPackageId], references: [id], onDelete: Restrict)
+
+  @@unique([projectId, scopeKey, batchId])
+  @@index([projectId, scopeType, calculatedAt])
+  @@index([workPackageId, calculatedAt])
+  @@index([status, calculatedAt])
+  @@index([inputHash])
+  @@map("readiness_snapshots")
 }
 
 model BomRevisionTransition {
@@ -1068,22 +1428,23 @@ model StoredFile {
 }
 
 model Document {
-  id                   String                @id @default(uuid()) @db.Uuid
-  projectId            String                @db.Uuid
-  ownerOrganizationId  String                @db.Uuid
-  title                String                @db.VarChar(200)
-  category             String                @db.VarChar(100)
-  description          String                @default("") @db.VarChar(2000)
-  currentVersionNumber Int                   @default(1)
-  version              Int                   @default(1)
-  createdByUserId      String                @db.Uuid
-  createdAt            DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt            DateTime              @updatedAt @db.Timestamptz(3)
-  project              Project               @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  ownerOrganization    Organization          @relation(fields: [ownerOrganizationId], references: [id], onDelete: Restrict)
-  createdBy            UserProfile           @relation("DocumentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  id                   String                     @id @default(uuid()) @db.Uuid
+  projectId            String                     @db.Uuid
+  ownerOrganizationId  String                     @db.Uuid
+  title                String                     @db.VarChar(200)
+  category             String                     @db.VarChar(100)
+  description          String                     @default("") @db.VarChar(2000)
+  currentVersionNumber Int                        @default(1)
+  version              Int                        @default(1)
+  createdByUserId      String                     @db.Uuid
+  createdAt            DateTime                   @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                   @updatedAt @db.Timestamptz(3)
+  project              Project                    @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  ownerOrganization    Organization               @relation(fields: [ownerOrganizationId], references: [id], onDelete: Restrict)
+  createdBy            UserProfile                @relation("DocumentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
   versions             DocumentVersion[]
   associations         DocumentAssociation[]
+  inspectionChecks     ReceivingInspectionCheck[]
 
   @@index([projectId, updatedAt])
   @@index([ownerOrganizationId, projectId])
@@ -1207,20 +1568,81 @@ model BomImportRow {
 }
 
 model OutboxEvent {
-  id            String       @id @default(uuid()) @db.Uuid
-  eventType     String       @db.VarChar(100)
-  aggregateType String       @db.VarChar(100)
-  aggregateId   String       @db.VarChar(100)
-  payload       Json
-  status        OutboxStatus @default(PENDING)
-  attempts      Int          @default(0)
-  availableAt   DateTime     @default(now()) @db.Timestamptz(3)
-  lockedAt      DateTime?    @db.Timestamptz(3)
-  processedAt   DateTime?    @db.Timestamptz(3)
-  lastErrorCode String?      @db.VarChar(100)
-  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  id             String         @id @default(uuid()) @db.Uuid
+  eventType      String         @db.VarChar(100)
+  aggregateType  String         @db.VarChar(100)
+  aggregateId    String         @db.VarChar(100)
+  payload        Json
+  status         OutboxStatus   @default(PENDING)
+  attempts       Int            @default(0)
+  availableAt    DateTime       @default(now()) @db.Timestamptz(3)
+  lockedAt       DateTime?      @db.Timestamptz(3)
+  processedAt    DateTime?      @db.Timestamptz(3)
+  deadLetteredAt DateTime?      @db.Timestamptz(3)
+  lastErrorCode  String?        @db.VarChar(100)
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  notifications  Notification[]
 
   @@index([status, availableAt, createdAt])
   @@index([aggregateType, aggregateId])
   @@map("outbox_events")
+}
+
+model NotificationPreference {
+  id           String           @id @default(uuid()) @db.Uuid
+  userId       String           @db.Uuid
+  type         NotificationType
+  inAppEnabled Boolean          @default(true)
+  emailEnabled Boolean          @default(false)
+  version      Int              @default(1)
+  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime         @updatedAt @db.Timestamptz(3)
+  user         UserProfile      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, type])
+  @@index([userId, updatedAt])
+  @@map("notification_preferences")
+}
+
+model Notification {
+  id                  String                     @id @default(uuid()) @db.Uuid
+  userId              String                     @db.Uuid
+  projectId           String                     @db.Uuid
+  sourceOutboxEventId String                     @db.Uuid
+  type                NotificationType
+  title               String                     @db.VarChar(200)
+  message             String                     @db.VarChar(500)
+  actionUrl           String                     @db.VarChar(500)
+  visibleInApp        Boolean                    @default(true)
+  readAt              DateTime?                  @db.Timestamptz(3)
+  createdAt           DateTime                   @default(now()) @db.Timestamptz(3)
+  user                UserProfile                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  project             Project                    @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceOutboxEvent   OutboxEvent                @relation(fields: [sourceOutboxEventId], references: [id], onDelete: Restrict)
+  emailDelivery       NotificationEmailDelivery?
+
+  @@unique([sourceOutboxEventId, userId])
+  @@index([userId, visibleInApp, readAt, createdAt])
+  @@index([projectId, createdAt])
+  @@map("notifications")
+}
+
+model NotificationEmailDelivery {
+  id             String              @id @default(uuid()) @db.Uuid
+  notificationId String              @unique @db.Uuid
+  emailAddress   String              @db.VarChar(320)
+  messageId      String              @unique @db.VarChar(255)
+  status         EmailDeliveryStatus @default(PENDING)
+  attempts       Int                 @default(0)
+  availableAt    DateTime            @default(now()) @db.Timestamptz(3)
+  lockedAt       DateTime?           @db.Timestamptz(3)
+  sentAt         DateTime?           @db.Timestamptz(3)
+  deadLetteredAt DateTime?           @db.Timestamptz(3)
+  lastErrorCode  String?             @db.VarChar(100)
+  createdAt      DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(3)
+  notification   Notification        @relation(fields: [notificationId], references: [id], onDelete: Restrict)
+
+  @@index([status, availableAt, createdAt])
+  @@map("notification_email_deliveries")
 }

@@ -17,6 +17,30 @@ async function main() {
     const unique = randomUUID();
     const sequence = randomInt(1, 2_147_483_647);
     const requiredDate = new Date("2026-08-31T00:00:00.000Z");
+    await database.inspectionCheckDefinition.upsert({
+      create: {
+        checkType: "CHECKLIST",
+        code: "E2E-VISUAL-CONDITION",
+        createdByUserId: localFixtures.internalAdminUserId,
+        description: "Verify received material has no visible transit damage",
+        itemId: phaseThreeAFixtures.demoItemId,
+        name: "Visual condition",
+        required: true,
+      },
+      update: {
+        active: true,
+        checkType: "CHECKLIST",
+        description: "Verify received material has no visible transit damage",
+        name: "Visual condition",
+        required: true,
+      },
+      where: {
+        itemId_code: {
+          code: "E2E-VISUAL-CONDITION",
+          itemId: phaseThreeAFixtures.demoItemId,
+        },
+      },
+    });
     const workPackage = await database.workPackage.create({
       data: {
         code: `E2E-${unique.slice(0, 8)}`,
@@ -115,6 +139,8 @@ async function main() {
     });
     process.stdout.write(
       JSON.stringify({
+        bomLineId: bom.revisions[0]!.lines[0]!.id,
+        bomRevisionId: bom.revisions[0]!.id,
         orderId: order.id,
         projectId: phaseTwoFixtures.demoProjectId,
         title,

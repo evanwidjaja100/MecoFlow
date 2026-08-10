@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { deflateRawSync } from "node:zlib";
 import {
   parseCsv,
   parseXlsx,
@@ -96,6 +97,23 @@ describe("BOM import parsing and validation", () => {
       "INVALID_XLSX_ARCHIVE",
     );
   });
+
+  it("rejects oversized CSV row sets while parsing", () => {
+    const rows = Array.from(
+      { length: 5_001 },
+      () => "ITEM-A,,1,KG,NORMAL,note",
+    ).join("\n");
+    expect(() => parseCsv(Buffer.from(`${header}\n${rows}\n`))).toThrow(
+      "ROW_LIMIT_EXCEEDED",
+    );
+  });
+
+  it("bounds deflate output before trusting archive size metadata", () => {
+    const expanded = Buffer.alloc(2 * 1024 * 1024, 65);
+    expect(() => parseXlsx(testDeflatedXlsx(expanded, 1_024))).toThrow(
+      "INVALID_XLSX_ARCHIVE",
+    );
+  });
 });
 
 function testXlsx(rows: string): Buffer {
@@ -122,4 +140,30 @@ function testXlsx(rows: string): Buffer {
   end.writeUInt32LE(central.length + name.length, 12);
   end.writeUInt32LE(local.length + name.length + data.length, 16);
   return Buffer.concat([local, name, data, central, name, end]);
+}
+
+function testDeflatedXlsx(data: Buffer, declaredSize: number): Buffer {
+  const name = Buffer.from("xl/worksheets/sheet1.xml");
+  const compressed = deflateRawSync(data);
+  const local = Buffer.alloc(30);
+  local.writeUInt32LE(0x04034b50, 0);
+  local.writeUInt16LE(20, 4);
+  local.writeUInt16LE(8, 8);
+  local.writeUInt32LE(compressed.length, 18);
+  local.writeUInt32LE(declaredSize, 22);
+  local.writeUInt16LE(name.length, 26);
+  const central = Buffer.alloc(46);
+  central.writeUInt32LE(0x02014b50, 0);
+  central.writeUInt16LE(20, 6);
+  central.writeUInt16LE(8, 10);
+  central.writeUInt32LE(compressed.length, 20);
+  central.writeUInt32LE(declaredSize, 24);
+  central.writeUInt16LE(name.length, 28);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(1, 8);
+  end.writeUInt16LE(1, 10);
+  end.writeUInt32LE(central.length + name.length, 12);
+  end.writeUInt32LE(local.length + name.length + compressed.length, 16);
+  return Buffer.concat([local, name, compressed, central, name, end]);
 }

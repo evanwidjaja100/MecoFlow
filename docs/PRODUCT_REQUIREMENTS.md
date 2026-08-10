@@ -46,6 +46,38 @@ Phase 5A delivers project-scoped document metadata and generic associations to e
 
 Phase 5B delivers supplier-created ASNs against supplier-owned current acknowledged PO lines, explicit submit/dispatch/arrive/cancel shipment commands, secure packing-list/certificate associations, internal draft and posted goods receipts, traceability fields and photographs, separate correcting entries, and awaiting-inspection inventory lots. Posting is idempotent and transactionally couples the immutable receipt, inventory effects, and audit evidence. Phase 5B creates no inspection decision, NCR, material allocation, or readiness calculation.
 
+## Phase 6A receiving-inspection scope
+
+Phase 6A delivers item-scoped configurable checklist, measurement, and certificate-review definitions; automatic or explicit inspection creation for inspection-required received material; a project work queue; server-authoritative results and evidence validation; and accepted, conditionally accepted, quarantined, or rejected lot dispositions. Finalization is expected-version and row-lock protected, can occur once, uses exact configured unit precision, and commits the disposition, accepted/rejected/quarantined lot quantity buckets, conditional-acceptance authority, and audit evidence in one transaction. Evidence reuses the private quarantined document workflow and an approved clean certificate is required before it can satisfy certificate review. Phase 6A creates no NCR response or material allocation.
+
+## Phase 6B NCR and material-allocation scope
+
+Phase 6B delivers NCR creation from a project, traceable inventory lot, or finalized non-accepted receiving inspection; explicit issue, supplier-response, close, and cancel commands; append-only supplier responses; and server-side supplier organization/field isolation. Internal disposition notes are absent from supplier representations unless an authorized internal command explicitly shares them.
+
+Accepted inventory-lot quantity may be allocated only to matching current released BOM lines. Creation is lot-lock serialized and database guarded so accepted availability cannot be exceeded under concurrency. Quarantined/rejected material is ineligible. Conditionally accepted material additionally requires its retained inspection disposition, an independent allocation permission, a reason, authorizer attribution, and audit evidence. Allocation release restores availability; consumption retains permanently committed quantity and both transitions retain quantity history. Phase 6B creates no readiness projection or dashboard.
+
+## Phase 7A material-requirement status scope
+
+Phase 7A delivers a deterministic, versioned, internal read projection for every current released BOM line. It exposes required, active-requisitioned, commercially ordered, supplier-confirmed, dispatched, corrected-received, accepted, active-or-consumed allocated, and certificate-complete quantities; allocation shortage; operative commitment date; furthest evidenced stage; and one deterministic blocker reason.
+
+Explicit PO allocations prevent double counting across split sourcing and pooled PO lines. Current sent/acknowledged PO revisions govern ordered and confirmed plans, while retained shipment, receipt, correction, inspection, and allocation history governs physical progress. Superseded and non-released BOM lines are absent. Phase 7A creates no dashboard, readiness/risk score, notification, report, worker job, or persisted readiness snapshot.
+
+## Phase 7B readiness and dashboard scope
+
+Phase 7B delivers the pure versioned criticality-weighted readiness calculator, documented RED/AMBER/GREEN/COMPLETE gates, deterministic reason codes and recommended actions, immutable reproducible project/work-package snapshots, event-primary and scheduled-safety recalculation, and internal management/project/material/history dashboards. Every score is inseparable from its blockers, reasons, actions, explanation, input hash, and model versions. Supplier access is absent. Phase 7B creates no notification, report, supplier scorecard, or Phase 8 behavior.
+
+## Phase 8A notification scope
+
+Phase 8A delivers transactionally enqueued in-app readiness alerts and daily reminders for active internal project members, per-user in-app/email preferences, optional bounded SMTP delivery, replay-safe recipient uniqueness, retry/dead-letter state, and worker queue observability. A project readiness snapshot and its identifier-only notification event commit atomically. Notification reads recheck current project assignment, and SMTP is disabled by default unless explicitly configured; local development uses Mailpit. Phase 8A creates no report, export, supplier scorecard, or Phase 8B behavior.
+
+## Phase 8B reporting and supplier-scorecard scope
+
+Phase 8B delivers the complete bounded MVP report catalog: Project Readiness, Material Exceptions, internal Supplier Performance, and the Own Supplier Scorecard. Reports use inclusive `Asia/Jakarta` periods of at most 366 days and 12 calendar-month trend buckets, capture one UTC generation timestamp, enforce existing project/source permissions, and repository-scope every row. Supplier organization is server-derived for supplier requests.
+
+Supplier KPIs are exact quantity- or count-based required-date delivery, original-commitment on-time, latest-commitment on-time, commitment revision, first-pass acceptance, usable acceptance, and NCR response rates. Original and latest commitments remain separate; a zero denominator is `null`, and no composite supplier grade is created. Full definitions are in `REPORTS_SCORECARDS_API.md`.
+
+CSV and macro-free XLSX exports include report identity, applied filters, and UTC generation timestamp; fail rather than truncate above 10,000 rows; neutralize formula-triggering text; and write immutable export audit evidence. Phase 8B creates no Phase 9 hardening, deployment, or performance-tuning behavior.
+
 ## MVP exclusions
 
 The MVP excludes accounting, valuation, HR/payroll, native mobile apps, customer portal, IoT, AI, CAD authoring, detailed production scheduling, maintenance, legally binding signatures, banking, full WMS, supplier payments, microservices, Kubernetes, event sourcing, blockchain, GraphQL, public registration, and social login.

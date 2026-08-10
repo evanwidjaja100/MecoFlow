@@ -1,0 +1,11 @@
+name: mecoflow-restore-rehearsal
+
+services:
+  restore:
+    volumes:
+      - backup-staging-data:/backups:ro
+
+volumes:
+  backup-staging-data:
+    external: true
+    name: ${RESTORE_SOURCE_BACKUP_VOLUME:-mecoflow-staging_backup-staging-data}

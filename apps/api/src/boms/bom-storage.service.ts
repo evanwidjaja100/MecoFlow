@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import type { ServiceEnvironment } from "@mecoflow/config";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
+import { objectStorageEncryptionRequest } from "../object-storage-encryption.js";
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
@@ -117,8 +118,7 @@ export class BomStorageService implements OnModuleDestroy {
         ContentType: upload.mimeType,
         Key: upload.storageKey,
         Metadata: { sha256: upload.sha256 },
-        ServerSideEncryption:
-          this.environment.NODE_ENV === "production" ? "AES256" : undefined,
+        ...objectStorageEncryptionRequest(this.environment),
       }),
     );
   }

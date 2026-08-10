@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { ServiceEnvironment } from "@mecoflow/config";
+import {
+  objectStorageEncryptionMatches,
+  objectStorageEncryptionRequest,
+} from "../object-storage-encryption.js";
 import { BomStorageService } from "./bom-storage.service.js";
 import { createBomXlsxTemplate } from "./bom-template.js";
 
@@ -87,5 +91,60 @@ describe("secure BOM upload validation", () => {
       },
     ];
     for (const input of cases) expect(() => storage.validate(input)).toThrow();
+  });
+
+  it("requires the configured object encryption only in the production application environment", () => {
+    expect(
+      objectStorageEncryptionRequest({
+        APP_ENV: "staging",
+        S3_KMS_KEY_ID: "",
+        S3_SERVER_SIDE_ENCRYPTION: undefined,
+      }),
+    ).toEqual({});
+    expect(
+      objectStorageEncryptionRequest({
+        APP_ENV: "production",
+        S3_KMS_KEY_ID: "",
+        S3_SERVER_SIDE_ENCRYPTION: "AES256",
+      }),
+    ).toEqual({ ServerSideEncryption: "AES256" });
+    expect(
+      objectStorageEncryptionRequest({
+        APP_ENV: "production",
+        S3_KMS_KEY_ID: "kms://production/object-storage-key",
+        S3_SERVER_SIDE_ENCRYPTION: "aws:kms",
+      }),
+    ).toEqual({
+      ServerSideEncryption: "aws:kms",
+      SSEKMSKeyId: "kms://production/object-storage-key",
+    });
+    expect(() =>
+      objectStorageEncryptionRequest({
+        APP_ENV: "production",
+        S3_KMS_KEY_ID: "",
+        S3_SERVER_SIDE_ENCRYPTION: undefined,
+      }),
+    ).toThrow("PRODUCTION_OBJECT_ENCRYPTION_REQUIRED");
+    expect(
+      objectStorageEncryptionMatches(
+        {
+          ServerSideEncryption: "aws:kms",
+          SSEKMSKeyId: "kms://production/object-storage-key",
+        },
+        {
+          ServerSideEncryption: "aws:kms",
+          SSEKMSKeyId: "kms://production/object-storage-key",
+        },
+      ),
+    ).toBe(true);
+    expect(
+      objectStorageEncryptionMatches(
+        {
+          ServerSideEncryption: "aws:kms",
+          SSEKMSKeyId: "kms://production/object-storage-key",
+        },
+        { ServerSideEncryption: "AES256" },
+      ),
+    ).toBe(false);
   });
 });

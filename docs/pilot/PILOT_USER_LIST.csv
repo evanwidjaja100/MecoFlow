@@ -1,0 +1,3 @@
+pilot_user_id,display_name,email,organization_code,organization_type,role_code,project_codes,training_complete,mfa_or_idp_control_verified,access_approved_by,access_review_date,status,notes
+EXAMPLE-INT-001,Fictional Internal User,pilot.internal.01@example.invalid,STAGING-MECO,INTERNAL,PROJECT_MANAGER,PILOT-2027-01|PILOT-2027-02,false,false,,,PENDING,Replace this row outside Git
+EXAMPLE-SUP-001,Fictional Supplier User,pilot.supplier.01@example.invalid,STAGING-SUPPLIER-A,SUPPLIER,SUPPLIER,PILOT-2027-01|PILOT-2027-03,false,false,,,PENDING,Use approved external identity only

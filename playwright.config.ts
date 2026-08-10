@@ -5,6 +5,7 @@ const serviceEnvironment = {
   APP_VERSION: "0.1.0",
   CORS_ORIGINS: "http://localhost:3000",
   DATABASE_URL:
+    process.env.DATABASE_URL ??
     "postgresql://mecoflow_local:local_only_change_me@127.0.0.1:5432/mecoflow?schema=public",
   NEXT_PUBLIC_API_BASE_URL: "http://localhost:3001",
   OIDC_CLIENT_ID: "mecoflow-web",
@@ -26,6 +27,7 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [["html", { open: "never" }], ["github"]] : "list",
+  workers: process.platform === "win32" ? 1 : undefined,
   use: {
     baseURL: "http://localhost:3000",
     screenshot: "only-on-failure",
@@ -44,14 +46,14 @@ export default defineConfig({
         "pnpm --parallel --filter @mecoflow/api --filter @mecoflow/worker start",
       env: serviceEnvironment,
       port: 3001,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 60_000,
     },
     {
       command: "pnpm --filter @mecoflow/web start",
       env: serviceEnvironment,
       port: 3000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 60_000,
     },
   ],

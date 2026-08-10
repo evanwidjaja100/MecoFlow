@@ -1,2 +1,6 @@
 #!/bin/sh
-pnpm format:check && pnpm lint && pnpm typecheck
+echo "Running pre-commit checks..."
+pnpm format:check || { echo "Format check failed. Run 'pnpm format' to fix."; exit 1; }
+pnpm lint || { echo "Lint failed."; exit 1; }
+pnpm typecheck || { echo "Typecheck failed."; exit 1; }
+echo "All checks passed."

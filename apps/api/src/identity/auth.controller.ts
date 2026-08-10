@@ -8,6 +8,7 @@ import {
   Req,
   Res,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import {
   ApiCookieAuth,
   ApiHeader,
@@ -19,6 +20,7 @@ import type { Request, Response } from "express";
 import { IdentityService } from "./identity.service.js";
 
 @ApiTags("authentication")
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller("api/v1/auth")
 export class AuthController {
   constructor(

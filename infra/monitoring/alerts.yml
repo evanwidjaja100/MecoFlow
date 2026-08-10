@@ -1,0 +1,148 @@
+groups:
+  - name: mecoflow-availability
+    rules:
+      - alert: MecoFlowPublicEndpointDown
+        expr: probe_success{job="mecoflow-public-https"} == 0
+        for: 2m
+        labels: { severity: critical, service: edge }
+        annotations:
+          summary: MECO Flow public HTTPS readiness is unavailable
+          description: The external HTTPS readiness probe has failed continuously for two minutes.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowpublicendpointdown
+      - alert: MecoFlowTlsCertificateExpiring
+        expr: (probe_ssl_earliest_cert_expiry{job="mecoflow-public-https"} - time()) < 2592000
+        for: 15m
+        labels: { severity: warning, service: edge }
+        annotations:
+          summary: MECO Flow TLS certificate expires within 30 days
+          description: Validate renewal automation and replace the certificate before expiry.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowtlscertificateexpiring
+      - alert: MecoFlowApiMetricsTargetDown
+        expr: up{job="mecoflow-api"} == 0
+        for: 2m
+        labels: { severity: critical, service: api }
+        annotations:
+          summary: MECO Flow API metrics target is unavailable
+          description: Prometheus cannot scrape the private API metrics endpoint.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowapimetricstargetdown
+      - alert: MecoFlowDependencyDown
+        expr: mecoflow_dependency_up == 0
+        for: 2m
+        labels: { severity: critical, service: api }
+        annotations:
+          summary: A required MECO Flow dependency is unavailable
+          description: Dependency {{ $labels.dependency }} has failed readiness for two minutes.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowdependencydown
+      - alert: MecoFlowMonitoringCollectionFailed
+        expr: mecoflow_monitoring_collection_success == 0
+        for: 5m
+        labels: { severity: warning, service: monitoring }
+        annotations:
+          summary: A MECO Flow operational metric source cannot be collected
+          description: Collection source {{ $labels.source }} has failed for five minutes; queue or dependency alerts may be incomplete.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowmonitoringcollectionfailed
+
+  - name: mecoflow-application
+    rules:
+      - alert: MecoFlowHighServerErrorRatio
+        expr: mecoflow:http_requests:error_ratio5m > 0.02 and sum(rate(mecoflow_http_requests_total[5m])) > 0.1
+        for: 10m
+        labels: { severity: warning, service: api }
+        annotations:
+          summary: MECO Flow API server-error ratio exceeds 2 percent
+          description: Correlate failing routes and request IDs; do not expose request bodies or credentials during diagnosis.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowhighservererrorratio
+      - alert: MecoFlowHighRequestLatency
+        expr: mecoflow:http_request_duration:p95_5m > 1
+        for: 10m
+        labels: { severity: warning, service: api }
+        annotations:
+          summary: MECO Flow API p95 latency exceeds one second
+          description: Inspect route, database, object-storage, and process-pressure signals before changing limits.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowhighrequestlatency
+      - alert: MecoFlowApiMemoryPressure
+        expr: mecoflow_process_resident_memory_bytes > 1073741824
+        for: 15m
+        labels: { severity: warning, service: api }
+        annotations:
+          summary: MECO Flow API resident memory exceeds 1 GiB
+          description: Confirm workload, heap growth, container limit, and restart risk before scaling or rollback.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowapimemorypressure
+      - alert: MecoFlowEventLoopLag
+        expr: mecoflow_nodejs_event_loop_lag_seconds > 0.25
+        for: 10m
+        labels: { severity: warning, service: api }
+        annotations:
+          summary: MECO Flow API event-loop lag exceeds 250 milliseconds
+          description: Check CPU saturation and synchronous report/import work; preserve request-level evidence.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecofloweventlooplag
+
+  - name: mecoflow-worker
+    rules:
+      - alert: MecoFlowWorkerHeartbeatStale
+        expr: mecoflow_worker_heartbeat_fresh == 0
+        for: 2m
+        labels: { severity: critical, service: worker }
+        annotations:
+          summary: MECO Flow worker heartbeat is absent, stale, or from another version
+          description: Verify worker health, version alignment, Redis, and controlled restart behavior.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowworkerheartbeatstale
+      - alert: MecoFlowOutboxBacklog
+        expr: max(mecoflow_outbox_oldest_pending_age_seconds) > 300
+        for: 5m
+        labels: { severity: warning, service: worker }
+        annotations:
+          summary: MECO Flow outbox contains pending work older than five minutes
+          description: Identify the affected event type and dependency before increasing concurrency or replaying work.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowoutboxbacklog
+      - alert: MecoFlowOutboxBacklogCritical
+        expr: max(mecoflow_outbox_oldest_pending_age_seconds) > 900
+        for: 5m
+        labels: { severity: critical, service: worker }
+        annotations:
+          summary: MECO Flow outbox contains pending work older than fifteen minutes
+          description: Stop retry amplification if necessary and follow the controlled dead-letter/recovery procedure.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowoutboxbacklogcritical
+      - alert: MecoFlowOutboxProcessingStuck
+        expr: sum(mecoflow_outbox_stuck_processing) > 0
+        for: 2m
+        labels: { severity: critical, service: worker }
+        annotations:
+          summary: MECO Flow has work locked in processing for over five minutes
+          description: Confirm worker ownership and idempotency before releasing or replaying the exact event.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowoutboxprocessingstuck
+      - alert: MecoFlowOutboxTerminalFailure
+        expr: mecoflow:outbox:terminal_failure_total > 0
+        for: 1m
+        labels: { severity: critical, service: worker }
+        annotations:
+          summary: MECO Flow has failed or dead-lettered outbox work
+          description: Preserve the row and failure code; remediation and replay require operator approval.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowoutboxterminalfailure
+      - alert: MecoFlowEmailDeadLetter
+        expr: sum(mecoflow_notification_email_deliveries{status="DEAD_LETTER"}) > 0
+        for: 1m
+        labels: { severity: warning, service: worker }
+        annotations:
+          summary: MECO Flow has dead-lettered email delivery
+          description: Treat a stale PROCESSING send as ambiguous and do not automatically resend it.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowemaildeadletter
+
+  - name: mecoflow-monitoring
+    rules:
+      - alert: MecoFlowPrometheusConfigReloadFailed
+        expr: prometheus_config_last_reload_successful == 0
+        for: 5m
+        labels: { severity: warning, service: monitoring }
+        annotations:
+          summary: Prometheus rejected its latest configuration reload
+          description: Validate configuration and rules before attempting another reload.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowprometheusconfigreloadfailed
+      - alert: MecoFlowAlertDeliveryFailures
+        expr: sum(rate(alertmanager_notifications_failed_total[5m])) > 0
+        for: 5m
+        labels: { severity: critical, service: monitoring }
+        annotations:
+          summary: Alertmanager cannot deliver on-call notifications
+          description: Verify the external receiver without printing its URL or token and use the alternate escalation path.
+          runbook: docs/OPERATIONS_RUNBOOK.md#mecoflowalertdeliveryfailures

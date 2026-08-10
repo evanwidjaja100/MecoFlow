@@ -1,0 +1,711 @@
+name: mecoflow-staging
+
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-file: "5"
+    max-size: 10m
+
+x-application-security: &application-security
+  cap_drop:
+    - ALL
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m
+
+x-image-build-args: &image-build-args
+  APP_VERSION: ${APP_VERSION:-0.0.0-staging}
+  BUILD_DATE: ${BUILD_DATE:-unknown}
+  VCS_REF: ${VCS_REF:-unknown}
+
+x-service-environment: &service-environment
+  API_PORT: "3001"
+  APP_CURRENCY: IDR
+  APP_ENV: staging
+  APP_TIMEZONE: Asia/Jakarta
+  APP_VERSION: ${APP_VERSION:-0.0.0-staging}
+  CORS_ORIGINS: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}
+  DATABASE_HOST: postgres
+  DATABASE_NAME: ${POSTGRES_DB:-mecoflow}
+  DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  DATABASE_PORT: "5432"
+  DATABASE_USER: ${POSTGRES_USER:-mecoflow}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  NODE_ENV: production
+  OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-mecoflow-web}
+  OIDC_ISSUER: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}/realms/${KEYCLOAK_REALM:-mecoflow-staging}
+  OIDC_REDIRECT_URI: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}/api/v1/auth/callback
+  REDIS_HOST: redis
+  REDIS_PASSWORD_FILE: /run/secrets/redis_password
+  REDIS_PORT: "6379"
+  S3_ACCESS_KEY_FILE: /run/secrets/s3_access_key
+  S3_BUCKET: mecoflow-staging-private
+  S3_ENDPOINT: http://minio:9000
+  S3_FORCE_PATH_STYLE: "true"
+  S3_REGION: ${S3_REGION:-us-east-1}
+  S3_SECRET_KEY_FILE: /run/secrets/s3_secret_key
+  SESSION_SECRET_FILE: /run/secrets/session_secret
+  SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-28800}
+  SMTP_ENABLED: "false"
+  TRUST_PROXY_HOPS: "1"
+  VIRUS_SCANNER_ENABLED: "true"
+  VIRUS_SCANNER_HOST: clamav
+  VIRUS_SCANNER_PORT: "3310"
+  VIRUS_SCANNER_TIMEOUT_MS: "10000"
+  WEB_BASE_URL: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}
+
+services:
+  postgres:
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: infra/docker/postgres.Dockerfile
+    image: mecoflow/postgres:${APP_VERSION:-0.0.0-staging}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mecoflow}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_USER: ${POSTGRES_USER:-mecoflow}
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      retries: 30
+      start_period: 10s
+      timeout: 5s
+    logging: *default-logging
+    networks:
+      - backend
+    restart: unless-stopped
+    secrets:
+      - postgres_password
+    stop_grace_period: 30s
+    user: "70:70"
+    volumes:
+      - postgres-staging-data:/var/lib/postgresql
+
+  keycloak-db:
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: infra/docker/postgres.Dockerfile
+    image: mecoflow/postgres:${APP_VERSION:-0.0.0-staging}
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DATABASE_NAME:-keycloak}
+      POSTGRES_PASSWORD_FILE: /run/secrets/keycloak_database_password
+      POSTGRES_USER: ${KEYCLOAK_DATABASE_USER:-keycloak}
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      retries: 30
+      start_period: 10s
+      timeout: 5s
+    logging: *default-logging
+    networks:
+      - backend
+    restart: unless-stopped
+    secrets:
+      - keycloak_database_password
+    stop_grace_period: 30s
+    user: "70:70"
+    volumes:
+      - keycloak-postgres-staging-data:/var/lib/postgresql
+
+  redis:
+    image: redis:8.2-alpine
+    command:
+      - -ec
+      - >-
+        exec redis-server --appendonly yes --appendfsync everysec
+        --requirepass "$$(cat /run/secrets/redis_password)"
+    entrypoint: /bin/sh
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep -q PONG',
+        ]
+      interval: 5s
+      retries: 30
+      start_period: 5s
+      timeout: 3s
+    logging: *default-logging
+    networks:
+      - backend
+    restart: unless-stopped
+    secrets:
+      - redis_password
+    stop_grace_period: 15s
+    user: "999:1000"
+    volumes:
+      - redis-staging-data:/data
+
+  minio:
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: infra/docker/minio.Dockerfile
+    image: mecoflow/minio:${APP_VERSION:-0.0.0-staging}
+    command:
+      - -ec
+      - >-
+        export MINIO_ROOT_USER="$$(cat /run/secrets/minio_root_user)";
+        export MINIO_ROOT_PASSWORD="$$(cat /run/secrets/minio_root_password)";
+        exec minio server /data --console-address ':9001'
+    entrypoint: /bin/sh
+    healthcheck:
+      test:
+        ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/ready"]
+      interval: 5s
+      retries: 30
+      start_period: 10s
+      timeout: 5s
+    logging: *default-logging
+    networks:
+      - backend
+    restart: unless-stopped
+    secrets:
+      - minio_root_password
+      - minio_root_user
+    stop_grace_period: 20s
+    volumes:
+      - minio-staging-data:/data
+
+  minio-init:
+    image: mecoflow/operations:${APP_VERSION:-0.0.0-staging}
+    command:
+      - -ec
+      - >-
+        set -eu;
+        test "${S3_BUCKET:-mecoflow-staging-private}" = "mecoflow-staging-private";
+        mc --config-dir /tmp/mc alias set staging http://minio:9000
+        "$$(cat /run/secrets/minio_root_user)"
+        "$$(cat /run/secrets/minio_root_password)" >/dev/null 2>&1 &&
+        if test "$${REMOVE_S3_USER:-false}" = "true";
+        then mc --config-dir /tmp/mc admin user remove staging
+        "$$(cat /run/secrets/s3_access_key)" >/dev/null 2>&1;
+        exit 0;
+        fi;
+        mc --config-dir /tmp/mc mb --ignore-existing
+        "staging/mecoflow-staging-private" >/dev/null 2>&1 &&
+        mc --config-dir /tmp/mc anonymous set none
+        "staging/mecoflow-staging-private" >/dev/null 2>&1 &&
+        if ! mc --config-dir /tmp/mc admin user info staging
+        "$$(cat /run/secrets/s3_access_key)" >/dev/null 2>&1;
+        then mc --config-dir /tmp/mc admin user add staging
+        "$$(cat /run/secrets/s3_access_key)"
+        "$$(cat /run/secrets/s3_secret_key)" >/dev/null 2>&1;
+        fi;
+        mc --config-dir /tmp/mc admin policy create staging
+        mecoflow-staging-app /config/minio-app-policy.json >/dev/null 2>&1;
+        mc --config-dir /tmp/mc admin policy attach staging mecoflow-staging-app
+        --user "$$(cat /run/secrets/s3_access_key)" >/dev/null 2>&1
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    environment:
+      S3_BUCKET: mecoflow-staging-private
+    logging: *default-logging
+    networks:
+      - backend
+    restart: "no"
+    read_only: true
+    secrets:
+      - minio_root_password
+      - minio_root_user
+      - s3_access_key
+      - s3_secret_key
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    user: "1000:1000"
+    volumes:
+      - ./infra/staging/minio-app-policy.json:/config/minio-app-policy.json:ro
+
+  clamav:
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: infra/docker/clamav.Dockerfile
+    image: mecoflow/clamav:${APP_VERSION:-0.0.0-staging}
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 15s
+      retries: 40
+      start_period: 60s
+      timeout: 10s
+    logging: *default-logging
+    networks:
+      - backend
+      - egress
+    restart: unless-stopped
+    stop_grace_period: 30s
+    tmpfs:
+      - /run:rw,nosuid,nodev,size=8m,uid=100,gid=101,mode=0775
+      - /tmp:rw,noexec,nosuid,size=64m,uid=100,gid=101,mode=1777
+    volumes:
+      - clamav-staging-data:/var/lib/clamav
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0
+    command:
+      - -ec
+      - >-
+        export KC_DB_PASSWORD="$$(cat /run/secrets/keycloak_database_password)";
+        export KC_BOOTSTRAP_ADMIN_PASSWORD="$$(cat /run/secrets/keycloak_admin_password)";
+        exec /opt/keycloak/bin/kc.sh start
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-mecoflow-staging-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DATABASE_NAME:-keycloak}
+      KC_DB_USERNAME: ${KEYCLOAK_DATABASE_USER:-keycloak}
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}
+      KC_HOSTNAME_STRICT: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3 &&
+          grep -q '200 OK' <&3
+      interval: 10s
+      retries: 40
+      start_period: 30s
+      timeout: 5s
+    logging: *default-logging
+    networks:
+      - backend
+      - edge
+    restart: unless-stopped
+    secrets:
+      - keycloak_admin_password
+      - keycloak_database_password
+    stop_grace_period: 30s
+
+  migrate:
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: infra/docker/migrations.Dockerfile
+    environment:
+      APP_ENV: staging
+      DATABASE_HOST: postgres
+      DATABASE_NAME: ${POSTGRES_DB:-mecoflow}
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      DATABASE_USER: ${POSTGRES_USER:-mecoflow}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+    profiles:
+      - operations
+    read_only: true
+    secrets:
+      - postgres_password
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+
+  seed:
+    command: ["node", "packages/database/dist/prisma/seed.js"]
+    environment:
+      APP_ENV: staging
+      DATABASE_HOST: postgres
+      DATABASE_NAME: ${POSTGRES_DB:-mecoflow}
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      DATABASE_USER: ${POSTGRES_USER:-mecoflow}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+    profiles:
+      - operations
+    read_only: true
+    secrets:
+      - postgres_password
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+
+  staging-smoke-prepare:
+    command: ["node", "infra/staging/provision-smoke.mjs"]
+    environment:
+      APP_ENV: staging
+      DATABASE_HOST: postgres
+      DATABASE_NAME: ${POSTGRES_DB:-mecoflow}
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      DATABASE_USER: ${POSTGRES_USER:-mecoflow}
+      KEYCLOAK_ADMIN_PASSWORD_FILE: /run/secrets/keycloak_admin_password
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-mecoflow-staging-admin}
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-mecoflow-staging}
+      NODE_ENV: production
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-mecoflow-web}
+      OIDC_ISSUER: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}/realms/${KEYCLOAK_REALM:-mecoflow-staging}
+      STAGING_INTERNAL_PASSWORD_FILE: /run/secrets/staging_internal_password
+      STAGING_PUBLIC_URL: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}
+      STAGING_SMOKE_FIXTURES: "true"
+      STAGING_SUPPLIER_A_PASSWORD_FILE: /run/secrets/staging_supplier_a_password
+      STAGING_SUPPLIER_B_PASSWORD_FILE: /run/secrets/staging_supplier_b_password
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+    profiles:
+      - operations
+    read_only: true
+    secrets:
+      - keycloak_admin_password
+      - postgres_password
+      - staging_internal_password
+      - staging_supplier_a_password
+      - staging_supplier_b_password
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+
+  pilot-prepare:
+    command: ["node", "infra/pilot/provision-pilot.mjs"]
+    environment:
+      APP_ENV: staging
+      DATABASE_HOST: postgres
+      DATABASE_NAME: ${POSTGRES_DB:-mecoflow}
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      DATABASE_USER: ${POSTGRES_USER:-mecoflow}
+      NODE_ENV: production
+      STAGING_PILOT_FIXTURES: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+    profiles:
+      - operations
+    read_only: true
+    secrets:
+      - postgres_password
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+
+  api:
+    <<: *application-security
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      clamav:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *service-environment
+      NODE_EXTRA_CA_CERTS: /etc/mecoflow/tls/staging-ca.crt
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      retries: 20
+      start_period: 15s
+      timeout: 5s
+    image: mecoflow/api:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+      - edge
+    restart: unless-stopped
+    secrets:
+      - postgres_password
+      - redis_password
+      - s3_access_key
+      - s3_secret_key
+      - session_secret
+    stop_grace_period: 20s
+    volumes:
+      - ${STAGING_RUNTIME_DIR:-.runtime/staging}/tls/tls.crt:/etc/mecoflow/tls/staging-ca.crt:ro
+
+  worker:
+    <<: *application-security
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    depends_on:
+      clamav:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *service-environment
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "/usr/local/bin/load-secrets.mjs",
+          "node",
+          "dist/healthcheck.js",
+        ]
+      interval: 10s
+      retries: 20
+      start_period: 15s
+      timeout: 5s
+    image: mecoflow/worker:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+    restart: unless-stopped
+    secrets:
+      - postgres_password
+      - redis_password
+      - s3_access_key
+      - s3_secret_key
+      - session_secret
+    stop_grace_period: 30s
+
+  web:
+    <<: *application-security
+    build:
+      args:
+        <<: *image-build-args
+        NEXT_PUBLIC_API_BASE_URL: ${STAGING_PUBLIC_URL:-https://mecoflow.localhost:8443}
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_INTERNAL_URL: http://api:3001
+      APP_VERSION: ${APP_VERSION:-0.0.0-staging}
+      NODE_ENV: production
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health/web').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      retries: 20
+      start_period: 15s
+      timeout: 5s
+    image: mecoflow/web:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+      - edge
+    restart: unless-stopped
+    stop_grace_period: 20s
+
+  proxy:
+    cap_drop:
+      - ALL
+    depends_on:
+      api:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --no-check-certificate -O /dev/null https://127.0.0.1:8443/health/ready",
+        ]
+      interval: 10s
+      retries: 20
+      start_period: 10s
+      timeout: 5s
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: infra/docker/proxy.Dockerfile
+    image: mecoflow/proxy:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      edge:
+        aliases:
+          - mecoflow.localhost
+    ports:
+      - "${STAGING_BIND_ADDRESS:-127.0.0.1}:${STAGING_HTTPS_PORT:-8443}:8443"
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    user: "101:101"
+    volumes:
+      - ./infra/staging/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${STAGING_RUNTIME_DIR:-.runtime/staging}/tls:/etc/nginx/tls:ro
+
+  backup:
+    build:
+      args: *image-build-args
+      context: .
+      dockerfile: infra/docker/operations.Dockerfile
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      keycloak-db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_VERSION: ${APP_VERSION:-0.0.0-staging}
+      DATABASE_HOST: postgres
+      DATABASE_NAME: ${POSTGRES_DB:-mecoflow}
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      DATABASE_USER: ${POSTGRES_USER:-mecoflow}
+      KEYCLOAK_DATABASE_HOST: keycloak-db
+      KEYCLOAK_DATABASE_NAME: ${KEYCLOAK_DATABASE_NAME:-keycloak}
+      KEYCLOAK_DATABASE_PASSWORD_FILE: /run/secrets/keycloak_database_password
+      KEYCLOAK_DATABASE_USER: ${KEYCLOAK_DATABASE_USER:-keycloak}
+      KEYCLOAK_ADMIN_PASSWORD_FILE: /run/secrets/keycloak_admin_password
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-mecoflow-staging-admin}
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-mecoflow-staging}
+      S3_ACCESS_KEY_FILE: /run/secrets/s3_access_key
+      S3_BUCKET: mecoflow-staging-private
+      S3_ENDPOINT: http://minio:9000
+      S3_SECRET_KEY_FILE: /run/secrets/s3_secret_key
+    image: mecoflow/operations:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+    profiles:
+      - operations
+    read_only: true
+    secrets:
+      - keycloak_admin_password
+      - keycloak_database_password
+      - postgres_password
+      - s3_access_key
+      - s3_secret_key
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    volumes:
+      - backup-staging-data:/backups
+
+  restore:
+    command: ["mecoflow-restore"]
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_NAME: ${POSTGRES_DB:-mecoflow}
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      DATABASE_USER: ${POSTGRES_USER:-mecoflow}
+      KEYCLOAK_DATABASE_HOST: keycloak-db
+      KEYCLOAK_DATABASE_NAME: ${KEYCLOAK_DATABASE_NAME:-keycloak}
+      KEYCLOAK_DATABASE_PASSWORD_FILE: /run/secrets/keycloak_database_password
+      KEYCLOAK_DATABASE_USER: ${KEYCLOAK_DATABASE_USER:-keycloak}
+      S3_ACCESS_KEY_FILE: /run/secrets/s3_access_key
+      S3_BUCKET: mecoflow-staging-private
+      S3_ENDPOINT: http://minio:9000
+      S3_SECRET_KEY_FILE: /run/secrets/s3_secret_key
+    image: mecoflow/operations:${APP_VERSION:-0.0.0-staging}
+    logging: *default-logging
+    networks:
+      - backend
+    profiles:
+      - operations
+    read_only: true
+    secrets:
+      - keycloak_database_password
+      - postgres_password
+      - s3_access_key
+      - s3_secret_key
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    volumes:
+      - backup-staging-data:/backups
+
+networks:
+  backend:
+    internal: true
+  edge:
+  egress:
+
+secrets:
+  keycloak_admin_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/keycloak_admin_password
+  keycloak_database_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/keycloak_database_password
+  minio_root_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/minio_root_password
+  minio_root_user:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/minio_root_user
+  postgres_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/postgres_password
+  redis_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/redis_password
+  s3_access_key:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/s3_access_key
+  s3_secret_key:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/s3_secret_key
+  session_secret:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/session_secret
+  staging_internal_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/staging_internal_password
+  staging_supplier_a_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/staging_supplier_a_password
+  staging_supplier_b_password:
+    file: ${STAGING_RUNTIME_DIR:-.runtime/staging}/secrets/staging_supplier_b_password
+
+volumes:
+  backup-staging-data:
+  clamav-staging-data:
+  keycloak-postgres-staging-data:
+  minio-staging-data:
+  postgres-staging-data:
+  redis-staging-data:

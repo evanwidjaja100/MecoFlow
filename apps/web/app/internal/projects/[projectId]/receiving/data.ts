@@ -57,7 +57,15 @@ export interface GoodsReceipt {
       id: string;
       lotNumber: number;
       quantity: string;
-      status: "AWAITING_INSPECTION";
+      acceptedQuantity: string;
+      rejectedQuantity: string;
+      quarantinedQuantity: string;
+      status:
+        | "ACCEPTED"
+        | "AWAITING_INSPECTION"
+        | "CONDITIONALLY_ACCEPTED"
+        | "QUARANTINED"
+        | "REJECTED";
     };
     inventoryLotAdjustment: null | {
       inventoryLot: { id: string; lotNumber: number };

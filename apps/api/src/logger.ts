@@ -4,6 +4,11 @@ import pino, { type Logger } from "pino";
 const redactedPaths = [
   "authorization",
   "cookie",
+  "password",
+  "token",
+  "secret",
+  "accessKey",
+  "storageKey",
   "*.authorization",
   "*.cookie",
   "*.password",
@@ -29,10 +34,14 @@ export class JsonLogger implements LoggerService {
     this.logger.info({ context }, this.toMessage(message));
   }
 
-  error(message: unknown, trace?: string, context?: string): void {
+  error(message: unknown, _trace?: string, context?: string): void {
     this.logger.error(
-      { context, errorClassification: "unexpected_internal_error", trace },
-      this.toMessage(message),
+      {
+        context,
+        errorClassification: "unexpected_internal_error",
+        errorType: message instanceof Error ? message.name : undefined,
+      },
+      message instanceof Error ? "Application error" : this.toMessage(message),
     );
   }
 

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "environment": "production",
+  "applicationEnvironmentFile": "application.env",
+  "candidate": {
+    "applicationVersion": "replace-me",
+    "sourceRevision": "replace-with-the-40-character-release-commit"
+  },
+  "publicEndpoints": {
+    "applicationUrl": "https://mecoflow.example.com",
+    "oidcIssuer": "https://identity.example.com/realms/mecoflow",
+    "expectedDnsNames": ["mecoflow.example.com"]
+  },
+  "secrets": {
+    "files": {
+      "applicationDatabasePassword": "secrets/application-database-password",
+      "keycloakAdminPassword": "secrets/keycloak-admin-password",
+      "keycloakDatabasePassword": "secrets/keycloak-database-password",
+      "redisPassword": "secrets/redis-password",
+      "s3AccessKey": "secrets/s3-access-key",
+      "s3SecretKey": "secrets/s3-secret-key",
+      "sessionSecret": "secrets/session-secret"
+    },
+    "manager": {
+      "provider": "replace-me",
+      "referencePrefix": "replace-me",
+      "aclEvidenceId": "replace-me",
+      "reviewedAt": "replace-me",
+      "rotationTestedAt": "replace-me"
+    },
+    "smtpEnabled": false
+  },
+  "tls": {
+    "certificateChainFile": "tls/fullchain.pem",
+    "privateKeyFile": "tls/private-key.pem",
+    "minimumRemainingDays": 30,
+    "trustEvidenceId": "replace-me",
+    "trustReviewedAt": "replace-me",
+    "renewalProcedure": "replace-me",
+    "renewalTestedAt": "replace-me"
+  },
+  "objectStorage": {
+    "endpoint": "https://objects.example.com",
+    "bucket": "mecoflow-production-private",
+    "applicationEncryption": "aws:kms",
+    "kmsKeyReference": "replace-me",
+    "policyEvidenceFile": "evidence/object-storage.json",
+    "maximumEvidenceAgeDays": 7
+  },
+  "offsiteBackup": {
+    "targetUri": "s3://replace-me-production-backups/mecoflow",
+    "kmsKeyReference": "replace-me",
+    "retentionDays": 35,
+    "rpoHours": 24,
+    "rtoHours": 4,
+    "crossFailureDomain": true,
+    "immutableOrVersioned": true,
+    "latestEvidenceFile": "evidence/offsite-backup.json",
+    "maximumRestoreEvidenceAgeDays": 90
+  },
+  "owners": {
+    "security": "replace-me",
+    "operations": "replace-me",
+    "backup": "replace-me",
+    "tlsRenewal": "replace-me",
+    "releaseApprover": "replace-me"
+  }
+}

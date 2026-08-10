@@ -3463,6 +3463,1206 @@
           "Advance shipment notices and receiving"
         ]
       }
+    },
+    "/api/v1/inspection-check-definitions": {
+      "get": {
+        "operationId": "InspectionsController_listDefinitions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List configurable inspection check definitions",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/items/{itemId}/inspection-check-definitions": {
+      "post": {
+        "operationId": "InspectionsController_createDefinition",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create an item inspection check definition",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/inspection-check-definitions/{definitionId}": {
+      "patch": {
+        "operationId": "InspectionsController_updateDefinition",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Replace an inspection check configuration",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/receiving-inspections": {
+      "get": {
+        "operationId": "InspectionsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List the project receiving inspection work queue",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/inventory-lots/{inventoryLotId}/receiving-inspections": {
+      "post": {
+        "operationId": "InspectionsController_createExplicit",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create an inspection explicitly for an awaiting lot",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/receiving-inspections/{inspectionId}": {
+      "get": {
+        "operationId": "InspectionsController_detail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read an authorized receiving inspection",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/receiving-inspections/{inspectionId}/results": {
+      "post": {
+        "operationId": "InspectionsController_saveResults",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Record checklist, measurement, and certificate results",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/receiving-inspections/{inspectionId}/finalize": {
+      "post": {
+        "operationId": "InspectionsController_finalize",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Finalize the inspection and inventory lot disposition",
+        "tags": [
+          "Receiving inspections"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/ncrs": {
+      "get": {
+        "operationId": "NcrsController_listInternal",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List internal project NCRs",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      },
+      "post": {
+        "operationId": "NcrsController_create",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create an NCR from a project, inventory lot, or inspection",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/ncrs/{ncrId}": {
+      "get": {
+        "operationId": "NcrsController_detailInternal",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read an internal NCR",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/ncrs/{ncrId}/issue": {
+      "post": {
+        "operationId": "NcrsController_issue",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Issue an NCR to its supplier",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/ncrs/{ncrId}/close": {
+      "post": {
+        "operationId": "NcrsController_close",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Close an issued or supplier-responded NCR",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/ncrs/{ncrId}/cancel": {
+      "post": {
+        "operationId": "NcrsController_cancel",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Cancel a draft or issued NCR",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/supplier/ncrs": {
+      "get": {
+        "operationId": "NcrsController_listSupplier",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List issued NCRs for the supplier organization",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/supplier/ncrs/{ncrId}": {
+      "get": {
+        "operationId": "NcrsController_detailSupplier",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read an issued own-organization NCR",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/supplier/ncrs/{ncrId}/responses": {
+      "post": {
+        "operationId": "NcrsController_respond",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Append a supplier NCR response",
+        "tags": [
+          "Nonconformance reports"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/material-allocations": {
+      "get": {
+        "operationId": "AllocationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List project material allocations",
+        "tags": [
+          "Material allocations"
+        ]
+      },
+      "post": {
+        "operationId": "AllocationsController_create",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Allocate an accepted inventory lot to a released BOM line",
+        "tags": [
+          "Material allocations"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/material-allocation-options": {
+      "get": {
+        "operationId": "AllocationsController_options",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List accepted lots and released BOM lines eligible for allocation",
+        "tags": [
+          "Material allocations"
+        ]
+      }
+    },
+    "/api/v1/material-allocations/{allocationId}": {
+      "get": {
+        "operationId": "AllocationsController_detail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read a material allocation and quantity history",
+        "tags": [
+          "Material allocations"
+        ]
+      }
+    },
+    "/api/v1/material-allocations/{allocationId}/release": {
+      "post": {
+        "operationId": "AllocationsController_release",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Release an active material allocation",
+        "tags": [
+          "Material allocations"
+        ]
+      }
+    },
+    "/api/v1/material-allocations/{allocationId}/consume": {
+      "post": {
+        "operationId": "AllocationsController_consume",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks operation or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Record consumption of an active material allocation",
+        "tags": [
+          "Material allocations"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/material-requirement-status": {
+      "get": {
+        "operationId": "RequirementStatusController_project",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialRequirementStatusResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The principal lacks BOM permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Project deterministic status for every current released BOM line",
+        "tags": [
+          "Material requirement status"
+        ]
+      }
+    },
+    "/api/v1/readiness/management": {
+      "get": {
+        "operationId": "ReadinessController_management",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessManagementResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The principal lacks readiness permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Latest project readiness for the authorized management portfolio",
+        "tags": [
+          "Readiness"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/readiness": {
+      "get": {
+        "operationId": "ReadinessController_overview",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessOverviewResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The principal lacks readiness permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Latest project and work-package readiness snapshots",
+        "tags": [
+          "Readiness"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/readiness/materials": {
+      "get": {
+        "operationId": "ReadinessController_materials",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessMaterialsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The principal lacks readiness permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Latest material-readiness board with line explanations",
+        "tags": [
+          "Readiness"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/readiness/history": {
+      "get": {
+        "operationId": "ReadinessController_history",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessHistoryResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The principal lacks readiness permission or project scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Immutable project and work-package readiness history",
+        "tags": [
+          "Readiness"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List the current user's authorized notifications",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{notificationId}/read": {
+      "post": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "notificationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Mark one own authorized notification as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notification-preferences": {
+      "get": {
+        "operationId": "NotificationsController_preferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferencesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "List the current user's notification preferences",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notification-preferences/{type}": {
+      "put": {
+        "operationId": "NotificationsController_updatePreference",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "READINESS_ALERT",
+                "READINESS_REMINDER"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Update one own notification preference",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/reports/project-readiness": {
+      "get": {
+        "operationId": "ReportsController_projectReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read the authorized project-readiness report",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
+    },
+    "/api/v1/reports/material-exceptions": {
+      "get": {
+        "operationId": "ReportsController_materialExceptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read current authorized material exceptions",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
+    },
+    "/api/v1/reports/supplier-performance": {
+      "get": {
+        "operationId": "ReportsController_supplierPerformance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read authorized supplier KPI scorecards",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
+    },
+    "/api/v1/supplier/scorecard": {
+      "get": {
+        "operationId": "ReportsController_ownSupplierScorecard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Read the authenticated supplier's own scorecard",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
+    },
+    "/api/v1/reports/project-readiness/export/{format}": {
+      "get": {
+        "operationId": "ReportsController_exportProjectReadiness",
+        "parameters": [
+          {
+            "name": "format",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "csv",
+                "xlsx"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Export authorized project readiness",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
+    },
+    "/api/v1/reports/material-exceptions/export/{format}": {
+      "get": {
+        "operationId": "ReportsController_exportMaterialExceptions",
+        "parameters": [
+          {
+            "name": "format",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "csv",
+                "xlsx"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Export authorized material exceptions",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
+    },
+    "/api/v1/reports/supplier-performance/export/{format}": {
+      "get": {
+        "operationId": "ReportsController_exportSupplierPerformance",
+        "parameters": [
+          {
+            "name": "format",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "csv",
+                "xlsx"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Export authorized supplier scorecards",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
+    },
+    "/api/v1/supplier/scorecard/export/{format}": {
+      "get": {
+        "operationId": "ReportsController_exportOwnSupplierScorecard",
+        "parameters": [
+          {
+            "name": "format",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "csv",
+                "xlsx"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "The principal lacks report permission or object scope"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Export the authenticated supplier's own scorecard",
+        "tags": [
+          "Reports and scorecards"
+        ]
+      }
     }
   },
   "info": {
@@ -4332,6 +5532,7 @@
               "ADVANCE_SHIPMENT_NOTICE",
               "BOM",
               "GOODS_RECEIPT",
+              "RECEIVING_INSPECTION",
               "PROJECT",
               "PURCHASE_ORDER",
               "PURCHASE_REQUISITION",
@@ -4396,6 +5597,946 @@
           "sha256",
           "title",
           "category"
+        ]
+      },
+      "RequirementStatusItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "PLATE-304"
+          },
+          "name": {
+            "type": "string",
+            "example": "Stainless steel plate"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name"
+        ]
+      },
+      "RequirementStatusUnitDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "EA"
+          },
+          "name": {
+            "type": "string",
+            "example": "Each"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "ea"
+          },
+          "decimalPrecision": {
+            "type": "number",
+            "maximum": 6,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "symbol",
+          "decimalPrecision"
+        ]
+      },
+      "RequirementStatusWorkPackageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "WP-01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Fabrication"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name"
+        ]
+      },
+      "MaterialRequirementStatusLineDto": {
+        "type": "object",
+        "properties": {
+          "bomLineId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bomId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bomRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bomRevisionNumber": {
+            "type": "number",
+            "minimum": 1
+          },
+          "lineNumber": {
+            "type": "number",
+            "minimum": 1
+          },
+          "criticality": {
+            "type": "string",
+            "enum": [
+              "CRITICAL",
+              "HIGH",
+              "NORMAL",
+              "LOW"
+            ]
+          },
+          "item": {
+            "$ref": "#/components/schemas/RequirementStatusItemDto"
+          },
+          "unitOfMeasure": {
+            "$ref": "#/components/schemas/RequirementStatusUnitDto"
+          },
+          "workPackage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RequirementStatusWorkPackageDto"
+              }
+            ]
+          },
+          "requiredQuantity": {
+            "type": "string",
+            "example": "10.5"
+          },
+          "requisitionedQuantity": {
+            "type": "string",
+            "example": "10.5"
+          },
+          "orderedQuantity": {
+            "type": "string",
+            "example": "10.5"
+          },
+          "confirmedQuantity": {
+            "type": "string",
+            "example": "10.5"
+          },
+          "shippedQuantity": {
+            "type": "string",
+            "example": "8"
+          },
+          "receivedQuantity": {
+            "type": "string",
+            "example": "6"
+          },
+          "acceptedQuantity": {
+            "type": "string",
+            "example": "5"
+          },
+          "allocatedQuantity": {
+            "type": "string",
+            "example": "3"
+          },
+          "certificateCompleteQuantity": {
+            "type": "string",
+            "example": "5"
+          },
+          "shortage": {
+            "type": "string",
+            "example": "7.5"
+          },
+          "operativeCommitmentDate": {
+            "type": "string",
+            "example": "2026-08-31",
+            "nullable": true
+          },
+          "currentStage": {
+            "type": "string",
+            "enum": [
+              "NOT_STARTED",
+              "REQUISITIONED",
+              "ORDERED",
+              "CONFIRMED",
+              "SHIPPED",
+              "RECEIVED",
+              "ACCEPTED",
+              "CERTIFICATE_COMPLETE",
+              "ALLOCATED",
+              "COMPLETE"
+            ]
+          },
+          "blockerReason": {
+            "type": "string",
+            "enum": [
+              "REQUISITION_SHORTFALL",
+              "ORDER_SHORTFALL",
+              "SUPPLIER_CONFIRMATION_MISSING",
+              "SHIPMENT_SHORTFALL",
+              "RECEIPT_SHORTFALL",
+              "REJECTED_MATERIAL",
+              "QUARANTINED_MATERIAL",
+              "INSPECTION_PENDING",
+              "ACCEPTANCE_SHORTFALL",
+              "CERTIFICATE_INCOMPLETE",
+              "ALLOCATION_SHORTFALL"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "bomLineId",
+          "bomId",
+          "bomRevisionId",
+          "bomRevisionNumber",
+          "lineNumber",
+          "criticality",
+          "item",
+          "unitOfMeasure",
+          "workPackage",
+          "requiredQuantity",
+          "requisitionedQuantity",
+          "orderedQuantity",
+          "confirmedQuantity",
+          "shippedQuantity",
+          "receivedQuantity",
+          "acceptedQuantity",
+          "allocatedQuantity",
+          "certificateCompleteQuantity",
+          "shortage",
+          "operativeCommitmentDate",
+          "currentStage",
+          "blockerReason"
+        ]
+      },
+      "MaterialRequirementStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "modelVersion": {
+            "type": "string",
+            "example": "material-requirement-status-v1"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialRequirementStatusLineDto"
+            }
+          }
+        },
+        "required": [
+          "modelVersion",
+          "data"
+        ]
+      },
+      "ReadinessProjectDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "DEMO-2026"
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo process equipment project"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name"
+        ]
+      },
+      "ReadinessWorkPackageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "WP-01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Fabrication"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name"
+        ]
+      },
+      "ReadinessBlockerDto": {
+        "type": "object",
+        "properties": {
+          "bomLineId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "example": "CERTIFICATE_INCOMPLETE"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bomLineId",
+          "code",
+          "explanation"
+        ]
+      },
+      "ReadinessRecommendedActionDto": {
+        "type": "object",
+        "properties": {
+          "bomLineId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "example": "COMPLETE_CERTIFICATE_REVIEW"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bomLineId",
+          "code",
+          "action"
+        ]
+      },
+      "ReadinessSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "batchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ReadinessProjectDto"
+          },
+          "workPackage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReadinessWorkPackageDto"
+              }
+            ]
+          },
+          "scopeType": {
+            "type": "string",
+            "enum": [
+              "PROJECT",
+              "WORK_PACKAGE"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RED",
+              "AMBER",
+              "GREEN",
+              "COMPLETE"
+            ]
+          },
+          "score": {
+            "type": "number",
+            "maximum": 100,
+            "minimum": 0
+          },
+          "lineCount": {
+            "type": "number"
+          },
+          "criticalLineCount": {
+            "type": "number"
+          },
+          "readyCriticalLineCount": {
+            "type": "number"
+          },
+          "blockerCount": {
+            "type": "number"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessBlockerDto"
+            }
+          },
+          "reasonCodes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "NO_RELEASED_REQUIREMENTS",
+                "CRITICAL_REJECTED_MATERIAL",
+                "CRITICAL_QUARANTINED_MATERIAL",
+                "CRITICAL_CERTIFICATE_MISSING",
+                "CRITICAL_OPEN_NCR",
+                "CRITICAL_LATE_COMMITMENT",
+                "CRITICAL_SHORTAGE_DUE",
+                "LATE_COMMITMENT",
+                "OPEN_NCR",
+                "PARTIAL_ACCEPTANCE",
+                "SHORTAGE_DUE_SOON",
+                "FUTURE_LOW_PRIORITY_SHORTAGE",
+                "WEIGHTED_SCORE_RED",
+                "WEIGHTED_SCORE_AMBER"
+              ]
+            }
+          },
+          "recommendedActions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessRecommendedActionDto"
+            }
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "calculatorVersion": {
+            "type": "string",
+            "example": "readiness-calculator-v1"
+          },
+          "ruleVersion": {
+            "type": "string",
+            "example": "readiness-rules-v1"
+          },
+          "materialProjectionVersion": {
+            "type": "string",
+            "example": "material-requirement-status-v1"
+          },
+          "calculationDate": {
+            "type": "string",
+            "example": "2026-07-22"
+          },
+          "calculatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "EVENT",
+              "SCHEDULED"
+            ]
+          },
+          "inputHash": {
+            "type": "string",
+            "example": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        },
+        "required": [
+          "id",
+          "batchId",
+          "project",
+          "workPackage",
+          "scopeType",
+          "status",
+          "score",
+          "lineCount",
+          "criticalLineCount",
+          "readyCriticalLineCount",
+          "blockerCount",
+          "blockers",
+          "reasonCodes",
+          "recommendedActions",
+          "explanation",
+          "calculatorVersion",
+          "ruleVersion",
+          "materialProjectionVersion",
+          "calculationDate",
+          "calculatedAt",
+          "trigger",
+          "inputHash"
+        ]
+      },
+      "ReadinessManagementResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessSnapshotDto"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "example": {
+              "page": 1,
+              "pageSize": 20,
+              "total": 42,
+              "totalPages": 3
+            }
+          }
+        },
+        "required": [
+          "data",
+          "pagination"
+        ]
+      },
+      "ReadinessOverviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "latest": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReadinessSnapshotDto"
+              }
+            ]
+          },
+          "workPackages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessSnapshotDto"
+            }
+          }
+        },
+        "required": [
+          "latest",
+          "workPackages"
+        ]
+      },
+      "ReadinessMaterialLineDto": {
+        "type": "object",
+        "properties": {
+          "bomLineId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lineNumber": {
+            "type": "number"
+          },
+          "itemCode": {
+            "type": "string"
+          },
+          "itemName": {
+            "type": "string"
+          },
+          "criticality": {
+            "type": "string"
+          },
+          "currentStage": {
+            "type": "string"
+          },
+          "blockerReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requiredQuantity": {
+            "type": "string"
+          },
+          "requisitionedQuantity": {
+            "type": "string"
+          },
+          "orderedQuantity": {
+            "type": "string"
+          },
+          "confirmedQuantity": {
+            "type": "string"
+          },
+          "shippedQuantity": {
+            "type": "string"
+          },
+          "receivedQuantity": {
+            "type": "string"
+          },
+          "acceptedQuantity": {
+            "type": "string"
+          },
+          "allocatedQuantity": {
+            "type": "string"
+          },
+          "certificateCompleteQuantity": {
+            "type": "string"
+          },
+          "shortage": {
+            "type": "string"
+          },
+          "requiredDate": {
+            "type": "string"
+          },
+          "operativeCommitmentDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "workPackageCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "workPackageId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "workPackageName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitCode": {
+            "type": "string"
+          },
+          "unitSymbol": {
+            "type": "string"
+          },
+          "openNcrCount": {
+            "type": "number"
+          },
+          "certificateRequired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bomLineId",
+          "lineNumber",
+          "itemCode",
+          "itemName",
+          "criticality",
+          "currentStage",
+          "blockerReason",
+          "requiredQuantity",
+          "requisitionedQuantity",
+          "orderedQuantity",
+          "confirmedQuantity",
+          "shippedQuantity",
+          "receivedQuantity",
+          "acceptedQuantity",
+          "allocatedQuantity",
+          "certificateCompleteQuantity",
+          "shortage",
+          "requiredDate",
+          "operativeCommitmentDate",
+          "workPackageCode",
+          "workPackageId",
+          "workPackageName",
+          "unitCode",
+          "unitSymbol",
+          "openNcrCount",
+          "certificateRequired"
+        ]
+      },
+      "ReadinessLineExplanationDto": {
+        "type": "object",
+        "properties": {
+          "bomLineId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "criticality": {
+            "type": "string"
+          },
+          "currentStage": {
+            "type": "string"
+          },
+          "itemCode": {
+            "type": "string"
+          },
+          "lineNumber": {
+            "type": "number"
+          },
+          "blockerCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reasonCodes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "NO_RELEASED_REQUIREMENTS",
+                "CRITICAL_REJECTED_MATERIAL",
+                "CRITICAL_QUARANTINED_MATERIAL",
+                "CRITICAL_CERTIFICATE_MISSING",
+                "CRITICAL_OPEN_NCR",
+                "CRITICAL_LATE_COMMITMENT",
+                "CRITICAL_SHORTAGE_DUE",
+                "LATE_COMMITMENT",
+                "OPEN_NCR",
+                "PARTIAL_ACCEPTANCE",
+                "SHORTAGE_DUE_SOON",
+                "FUTURE_LOW_PRIORITY_SHORTAGE",
+                "WEIGHTED_SCORE_RED",
+                "WEIGHTED_SCORE_AMBER"
+              ]
+            }
+          },
+          "stageScore": {
+            "type": "number"
+          },
+          "weightedPoints": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "bomLineId",
+          "criticality",
+          "currentStage",
+          "itemCode",
+          "lineNumber",
+          "blockerCodes",
+          "reasonCodes",
+          "stageScore",
+          "weightedPoints"
+        ]
+      },
+      "ReadinessMaterialsResponseDto": {
+        "type": "object",
+        "properties": {
+          "latest": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReadinessSnapshotDto"
+              }
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessMaterialLineDto"
+            }
+          },
+          "lineExplanations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessLineExplanationDto"
+            }
+          }
+        },
+        "required": [
+          "latest",
+          "lines",
+          "lineExplanations"
+        ]
+      },
+      "ReadinessHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessSnapshotDto"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "READINESS_ALERT",
+              "READINESS_REMINDER"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "actionUrl": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "message",
+          "actionUrl",
+          "projectId",
+          "readAt",
+          "createdAt"
+        ]
+      },
+      "NotificationListMetaDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "unread": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "requestId",
+          "correlationId",
+          "unread"
+        ]
+      },
+      "NotificationPaginationDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "maximum": 100,
+            "minimum": 1
+          },
+          "total": {
+            "type": "number",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "totalPages"
+        ]
+      },
+      "NotificationListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/NotificationListMetaDto"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/NotificationPaginationDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta",
+          "pagination"
+        ]
+      },
+      "NotificationPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "READINESS_ALERT",
+              "READINESS_REMINDER"
+            ]
+          },
+          "inAppEnabled": {
+            "type": "boolean"
+          },
+          "emailEnabled": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "type",
+          "inAppEnabled",
+          "emailEnabled",
+          "version"
+        ]
+      },
+      "NotificationResponseMetaDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requestId",
+          "correlationId"
+        ]
+      },
+      "NotificationPreferencesResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationPreferenceDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/NotificationResponseMetaDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
         ]
       }
     }

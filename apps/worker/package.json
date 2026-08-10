@@ -16,7 +16,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.1086.0",
     "@mecoflow/config": "workspace:*",
+    "@mecoflow/contracts": "workspace:*",
     "@mecoflow/database": "workspace:*",
+    "@mecoflow/readiness": "workspace:*",
     "dotenv": "17.2.3",
     "ioredis": "5.11.1",
     "pino": "10.3.1"

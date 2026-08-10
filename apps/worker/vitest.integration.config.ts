@@ -8,5 +8,9 @@ loadEnvironment({
 });
 
 export default defineConfig({
-  test: { include: ["src/**/*.integration.test.ts"], testTimeout: 30_000 },
+  test: {
+    fileParallelism: false,
+    include: ["src/**/*.integration.test.ts"],
+    testTimeout: 30_000,
+  },
 });

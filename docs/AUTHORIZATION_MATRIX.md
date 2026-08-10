@@ -27,6 +27,10 @@ Project and item-master permissions are retained in the cumulative seed catalog,
 | `project.read`                        | Read projects allowed by project policy              |
 | `project.write`                       | Change projects allowed by project policy            |
 | `project.membership.manage`           | Manage explicit project scope                        |
+| `readiness.read`                      | Read authorized readiness snapshots and explanations |
+| `report.read`                         | Read authorized Phase 8B operational reports         |
+| `report.export`                       | Export authorized Phase 8B operational reports       |
+| `scorecard.read`                      | Read authorized internal supplier scorecards         |
 | `item.read`                           | Read the global internal item master                 |
 | `item.write`                          | Create or change internal item-master records        |
 | `item.export`                         | Export filtered internal item-master records         |
@@ -62,28 +66,49 @@ Project and item-master permissions are retained in the cumulative seed catalog,
 | `receiving.write`                     | Create project draft goods receipts                  |
 | `receiving.post`                      | Idempotently post project goods receipts             |
 | `receiving.correct`                   | Create separate project correcting receipt entries   |
+| `inspection.read`                     | Read scoped inspections and their work queue         |
+| `inspection.configure`                | Configure item inspection check definitions          |
+| `inspection.create`                   | Explicitly create a required lot inspection          |
+| `inspection.write`                    | Record scoped inspection results                     |
+| `inspection.finalize`                 | Finalize a scoped inspection and lot disposition     |
+| `inspection.conditional-accept`       | Authorize and attribute conditional acceptance       |
+| `ncr.read`                            | Read scoped internal NCRs                            |
+| `ncr.create`                          | Create scoped NCR drafts                             |
+| `ncr.issue`                           | Issue scoped NCRs to their supplier                  |
+| `ncr.close`                           | Close or cancel scoped NCRs                          |
+| `supplier.ncr.read`                   | Read issued own-organization NCRs                    |
+| `supplier.ncr.respond`                | Append own-organization NCR responses                |
+| `allocation.read`                     | Read scoped material allocations                     |
+| `allocation.create`                   | Allocate accepted lots to released BOM lines         |
+| `allocation.release`                  | Release active material allocations                  |
+| `allocation.consume`                  | Consume active material allocations                  |
+| `allocation.conditional-use`          | Authorize conditionally accepted material use        |
 | `supplier.asn.read`                   | Read own-organization advance shipment notices       |
 | `supplier.asn.write`                  | Create own-organization advance shipment notices     |
 | `supplier.asn.transition`             | Submit, dispatch, or cancel own shipment notices     |
+| `supplier.scorecard.read`             | Read the own-organization supplier scorecard         |
+| `supplier.scorecard.export`           | Export the own-organization supplier scorecard       |
 
 ## Seeded role mapping
 
 | Role               | Organization scope | Seeded permissions                                                                                         |
 | ------------------ | ------------------ | ---------------------------------------------------------------------------------------------------------- |
 | `SYSTEM_ADMIN`     | Internal           | All seeded permissions; global catalog actions still require an active internal membership and are audited |
-| `MECO_MANAGEMENT`  | Internal           | Existing grants plus BOM/requisition/PO read and PO exception read                                         |
-| `PROJECT_MANAGER`  | Internal           | Existing grants plus all BOM, requisition, PO, override, and exception grants                              |
+| `MECO_MANAGEMENT`  | Internal           | Existing grants plus BOM/procurement/receiving/inspection/NCR/allocation read and PO exception read        |
+| `PROJECT_MANAGER`  | Internal           | Inspection, NCR, and ordinary allocation commands; no configuration, conditional acceptance/use            |
 | `ENGINEERING`      | Internal           | Existing grants plus BOM authoring/review and requisition/PO read                                          |
-| `PPIC`             | Internal           | Existing grants plus BOM read/review, requisition/PO read, and PO exception read                           |
-| `PURCHASING`       | Internal           | Requisition create/submit/cancel and PO read/write/send/cancel/exception; no approval or quantity override |
-| `WAREHOUSE`        | Internal           | Existing grants plus `bom.read`                                                                            |
-| `QA_QC`            | Internal           | Existing grants plus BOM/requisition/PO read and PO exception read                                         |
-| `PRODUCTION`       | Internal           | Existing grants plus `bom.read`                                                                            |
-| `FINANCE_READONLY` | Internal           | Existing read grants plus BOM/requisition/PO read; no procurement command permission                       |
-| `AUDITOR_READONLY` | Internal           | Existing read/export/audit grants plus BOM/requisition/PO read; no procurement command permission          |
-| `SUPPLIER_ADMIN`   | Own supplier       | Existing own-organization grants plus supplier PO read/acknowledge and commitment append                   |
-| `SUPPLIER_USER`    | Own supplier       | Own organization/project read plus supplier PO read/acknowledge and commitment append                      |
+| `PPIC`             | Internal           | Existing reads plus ordinary allocation create/release                                                     |
+| `PURCHASING`       | Internal           | Procurement grants plus NCR commands and allocation read; no quantity/conditional override                 |
+| `WAREHOUSE`        | Internal           | Receiving/inspection read-create plus ordinary allocation create/release                                   |
+| `QA_QC`            | Internal           | All inspection, NCR, and allocation grants, including both conditional authorities                         |
+| `PRODUCTION`       | Internal           | Existing reads plus allocation consumption                                                                 |
+| `FINANCE_READONLY` | Internal           | Existing read grants plus inspection/NCR/allocation read                                                   |
+| `AUDITOR_READONLY` | Internal           | Existing read/export/audit grants plus inspection/NCR/allocation read                                      |
+| `SUPPLIER_ADMIN`   | Own supplier       | Existing own-organization collaboration plus NCR read/respond                                              |
+| `SUPPLIER_USER`    | Own supplier       | Existing own-organization collaboration plus NCR read/respond                                              |
 | `CUSTOMER_VIEWER`  | Reserved           | None; no MVP application surface                                                                           |
+
+Phase 8B grants `report.read` to seeded internal roles already holding readiness/BOM visibility. Export is limited to system administration, management, project management, purchasing, QA/QC, finance-readonly, and auditor-readonly. The same roles receive internal `scorecard.read`. Both supplier roles receive own-scorecard read/export only.
 
 ## Phase 1 endpoint policy
 
@@ -225,3 +250,89 @@ Supplier ASN permissions never grant internal shipment or receipt access. Suppli
 | Correction creation              | `receiving.correct` plus project-write scope, CSRF, posted original receipt and line scope                         |
 
 `SYSTEM_ADMIN` and `PROJECT_MANAGER` receive all internal Phase 5B grants. `WAREHOUSE` receives shipment read/arrival and receipt read/write/post/correct. Management, PPIC, QA/QC, production, finance-readonly, and auditor-readonly receive the documented read grants; engineering and purchasing receive shipment read. Supplier roles receive ASN read/write/transition only for their organization. Supplier B, cross-line, inactive assignment, real/nonexistent, CSRF, and field-filtering negative evidence is automated.
+
+## Phase 6A receiving-inspection decision model
+
+Inspection permissions never create project scope and supplier roles receive none. Every inspection route composes the operation permission with internal project scope; checks, lots, documents, and definitions are re-scoped through their parent objects before data is returned or changed. Permission preflight precedes protected identifier resolution.
+
+| API surface                            | Required policy                                                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Inspection work queue/detail           | `inspection.read` plus project-read scope                                                                                 |
+| Check-definition list/create/update    | `inspection.configure`; unsafe commands also require CSRF, active item/UOM references, and expected version on update     |
+| Explicit inspection creation           | `inspection.create` plus project-write scope, CSRF, an awaiting lot, active definitions, and no existing inspection       |
+| Checklist/measurement/certificate save | `inspection.write` plus project-write scope, CSRF, expected version, and evidence-document approval/association checks    |
+| Ordinary finalization                  | `inspection.finalize` plus project-write scope, CSRF, expected version, complete required checks, and quantity invariants |
+| Conditional acceptance                 | Ordinary finalization plus independent `inspection.conditional-accept`; the authorizer and dedicated audit are retained   |
+
+`SYSTEM_ADMIN` receives all inspection grants but remains subject to active membership, project scope, CSRF, versions, evidence, quantity, and audit controls. `QA_QC` receives all operational inspection grants. `PROJECT_MANAGER` can read/create/record/finalize but cannot configure checks or conditionally accept. `WAREHOUSE` can read and explicitly create an inspection. Management, PPIC, production, finance-readonly, and auditor-readonly can read only. Suppliers, engineering, and purchasing receive no inspection grant. Authorization tests cover real/nonexistent supplier denial, project-manager conditional-acceptance denial, CSRF, and successful independently authorized conditional acceptance with audit evidence.
+
+## Phase 6B NCR and material-allocation decision model
+
+NCR permissions never create project scope. Internal list/detail and commands compose `ncr.*` with existing project policy. Supplier permissions grant no internal NCR view and require an active exact supplier organization/project assignment in repository queries. Allocation permissions are internal-only and compose with project scope. Conditional use is independent of ordinary creation permission.
+
+| API surface                     | Required policy                                                                                                                         |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Internal NCR list/detail        | `ncr.read` plus project-read scope                                                                                                      |
+| NCR creation                    | `ncr.create` plus project-write scope, CSRF, valid source, derived/assigned active project supplier                                     |
+| NCR issue                       | `ncr.issue` plus project-write scope, CSRF, expected version, draft state, reason                                                       |
+| NCR close/cancel                | `ncr.close` plus project-write scope, CSRF, expected version, valid transition, reason                                                  |
+| Supplier NCR list/detail        | `supplier.ncr.read`, exact organization, exact active project assignment, issued/responded/closed state, supplier-safe allowlist        |
+| Supplier response append        | `supplier.ncr.respond`, supplier object scope, CSRF, expected version, open supplier-response state                                     |
+| Allocation list/detail/options  | `allocation.read` plus project-read scope                                                                                               |
+| Allocation creation             | `allocation.create` plus project-write scope, CSRF, accepted lot, current released matching BOM line, precision and locked availability |
+| Conditional material allocation | Ordinary creation plus independent `allocation.conditional-use`, retained disposition authority, reason, authorizer and dedicated audit |
+| Allocation release              | `allocation.release` plus project-write scope, CSRF, expected version, active allocation, reason                                        |
+| Allocation consumption          | `allocation.consume` plus project-write scope, CSRF, expected version, active allocation, reason                                        |
+
+`SYSTEM_ADMIN` remains subject to all scope/state/concurrency/audit controls. `QA_QC` receives all NCR/allocation grants including conditional use. `PROJECT_MANAGER` receives NCR and ordinary allocation commands but not conditional use. `PURCHASING` receives NCR commands and allocation read; `WAREHOUSE` and `PPIC` can create/release ordinary allocations; `PRODUCTION` can consume. Read-only roles receive only the mapped reads. Both supplier roles receive own-organization NCR read/respond only. Supplier A/B, missing-object equivalence, field absence, CSRF, project-manager conditional-use denial, and successful independently authorized use are automated.
+
+## Phase 7A material-requirement status decision model
+
+Phase 7A adds no permission key. The projection reuses the established internal `bom.read` grant because it is a released-BOM read model, and composes it with existing project-read scope. Every seeded internal role already holding `bom.read` retains its existing project-scope rules. Supplier roles do not hold `bom.read`, so supplier project assignment alone cannot expose the projection.
+
+| API surface                                                    | Required policy                                                       |
+| -------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `GET /api/v1/projects/{projectId}/material-requirement-status` | Active internal membership + `bom.read` + existing project-read scope |
+
+The endpoint is read-only and requires no CSRF token. It exposes no supplier-specific representation.
+
+## Phase 7B readiness decision model
+
+Readiness permission never creates project scope. Every route requires an active internal membership with `readiness.read` and `project.read`; project routes additionally apply the existing project-read policy. The management route applies the same system-administrator, same-organization management, and active explicit assignment predicates in its repository query. Supplier and customer roles receive no readiness grant.
+
+| API surface                    | Required policy                                                                    |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
+| Management readiness dashboard | Internal `readiness.read` + `project.read`; repository-scoped authorized projects  |
+| Project/work-package overview  | Internal `readiness.read` + project-read scope                                     |
+| Material-readiness board       | Internal `readiness.read` + project-read scope; minimized persisted inputs         |
+| Readiness history              | Internal `readiness.read` + project-read scope; immutable snapshot representations |
+
+All seeded internal roles receive `readiness.read` because their existing duties already include released-BOM visibility; ordinary roles still require active project assignment. Supplier real/nonexistent project attempts are equivalent forbidden responses. There is no readiness write route or supplier representation.
+
+## Phase 8A notification decision model
+
+Notification inbox and preference operations are authenticated-user self-service and add no role grant. Notification creation never broadens project scope: only active internal users on an active exact project-member assignment are recipients, and inbox reads recheck that assignment. Supplier users receive no Phase 8A readiness notification.
+
+| API surface                                        | Required policy                                                                                             |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/notifications`                        | Active authenticated principal; own user ID; current active project assignment on every returned row        |
+| `POST /api/v1/notifications/{notificationId}/read` | Active authenticated principal; own notification; current active project assignment; CSRF                   |
+| `GET /api/v1/notification-preferences`             | Active authenticated principal; own user ID                                                                 |
+| `PUT /api/v1/notification-preferences/{type}`      | Active authenticated principal; own user ID; supported type; CSRF; expected version; same-transaction audit |
+
+Inaccessible and nonexistent notification identifiers return the same not-found response. A request cannot supply a user ID, email address, project ID, delivery status, or source event.
+
+## Phase 8B report and supplier-scorecard decision model
+
+Report permissions never create project or source-object scope. Internal routes require the Phase 8B permission plus existing `project.read`, `readiness.read`, and `bom.read`; supplier performance additionally requires purchase-order, shipment, inspection, and NCR reads. Repository predicates apply the existing system-administrator, same-organization management, or active explicit project-member rules before rows are loaded.
+
+| API surface                            | Required policy                                                                                                          |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Project Readiness Report               | Internal `report.read` + `project.read` + `readiness.read` + `bom.read` + authorized project predicate                   |
+| Material Exceptions Report             | Internal report policy plus current released-material/readiness scope                                                    |
+| Internal Supplier Performance Report   | Internal report policy + `scorecard.read` + PO/shipment/inspection/NCR reads + authorized project/supplier filters       |
+| Internal CSV/XLSX export               | Corresponding read policy + `report.export` + bounded rows + formula sanitization + immutable export audit               |
+| Own Supplier Scorecard                 | `supplier.scorecard.read` + exact active supplier membership + active exact project assignment; aggregate allowlist only |
+| Own Supplier Scorecard CSV/XLSX export | Own-scorecard policy + `supplier.scorecard.export` + bounded rows + formula sanitization + immutable export audit        |
+
+Supplier requests cannot provide `supplierOrganizationId`; it is derived from the authenticated membership. Supplier A cannot access Supplier B scorecards, rows, filters, trends, or underlying objects. Supplier real-foreign and nonexistent identifiers are equivalent because no supplier identifier lookup surface exists. Browser route visibility is presentation only.

@@ -20,6 +20,8 @@ const validProductionEnvironment = {
   NODE_ENV: "production",
   S3_ACCESS_KEY: "production-access-key",
   S3_ENDPOINT: "https://objects.internal",
+  S3_KMS_KEY_ID: "kms://production/object-storage-key",
+  S3_SERVER_SIDE_ENCRYPTION: "aws:kms",
   S3_SECRET_KEY: "production-secret-key",
   WEB_BASE_URL: "https://mecoflow.example.com",
   OIDC_ISSUER: "https://identity.example.com/realms/mecoflow",
@@ -33,6 +35,7 @@ describe("parseServiceEnvironment", () => {
     const result = parseServiceEnvironment(validEnvironment);
     expect(result.APP_TIMEZONE).toBe("Asia/Jakarta");
     expect(result.API_PORT).toBe(3001);
+    expect(result.SMTP_ENABLED).toBe(false);
     expect(result.VIRUS_SCANNER_ENABLED).toBe(false);
   });
 
@@ -122,6 +125,45 @@ describe("parseServiceEnvironment", () => {
     ).toThrow("Invalid service environment: S3_ACCESS_KEY, S3_SECRET_KEY");
   });
 
+  it("requires HTTPS and an explicit valid production object-encryption contract", () => {
+    expect(() =>
+      parseServiceEnvironment({
+        ...validProductionEnvironment,
+        S3_ENDPOINT: "http://objects.internal",
+        S3_SERVER_SIDE_ENCRYPTION: undefined,
+      }),
+    ).toThrow(
+      "Invalid service environment: S3_ENDPOINT, S3_SERVER_SIDE_ENCRYPTION",
+    );
+
+    expect(() =>
+      parseServiceEnvironment({
+        ...validProductionEnvironment,
+        S3_KMS_KEY_ID: "",
+      }),
+    ).toThrow("Invalid service environment: S3_KMS_KEY_ID");
+
+    expect(
+      parseServiceEnvironment({
+        ...validProductionEnvironment,
+        S3_KMS_KEY_ID: "",
+        S3_SERVER_SIDE_ENCRYPTION: "AES256",
+      }).S3_SERVER_SIDE_ENCRYPTION,
+    ).toBe("AES256");
+  });
+
+  it("keeps the production-mode staging runtime compatible with internal unencrypted MinIO", () => {
+    const staging = parseServiceEnvironment({
+      ...validProductionEnvironment,
+      APP_ENV: "staging",
+      S3_ENDPOINT: "http://minio:9000",
+      S3_KMS_KEY_ID: undefined,
+      S3_SERVER_SIDE_ENCRYPTION: undefined,
+    });
+    expect(staging.APP_ENV).toBe("staging");
+    expect(staging.S3_SERVER_SIDE_ENCRYPTION).toBeUndefined();
+  });
+
   it("requires virus scanning in production", () => {
     expect(() =>
       parseServiceEnvironment({
@@ -129,6 +171,29 @@ describe("parseServiceEnvironment", () => {
         VIRUS_SCANNER_ENABLED: "false",
       }),
     ).toThrow("Invalid service environment: VIRUS_SCANNER_ENABLED");
+  });
+
+  it("supports local Mailpit but rejects insecure production SMTP", () => {
+    const local = parseServiceEnvironment({
+      ...validEnvironment,
+      SMTP_ENABLED: "true",
+      SMTP_HOST: "127.0.0.1",
+      SMTP_PORT: "1025",
+    });
+    expect(local.SMTP_ENABLED).toBe(true);
+    expect(local.SMTP_PORT).toBe(1025);
+
+    expect(() =>
+      parseServiceEnvironment({
+        ...validProductionEnvironment,
+        SMTP_ENABLED: "true",
+        SMTP_HOST: "smtp.example.com",
+        SMTP_FROM_EMAIL: "notifications@example.com",
+        SMTP_PASSWORD: "secret",
+        SMTP_SECURE: "false",
+        SMTP_USERNAME: "mecoflow",
+      }),
+    ).toThrow("Invalid service environment: SMTP_ENABLED");
   });
 
   it("reports malformed production URLs as safe field errors", () => {

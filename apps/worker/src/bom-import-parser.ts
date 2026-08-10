@@ -9,6 +9,9 @@ export const BOM_IMPORT_COLUMNS = [
   "notes",
 ] as const;
 
+const MAX_IMPORT_ROWS = 5_000;
+const MAX_XLSX_UNCOMPRESSED_BYTES = 20 * 1024 * 1024;
+
 export interface ImportIssue {
   code: string;
   field: string;
@@ -89,6 +92,8 @@ function parseCsvRecords(
     } else if (character === "\n") {
       cells.push(cell.endsWith("\r") ? cell.slice(0, -1) : cell);
       records.push({ cells, rowNumber: recordLine });
+      if (records.length > MAX_IMPORT_ROWS + 1)
+        throw new ImportFileError("ROW_LIMIT_EXCEEDED");
       cells = [];
       cell = "";
       line += 1;
@@ -99,6 +104,8 @@ function parseCsvRecords(
   if (cell.length > 0 || cells.length > 0) {
     cells.push(cell.endsWith("\r") ? cell.slice(0, -1) : cell);
     records.push({ cells, rowNumber: recordLine });
+    if (records.length > MAX_IMPORT_ROWS + 1)
+      throw new ImportFileError("ROW_LIMIT_EXCEEDED");
   }
   return records;
 }
@@ -119,7 +126,7 @@ function rowsFromTable(
     BOM_IMPORT_COLUMNS.some((column, index) => header[index] !== column)
   )
     throw new ImportFileError("INVALID_HEADERS");
-  if (records.length - 1 > 5000)
+  if (records.length - 1 > MAX_IMPORT_ROWS)
     throw new ImportFileError("ROW_LIMIT_EXCEEDED");
   return records.slice(1).map((record) => {
     if (record.cells.length > 20)
@@ -222,7 +229,7 @@ function unzip(buffer: Buffer): Map<string, Buffer> {
       throw new ImportFileError("UNSAFE_XLSX_CONTENT");
     totalSize += uncompressedSize;
     if (
-      totalSize > 20 * 1024 * 1024 ||
+      totalSize > MAX_XLSX_UNCOMPRESSED_BYTES ||
       (compressedSize > 0 && uncompressedSize / compressedSize > 200)
     )
       throw new ImportFileError("UNSAFE_XLSX_ARCHIVE");
@@ -233,7 +240,14 @@ function unzip(buffer: Buffer): Map<string, Buffer> {
     const start = localOffset + 30 + localNameLength + localExtraLength;
     const compressed = buffer.subarray(start, start + compressedSize);
     const data =
-      compression === 8 ? inflateRawSync(compressed) : Buffer.from(compressed);
+      compression === 8
+        ? inflateRawSync(compressed, {
+            maxOutputLength: Math.min(
+              uncompressedSize + 1,
+              MAX_XLSX_UNCOMPRESSED_BYTES + 1,
+            ),
+          })
+        : Buffer.from(compressed);
     if (data.length !== uncompressedSize)
       throw new ImportFileError("INVALID_XLSX_ARCHIVE");
     entries.set(name, data);
@@ -292,6 +306,8 @@ function parseXlsxUnchecked(buffer: Buffer): RawImportRow[] {
             : xmlText(raw ?? "");
     }
     records.push({ cells, formulaColumns, rowNumber });
+    if (records.length > MAX_IMPORT_ROWS + 1)
+      throw new ImportFileError("ROW_LIMIT_EXCEEDED");
   }
   return rowsFromTable(records);
 }

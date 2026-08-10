@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import type { JsonLogger } from "./logger.js";
+import { normalizeMetricRoute } from "./monitoring/metrics-registry.js";
+import type { MetricsRegistry } from "./monitoring/metrics-registry.js";
 
 const safeIdentifier = /^[A-Za-z0-9._:-]{1,128}$/;
 
@@ -11,7 +13,7 @@ function headerIdentifier(
   return candidate && safeIdentifier.test(candidate) ? candidate : undefined;
 }
 
-export function requestLogging(logger: JsonLogger) {
+export function requestLogging(logger: JsonLogger, metrics: MetricsRegistry) {
   return (request: Request, response: Response, next: NextFunction): void => {
     const startedAt = performance.now();
     const requestId =
@@ -19,23 +21,27 @@ export function requestLogging(logger: JsonLogger) {
     const correlationId =
       headerIdentifier(request.headers["x-correlation-id"]) ?? requestId;
 
-    response.removeHeader("X-Powered-By");
-    response.setHeader("Cache-Control", "no-store");
-    response.setHeader(
-      "Content-Security-Policy",
-      "default-src 'none'; frame-ancestors 'none'",
-    );
-    response.setHeader("Referrer-Policy", "no-referrer");
-    response.setHeader("X-Content-Type-Options", "nosniff");
     response.setHeader("X-Request-Id", requestId);
     response.locals.requestId = requestId;
     response.locals.correlationId = correlationId;
 
     response.once("finish", () => {
+      const durationMs = Number((performance.now() - startedAt).toFixed(2));
+      const routePath = (request.route as { path?: unknown } | undefined)?.path;
+      metrics.recordHttpRequest({
+        durationMs,
+        method: request.method,
+        route: normalizeMetricRoute(
+          routePath,
+          request.path,
+          response.statusCode,
+        ),
+        statusCode: response.statusCode,
+      });
       logger.info(
         {
           correlationId,
-          durationMs: Number((performance.now() - startedAt).toFixed(2)),
+          durationMs,
           httpStatus: response.statusCode,
           method: request.method,
           requestId,

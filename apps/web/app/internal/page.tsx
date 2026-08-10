@@ -14,6 +14,18 @@ export default async function InternalHomePage() {
         <h2>Active organization</h2>
         <p>{me.memberships[0]?.organization.name}</p>
       </section>
+      {me.memberships.some((membership) =>
+        membership.permissions.includes("readiness.read"),
+      ) ? (
+        <section className="panel">
+          <h2>Management readiness</h2>
+          <p>
+            <a href="/internal/readiness">
+              Review weighted readiness, critical gates, blockers, and actions
+            </a>
+          </p>
+        </section>
+      ) : null}
       <section className="panel">
         <h2>Project workspace</h2>
         <p>

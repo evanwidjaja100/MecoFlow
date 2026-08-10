@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "replace-me",
+  "verifiedAt": "replace-me",
+  "endpoint": "https://objects.example.com",
+  "bucket": "mecoflow-production-private",
+  "applicationEncryption": "aws:kms",
+  "kmsKeyReference": "replace-me",
+  "kmsBackedProviderEncryption": true,
+  "writeProbeEncrypted": true,
+  "readProbeEncrypted": true,
+  "denyUnencryptedWrite": true,
+  "anonymousAccessDenied": true,
+  "versioningEnabled": true
+}

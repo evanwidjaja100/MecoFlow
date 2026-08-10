@@ -39,7 +39,11 @@ test("uploads through quarantine and shows the document security table", async (
     "SCAN FAILED",
     { timeout: 20_000 },
   );
-  await uploadedDocument.locator("summary").click();
+  const isOpen = await uploadedDocument.evaluate(
+    (element) => (element as HTMLDetailsElement).open,
+  );
+  if (!isOpen) await uploadedDocument.locator("summary").click();
+  await expect(uploadedDocument).toHaveAttribute("open", "");
   await expect(
     uploadedDocument.getByText("SCAN FAILED", { exact: true }),
   ).toBeVisible();

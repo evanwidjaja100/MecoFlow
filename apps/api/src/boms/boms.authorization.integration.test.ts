@@ -139,4 +139,118 @@ describeWithDatabase("Phase 3B BOM authorization", () => {
     );
     expect(response.status).toBe(403);
   });
+
+  it("keeps the Phase 7A projection internal and project scoped", async () => {
+    const admin = await authenticated(localFixtures.internalAdminUserId);
+    const allowed = await fetch(
+      `${baseUrl}/api/v1/projects/${phaseTwoFixtures.demoProjectId}/material-requirement-status`,
+      { headers: { cookie: admin.cookie } },
+    );
+    expect(allowed.status).toBe(200);
+    const body = (await allowed.json()) as {
+      data: Array<Record<string, unknown>>;
+      modelVersion: string;
+    };
+    expect(body.modelVersion).toBe("material-requirement-status-v1");
+    expect(
+      body.data.every(
+        (line) =>
+          !("supplierOrganizationId" in line) &&
+          !("internalNotes" in line) &&
+          !("auditEvents" in line),
+      ),
+    ).toBe(true);
+
+    const supplier = await authenticated(localFixtures.supplierAdminUserId);
+    const denied = await Promise.all(
+      [
+        phaseTwoFixtures.demoProjectId,
+        "ffffffff-ffff-4fff-8fff-ffffffffffff",
+      ].map((projectId) =>
+        fetch(
+          `${baseUrl}/api/v1/projects/${projectId}/material-requirement-status`,
+          { headers: { cookie: supplier.cookie } },
+        ),
+      ),
+    );
+    expect(denied.map(({ status }) => status)).toEqual([403, 403]);
+    const deniedBodies = (await Promise.all(
+      denied.map((response) => response.json()),
+    )) as Array<{ error: unknown }>;
+    expect(deniedBodies[0]?.error).toEqual(deniedBodies[1]?.error);
+  });
+
+  it("keeps every Phase 7B dashboard internal, scoped, and explanation complete", async () => {
+    const admin = await authenticated(localFixtures.internalAdminUserId);
+    const management = await fetch(`${baseUrl}/api/v1/readiness/management`, {
+      headers: { cookie: admin.cookie },
+    });
+    expect(management.status).toBe(200);
+    const managementBody = (await management.json()) as {
+      data: Array<Record<string, unknown>>;
+      pagination: {
+        page: number;
+        pageSize: number;
+        total: number;
+        totalPages: number;
+      };
+    };
+    expect(managementBody.data.length).toBeLessThanOrEqual(20);
+    expect(managementBody.pagination).toMatchObject({
+      page: 1,
+      pageSize: 20,
+    });
+    expect(
+      managementBody.data.every(
+        (snapshot) =>
+          Array.isArray(snapshot.blockers) &&
+          Array.isArray(snapshot.reasonCodes) &&
+          Array.isArray(snapshot.recommendedActions) &&
+          typeof snapshot.explanation === "string" &&
+          !("inputs" in snapshot) &&
+          !("supplierOrganizationId" in snapshot) &&
+          !("auditEvents" in snapshot),
+      ),
+    ).toBe(true);
+    expect(
+      (
+        await fetch(
+          `${baseUrl}/api/v1/readiness/management?page=1&pageSize=101`,
+          { headers: { cookie: admin.cookie } },
+        )
+      ).status,
+    ).toBe(422);
+
+    for (const suffix of ["", "/materials", "/history"]) {
+      const response = await fetch(
+        `${baseUrl}/api/v1/projects/${phaseTwoFixtures.demoProjectId}/readiness${suffix}`,
+        { headers: { cookie: admin.cookie } },
+      );
+      expect(response.status).toBe(200);
+    }
+
+    const supplier = await authenticated(localFixtures.supplierAdminUserId);
+    expect(
+      (
+        await fetch(`${baseUrl}/api/v1/readiness/management`, {
+          headers: { cookie: supplier.cookie },
+        })
+      ).status,
+    ).toBe(403);
+    const denied = await Promise.all(
+      [
+        phaseTwoFixtures.demoProjectId,
+        "ffffffff-ffff-4fff-8fff-ffffffffffff",
+      ].map((projectId) =>
+        fetch(`${baseUrl}/api/v1/projects/${projectId}/readiness`, {
+          headers: { cookie: supplier.cookie },
+        }),
+      ),
+    );
+    expect(denied.map(({ status }) => status)).toEqual([403, 403]);
+    const deniedBodies = (await Promise.all(
+      denied.map((response) => response.json()),
+    )) as Array<{ error: unknown }>;
+    expect(deniedBodies[0]?.error).toEqual(deniedBodies[1]?.error);
+  });
 });

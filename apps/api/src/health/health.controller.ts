@@ -4,6 +4,7 @@ import {
   Inject,
   ServiceUnavailableException,
 } from "@nestjs/common";
+import { SkipThrottle } from "@nestjs/throttler";
 import {
   ApiOkResponse,
   ApiOperation,
@@ -14,6 +15,7 @@ import type { HealthResponse, ReadinessResponse } from "@mecoflow/contracts";
 import { HealthService } from "./health.service.js";
 
 @ApiTags("health")
+@SkipThrottle()
 @Controller("health")
 export class HealthController {
   constructor(

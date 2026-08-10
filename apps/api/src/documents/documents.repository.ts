@@ -21,6 +21,7 @@ export type AssociationInput = {
     | "ADVANCE_SHIPMENT_NOTICE"
     | "BOM"
     | "GOODS_RECEIPT"
+    | "RECEIVING_INSPECTION"
     | "PROJECT"
     | "PURCHASE_ORDER"
     | "PURCHASE_REQUISITION"
@@ -226,6 +227,15 @@ export class DocumentsRepository {
           ownerType === "INTERNAL" &&
           Boolean(
             await transaction.goodsReceipt.findFirst({
+              select: { id: true },
+              where: { id: association.entityId, projectId },
+            }),
+          );
+      if (association.entityType === "RECEIVING_INSPECTION")
+        valid =
+          ownerType === "INTERNAL" &&
+          Boolean(
+            await transaction.receivingInspection.findFirst({
               select: { id: true },
               where: { id: association.entityId, projectId },
             }),

@@ -6,6 +6,7 @@ import {
   postGoodsReceipt,
   uploadReceiptPhoto,
 } from "../actions";
+import { createExplicitInspection } from "../../inspections/actions";
 import { goodsReceipt } from "../data";
 
 function can(me: Awaited<ReturnType<typeof requireMe>>, permission: string) {
@@ -36,6 +37,7 @@ export default async function GoodsReceiptPage({
     receipt.kind === "RECEIPT" &&
     can(me, "receiving.correct");
   const mayUpload = can(me, "document.upload");
+  const mayCreateInspection = can(me, "inspection.create");
   const now = new Date().toISOString().slice(0, 16);
   return (
     <main className="workspace workspace--tablet">
@@ -149,6 +151,18 @@ export default async function GoodsReceiptPage({
                   </dd>
                 </div>
               </dl>
+              {line.inventoryLot?.status === "AWAITING_INSPECTION" &&
+              mayCreateInspection ? (
+                <form action={createExplicitInspection}>
+                  <input type="hidden" name="projectId" value={projectId} />
+                  <input
+                    type="hidden"
+                    name="inventoryLotId"
+                    value={line.inventoryLot.id}
+                  />
+                  <button type="submit">Open receiving inspection</button>
+                </form>
+              ) : null}
             </article>
           ))}
         </div>

@@ -19,6 +19,12 @@ export default async function SupplierLayout({
           <a href="/supplier">Overview</a>
           <a href="/supplier/purchase-orders">Purchase orders</a>
           <a href="/supplier/asns">Shipment notices</a>
+          <a href="/supplier/ncrs">Nonconformance reports</a>
+          {me.memberships.some((membership) =>
+            membership.permissions.includes("supplier.scorecard.read"),
+          ) ? (
+            <a href="/supplier/scorecard">Scorecard</a>
+          ) : null}
         </nav>
       </aside>
       <div className="shell-content">

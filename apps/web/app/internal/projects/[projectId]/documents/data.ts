@@ -16,6 +16,7 @@ export interface ProjectDocument {
     entityType:
       | "ADVANCE_SHIPMENT_NOTICE"
       | "GOODS_RECEIPT"
+      | "RECEIVING_INSPECTION"
       | "PROJECT"
       | "WORK_PACKAGE"
       | "BOM"

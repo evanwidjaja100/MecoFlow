@@ -17,6 +17,17 @@ export default async function InternalLayout({
         <nav aria-label="Internal navigation">
           <a href="/internal">Overview</a>
           <a href="/internal/projects">Projects</a>
+          <a href="/internal/notifications">Notifications</a>
+          {me.memberships.some((membership) =>
+            membership.permissions.includes("readiness.read"),
+          ) ? (
+            <a href="/internal/readiness">Readiness</a>
+          ) : null}
+          {me.memberships.some((membership) =>
+            membership.permissions.includes("report.read"),
+          ) ? (
+            <a href="/internal/reports">Reports</a>
+          ) : null}
           {me.memberships.some((membership) =>
             membership.permissions.includes("item.read"),
           ) ? (
