@@ -25,8 +25,9 @@ $env:APP_VERSION = '<candidate-version>'
 pnpm security:image-scan
 ```
 
-`IMAGE_SCAN_IMAGES` may contain a comma-separated image list for a bounded
-diagnostic scan. It must not replace the default policy image list for release
+`IMAGE_SCAN_IMAGES` may contain a comma-separated image list only when
+`IMAGE_SCAN_MODE=diagnostic`. A subset always exits nonzero and is labeled
+diagnostic, so it cannot replace the default policy inventory for release
 evidence. `TRIVY_TIMEOUT` may raise the per-image timeout when the Java database
 needs its first download; it does not alter the vulnerability threshold.
 
@@ -94,6 +95,13 @@ unique findings): one unfixed Red Hat OpenJDK finding and findings in Jackson,
 Microsoft JDBC, Netty, and PostgreSQL JDBC packages for which no newer official
 Keycloak image was available during the rehearsal. Evidence summary:
 `.runtime/security-scans/2026-08-01T17-02-48.813Z/summary.json`.
+
+A 2026-08-11 Phase 0 dirty-worktree diagnostic against the current immutable
+policy resolved 5/14 image identities. Redis passed with zero blockers;
+Keycloak, Prometheus, Alertmanager, and Blackbox Exporter reported 17, 28, 48,
+and 30 Critical/High occurrences respectively. The nine project-owned `:ci`
+images had not been built and failed identity resolution. This is blocker
+inventory, not authoritative scan evidence or Phase 2 remediation.
 
 The rebuilt staging stack reached healthy for PostgreSQL, Redis, MinIO,
 ClamAV, Keycloak 26.7.0, API, worker, web, and proxy. Migration, seed,

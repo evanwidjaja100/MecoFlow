@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   collectFindings,
+  candidateBuildTimestamp,
   evaluateFindings,
   expandImage,
+  requireCandidateImageVersion,
+  validatePhaseZeroScanEvidence,
   validatePolicy,
 } from "./container-scan-policy.mjs";
 
@@ -32,6 +35,22 @@ test("policy requires a digest-pinned scanner", () => {
   );
 });
 
+test("policy requires the exact Phase 0 critical and high severity set", () => {
+  const base = {
+    schemaVersion: 1,
+    scannerImage: "scanner@sha256:abc",
+    images: ["example/image:1"],
+    exceptions: [],
+  };
+  assert.doesNotThrow(() =>
+    validatePolicy({ ...base, severities: ["HIGH", "CRITICAL"] }),
+  );
+  assert.throws(
+    () => validatePolicy({ ...base, severities: ["CRITICAL"] }),
+    /exactly CRITICAL and HIGH/u,
+  );
+});
+
 test("expired exceptions fail policy validation", () => {
   assert.throws(
     () =>
@@ -39,6 +58,7 @@ test("expired exceptions fail policy validation", () => {
         {
           schemaVersion: 1,
           scannerImage: "scanner@sha256:abc",
+          severities: ["CRITICAL", "HIGH"],
           images: ["example/image:1"],
           exceptions: [{ ...approvedException, expiresOn: "2025-01-01" }],
         },
@@ -100,4 +120,111 @@ test("application-version placeholders expand exactly", () => {
     expandImage("mecoflow/api:${APP_VERSION}", "1.2.3"),
     "mecoflow/api:1.2.3",
   );
+});
+
+test("release image versions are exactly bound to the candidate SHA", () => {
+  const sha = "a".repeat(40);
+  assert.equal(requireCandidateImageVersion(sha, sha), sha);
+  assert.throws(
+    () => requireCandidateImageVersion("ci", sha),
+    /must exactly equal GITHUB_SHA/u,
+  );
+  assert.throws(
+    () => requireCandidateImageVersion(sha, "abc"),
+    /full 40-character/u,
+  );
+});
+
+test("candidate image build timestamps are deterministic commit timestamps", () => {
+  assert.equal(
+    candidateBuildTimestamp("2026-08-11T07:08:09+07:00"),
+    "2026-08-11T00:08:09Z",
+  );
+  assert.throws(() => candidateBuildTimestamp("now"), /valid ISO timestamp/u);
+});
+
+function phaseZeroFixture(status = "blocked") {
+  const image = "example/image:ci";
+  return {
+    policy: {
+      schemaVersion: 1,
+      scannerImage: "scanner@sha256:abc",
+      severities: ["CRITICAL", "HIGH"],
+      images: ["example/image:${APP_VERSION}"],
+      exceptions: [],
+    },
+    summary: {
+      schemaVersion: 1,
+      scannerImage: "scanner@sha256:abc",
+      appVersion: "ci",
+      diagnosticMode: false,
+      result: status === "blocked" ? "failed" : "passed",
+      results: [
+        {
+          image,
+          resolvedIdentity: `sha256:${"1".repeat(64)}`,
+          repoDigests: [],
+          status,
+          findingCount: status === "blocked" ? 1 : 0,
+          acceptedCount: 0,
+          blockingCount: status === "blocked" ? 1 : 0,
+          reportPath: ".runtime/security-scans/run/01.json",
+          logPath: ".runtime/security-scans/run/01.log",
+        },
+      ],
+    },
+  };
+}
+
+test("accepts complete blocked scans as retained Phase 2 diagnostics", () => {
+  const fixture = phaseZeroFixture();
+  assert.deepEqual(
+    validatePhaseZeroScanEvidence({
+      ...fixture,
+      appVersion: "ci",
+      stepOutcome: "failure",
+    }),
+    [],
+  );
+});
+
+test("rejects incomplete scans and mismatched step outcomes", () => {
+  const fixture = phaseZeroFixture();
+  fixture.summary.results[0].status = "scan-error";
+  const errors = validatePhaseZeroScanEvidence({
+    ...fixture,
+    appVersion: "ci",
+    stepOutcome: "success",
+  });
+  assert.ok(errors.some((error) => error.includes("did not complete")));
+  assert.ok(errors.some((error) => error.includes("outcome must be failure")));
+});
+
+test("rejects tag-like or composite resolved scan identities", () => {
+  const fixture = phaseZeroFixture("passed");
+  fixture.summary.results[0].resolvedIdentity =
+    "sha256:123|example/image@sha256:456";
+  const errors = validatePhaseZeroScanEvidence({
+    ...fixture,
+    appVersion: "ci",
+    stepOutcome: "success",
+  });
+  assert.ok(
+    errors.some((error) => error.includes("immutable sha256 image ID")),
+  );
+});
+
+test("rejects inconsistent counts, reused paths, and invalid digest mappings", () => {
+  const fixture = phaseZeroFixture("passed");
+  fixture.summary.results[0].findingCount = 1;
+  fixture.summary.results[0].repoDigests = ["example/image:mutable"];
+  fixture.summary.results.push({ ...fixture.summary.results[0] });
+  const errors = validatePhaseZeroScanEvidence({
+    ...fixture,
+    appVersion: "ci",
+    stepOutcome: "success",
+  });
+  assert.ok(errors.some((error) => error.includes("finding counts")));
+  assert.ok(errors.some((error) => error.includes("digest mapping")));
+  assert.ok(errors.some((error) => error.includes("paths must be unique")));
 });

@@ -6,11 +6,82 @@ verified 2026-08-01). The production-oriented staging stack, controlled
 migration, clean-target restore, real OIDC, pilot business flow, readiness,
 permissions, and bidirectional supplier isolation are verified. The release
 candidate is classified **NOT READY** because external pilot controls and
-approvals remain incomplete and the fail-closed release-image scan blocks on
-Keycloak 26.7.0. Ten other release images have zero HIGH/CRITICAL findings and
-no vulnerability exception is approved. The full formatting/lint/type/unit/integration/
+approvals remain incomplete. A Phase 0 diagnostic of the currently pinned
+Keycloak 26.7.0 digest reports 17 unresolved Critical/High occurrences and no
+vulnerability exception is approved.
+The full formatting/lint/type/unit/integration/
 build gate and the complete 15-scenario browser gate are green on clean
 isolated databases. This is not a production-readiness claim.
+
+## Production-readiness remediation status — 2026-08-13
+
+Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
+**IN PROGRESS / BLOCKED**. Phases 1 and 2 remain locked.
+
+The current uncommitted working tree adds or corrects Phase 0 repository
+controls: full-SHA Actions, digest-pinned external Dockerfile/Compose/scan
+references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
+CI, non-short-circuiting uncached command-level evidence with output hashes and
+exact environment identity and zero-skip/test-total enforcement, root
+documentation paths, executable governance and structured closure checks,
+exact required suite manifests, and fail-closed database/test prerequisites.
+Governance now cross-validates the executable
+worktree path count against both the reconciliation record and P0R-01 evidence.
+Every executable inventory row now carries its own exact allowed classification,
+so missing, duplicate, stale, or unclassified paths fail closed. The same gate
+performs a repeatable high-confidence secret-exposure probe without printing
+matched values. Storage and application-image setup are now evidence-wrapped;
+the nine project images are resolved to immutable IDs supplied through
+fail-closed Compose variables, and a final workspace-cleanliness gate detects
+source drift. The final build is wired to consume the production API URL only
+from a future approved endpoint matrix and retain it in the environment identity. The container job
+builds/pulls and scans the exact 14-image inventory with candidate-bound
+retained evidence. Known Phase 2 dependency/image blockers are
+retained as completed diagnostics without making Phase 0 depend on Phase 2
+remediation. Typed decision, endpoint, supported-version, original-draft,
+approval, remote-control, risk, defect, traceability, command-prerequisite, and
+evidence records live in `docs/readiness/`; closure rejects status-only or
+reused approvals and requires named role signers with stable identities,
+distinct independent review, evidence digests, and exact subject/scope binding.
+Closure additionally binds every approval identity and every blocker, defect,
+risk, and traceability owner to the approved roster; requires a distinct
+reviewer-operated reproduction run with non-overlapping artifacts; and verifies
+supported versions plus lockfile/container-policy hashes against candidate
+source bytes. A separate least-privilege finalization workflow now runs both
+the local closure policy and a read-only authenticated GitHub verifier. The
+external verifier downloads the two runs' artifacts and checks live repository,
+workflow, job, actor, artifact, approval, remote-control, input-hash, endpoint,
+and expiry data instead of trusting locally asserted IDs and digests.
+
+This work is not a completed baseline. There is no owner-approved committed
+Phase 0 SHA, clean-checkout CI result, immutable retained output, or independent
+reviewer. The latest local uncached formatting, lint, typecheck, 44-file/233-test
+unit, OpenAPI, and build diagnostics pass, as do all 74 governance tests and all
+12 container-policy tests with zero skipped/todo. The fail-closed closure check
+correctly rejects the current dirty/incomplete record. The security audit still
+reports the four exact High advisories recorded in `blockers.md`, all assigned
+to locked Phase 2. A current diagnostic resolved 5/14 immutable image
+identities: Redis passed, while Keycloak/Prometheus/Alertmanager/Blackbox
+Exporter reported 17/28/48/30 blockers; all nine unbuilt project image
+identities failed closed. Docker Engine `29.6.1` became available during the
+Phase 0 continuation; the standalone `psql` client remains unavailable. On
+fresh isolated Docker-backed PostgreSQL databases, all 22 migrations and the
+authoritative seed completed, integration passed 29 files/116 tests,
+authorization passed 14 files/53 tests, and the browser gate passed 15/15 with
+isolated API/web ports. Failed missing-database, invalid-`APP_ENV`, occupied-port,
+and changed-OIDC-issuer attempts were retained as diagnostics and did not touch
+the developer database or services. These dirty-worktree runs are not
+authoritative baseline evidence. GitHub now reports that the repository is
+public, `main` is unprotected, no repository rulesets or protected release environments exist,
+only one collaborator is present, all Actions are permitted without SHA-pinning
+enforcement, and all five governed Phase 0 labels are absent. The current APIs
+no longer reproduce the earlier plan-limitation response, but no remote control
+has been changed without owner authorization. Production
+providers/endpoints, exact browser support, SLO/RPO/
+RTO/retention/capacity decisions, procurement/support ownership, and the human
+owner/reviewer roster are unapproved. The project-image immutability mechanism
+is implemented but still lacks a committed candidate and retained build/Compose
+evidence. Release status therefore remains **NOT READY**.
 
 On 2026-08-02 the repository gained a provider-neutral production-control
 contract and preflight for external secret files, trusted TLS, KMS-backed

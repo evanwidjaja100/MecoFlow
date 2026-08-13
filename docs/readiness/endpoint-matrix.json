@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "approvalRecordId": null,
+  "public": {
+    "webUrl": null,
+    "apiBaseUrl": null,
+    "dnsNames": [],
+    "dnsZones": [],
+    "corsOrigins": []
+  },
+  "identity": {
+    "issuerUrl": null,
+    "callbackUrls": [],
+    "hostname": null
+  },
+  "proxy": {
+    "chain": [],
+    "trustedHopCount": null
+  },
+  "internal": {
+    "apiService": null,
+    "webService": null,
+    "workerAndDependencies": []
+  },
+  "build": {
+    "nextPublicApiBaseUrl": null
+  }
+}

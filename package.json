@@ -6,8 +6,8 @@
   "license": "UNLICENSED",
   "packageManager": "pnpm@11.13.0",
   "engines": {
-    "node": ">=24.0.0",
-    "pnpm": ">=11.0.0"
+    "node": "24.18.0",
+    "pnpm": "11.13.0"
   },
   "scripts": {
     "build": "turbo run build",
@@ -25,6 +25,8 @@
     "dev": "turbo run dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "governance:check": "node scripts/verify-repository-governance.mjs",
+    "governance:test": "node --test scripts/ci-command-evidence-policy.test.mjs scripts/ci-evidence-policy.test.mjs scripts/ci-step-evidence-integration.test.mjs scripts/ci-step-outcome-policy.test.mjs scripts/ci-trigger-policy.test.mjs scripts/container-scan-policy.test.mjs scripts/dependency-audit-policy.test.mjs scripts/phase-zero-closure-policy.test.mjs scripts/phase-zero-external-evidence-policy.test.mjs scripts/repository-governance-policy.test.mjs scripts/test-output-policy.test.mjs scripts/test-prerequisite-policy.test.mjs",
     "lint": "turbo run lint",
     "monitoring:config": "docker compose --env-file .runtime/staging/staging.env -f compose.staging.yaml -f compose.monitoring.yaml --profile monitoring config --quiet",
     "monitoring:validate": "node scripts/validate-monitoring-config.mjs",
@@ -32,6 +34,9 @@
     "openapi:generate": "pnpm --filter @mecoflow/api openapi:generate",
     "operations:preflight": "node scripts/verify-operational-readiness.mjs",
     "operations:preflight:test": "node --test scripts/operational-readiness-policy.test.mjs",
+    "phase0:closure": "pnpm phase0:closure:local && pnpm phase0:closure:external",
+    "phase0:closure:external": "node scripts/verify-phase-zero-external-evidence.mjs",
+    "phase0:closure:local": "node scripts/verify-phase-zero-closure.mjs",
     "performance:measure": "tsx scripts/measure-performance.ts",
     "pilot:check": "node scripts/check-pilot-artifacts.mjs",
     "prepare": "node scripts/prepare.mjs",
@@ -44,13 +49,13 @@
     "staging:config": "docker compose --env-file .runtime/staging/staging.env -f compose.staging.yaml --profile operations config --quiet",
     "staging:restore-rehearsal": "powershell -NoProfile -ExecutionPolicy Bypass -File infra/scripts/run-backup-restore-rehearsal.ps1",
     "staging:pilot-acceptance": "powershell -NoProfile -ExecutionPolicy Bypass -File infra/scripts/run-pilot-acceptance.ps1",
-    "test": "turbo run test",
+    "test": "node scripts/verify-test-prerequisites.mjs unit && turbo run test",
     "test:authorization": "turbo run test:authorization",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/verify-test-prerequisites.mjs e2e && pnpm --filter @mecoflow/web build && playwright test",
     "test:integration": "turbo run test:integration",
     "test:staging-smoke": "playwright test --config playwright.staging.config.ts",
     "typecheck": "turbo run typecheck",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration && pnpm build"
+    "verify": "pnpm governance:test && pnpm governance:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration && pnpm build"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

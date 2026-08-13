@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "approvalRecordId": null,
+  "lockfileSha256": "99ca92f59dc8dc6f441cbd300a549ae7990f9db081b775b4a7610b43a840b1bb",
+  "application": {
+    "node": "24.18.0",
+    "pnpm": "11.13.0",
+    "typescript": "6.0.3",
+    "turborepo": "2.10.5",
+    "prisma": "7.9.0",
+    "playwright": "1.61.1"
+  },
+  "data": {
+    "postgresImage": "postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15",
+    "redisImage": "redis:8.2-alpine@sha256:a7859ed111db3c1f5404a973a4747505d559fb5ca32d37e447afc0ef845a2103"
+  },
+  "browsers": {
+    "chromeMajor": null,
+    "edgeMajor": null,
+    "firefoxMajor": null,
+    "safariVersion": null
+  },
+  "operatingSystems": {
+    "windows": null,
+    "macos": null,
+    "ios": null,
+    "ipados": null,
+    "android": null
+  },
+  "deployment": {
+    "platform": null,
+    "tool": null,
+    "version": null
+  }
+}

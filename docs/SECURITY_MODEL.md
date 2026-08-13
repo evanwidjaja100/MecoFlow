@@ -6,7 +6,7 @@ MECO Flow denies access by default, validates every trust boundary, minimizes di
 
 ## Authentication and sessions
 
-Keycloak is the sole identity provider. Phase 1 will implement OIDC Authorization Code with PKCE using secure HttpOnly cookies or a backend-for-frontend session; browser local storage must never contain access or refresh tokens. Production has no default administrator credentials, uses Secure cookies and an explicit SameSite/CSRF design, and restricts Keycloak administration.
+Keycloak is the sole identity provider. The historical Phase 1 implementation established OIDC Authorization Code with PKCE using secure HttpOnly cookies and a backend-for-frontend session; browser local storage must never contain access or refresh tokens. The production-readiness program revalidates systemic authorization and attribution in its separately authorized Phase 1. Production has no default administrator credentials, uses Secure cookies and an explicit SameSite/CSRF design, and restricts Keycloak administration.
 
 ## Authorization decision
 

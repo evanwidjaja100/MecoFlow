@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine AS minio-client
+FROM golang:1.26-alpine@sha256:0178a641fbb4858c5f1b48e34bdaabe0350a330a1b1149aabd498d0699ff5fb2 AS minio-client
 
 ARG MC_SOURCE_REF=77f82e18b5401a65958f1619df6ebb994634bd88
 ARG MC_SOURCE_SHA256=167415edd21bc29f5360943dac64272aa5cda0a39f3070b15cfeca671c43d975
@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       -ldflags "-s -w -X github.com/minio/mc/cmd.Version=2025-11-06T16:25:29Z -X github.com/minio/mc/cmd.CopyrightYear=2025 -X github.com/minio/mc/cmd.ReleaseTag=RELEASE.2025-11-06T16-25-29Z -X github.com/minio/mc/cmd.CommitID=${MC_SOURCE_REF} -X github.com/minio/mc/cmd.ShortCommitID=77f82e18b540" \
       -o /out/mc .
 
-FROM postgres:18-alpine AS runtime
+FROM postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15 AS runtime
 ARG APP_VERSION=0.0.0-unknown
 ARG BUILD_DATE=unknown
 ARG VCS_REF=unknown

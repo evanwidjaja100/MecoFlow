@@ -5,7 +5,7 @@ It combines fictional staging data, role-specific operating guides, executable
 acceptance evidence, daily control checks, and explicit go-live/rollback gates.
 
 This package does not assert production readiness. A pilot decision must use the
-classification and evidence recorded in `docs/IMPLEMENTATION_STATUS.md`, and
+classification and evidence recorded in `IMPLEMENTATION_STATUS.md`, and
 must remain `NOT READY` whenever restoration, security, isolation, acceptance,
 or critical data-integrity evidence is missing.
 

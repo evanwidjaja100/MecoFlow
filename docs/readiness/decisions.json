@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "approvalRecordIds": {
+    "D-01": null,
+    "D-02": null,
+    "D-03": null,
+    "D-04": null,
+    "D-05": null,
+    "D-06": null,
+    "D-07": null,
+    "D-08": null,
+    "D-09": null,
+    "D-10": null
+  },
+  "decisions": {
+    "D-01": {
+      "availabilityPercent": 99.5,
+      "latencyP95Ms": 1000,
+      "latencyP99Ms": 2000,
+      "maxErrorPercent": 1,
+      "measurementWindow": null,
+      "scope": null,
+      "exclusions": [],
+      "errorBudgetPolicy": null
+    },
+    "D-02": {
+      "rpoHours": 4,
+      "rtoHours": 8,
+      "recoveryScope": null,
+      "completeSetDefinition": null,
+      "verificationOwnerRoleId": "DATA-OWNER"
+    },
+    "D-03": {
+      "auditEvidenceDays": 365,
+      "monitoringDays": 30,
+      "documentDays": null,
+      "notificationDays": null,
+      "backupDays": null,
+      "privacyErasureDays": null,
+      "legalHoldPolicy": null
+    },
+    "D-04": {
+      "minimumHeadroomPercent": 30,
+      "maximumQueueRecoverySeconds": 300,
+      "peakNamedUsers": null,
+      "peakConcurrentSessions": null,
+      "projects": null,
+      "itemsAndBomLines": null,
+      "documentsAndBytes": null,
+      "reportConcurrency": null,
+      "queueRateAndDepth": null,
+      "annualGrowthPercent": null,
+      "planningHorizonMonths": null,
+      "seasonality": null
+    },
+    "D-05": {
+      "locales": ["en", "id"],
+      "timezone": "Asia/Jakarta",
+      "currency": "IDR",
+      "units": "metric",
+      "supportOwnerRoleId": "PRODUCT-OWNER"
+    },
+    "D-06": {
+      "supportedVersionsRef": "docs/readiness/supported-versions.json",
+      "phoneViewport": "390x844",
+      "tabletViewport": "768x1024",
+      "desktopMinimumWidth": 1280,
+      "inputModes": ["keyboard", "touch"],
+      "zoomPercent": [200, 400],
+      "forcedColors": true,
+      "reducedMotion": true
+    },
+    "D-07": {
+      "wcag": "2.2 AA",
+      "generalTargetPx": 44,
+      "warehouseQaTargetMinPx": 48,
+      "warehouseQaTargetMaxPx": 52
+    },
+    "D-08": {
+      "product": "Keycloak",
+      "distribution": null,
+      "version": null,
+      "hostingModel": null,
+      "regionsAndHa": null,
+      "supportTierAndSla": null,
+      "patchCadence": null,
+      "supportOwnerRoleId": "IDENTITY-OWNER",
+      "procurementReference": null,
+      "procurementStatus": null,
+      "procurementStartedAt": null,
+      "procurementEvidenceUri": null,
+      "procurementEvidenceSha256": null,
+      "exitStrategy": null,
+      "realmClientClaimContract": null,
+      "mfaRecoveryBreakGlassContract": null,
+      "keyRotationRevocationBackupContract": null
+    },
+    "D-09": {
+      "provider": null,
+      "productAndTier": null,
+      "s3Compatible": true,
+      "minioDevelopmentOnly": true,
+      "accountRegionEndpoint": null,
+      "supportTierAndSla": null,
+      "supportOwnerRoleId": "PLATFORM-OWNER",
+      "procurementReference": null,
+      "procurementStatus": null,
+      "procurementStartedAt": null,
+      "procurementEvidenceUri": null,
+      "procurementEvidenceSha256": null,
+      "exitStrategy": null,
+      "kmsAndPrivatePolicyContract": null,
+      "retentionVersioningLegalHoldContract": null,
+      "malwareScanningContract": null,
+      "replicationAndRecoveryContract": null
+    },
+    "D-10": {
+      "endpointMatrixRef": "docs/readiness/endpoint-matrix.json"
+    }
+  }
+}

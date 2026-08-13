@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "candidate": {
+    "branch": null,
+    "sourceSha": null,
+    "ownerApprovalRecordId": null,
+    "cleanReproductionEvidenceUri": null
+  },
+  "approvalReferences": {
+    "originalDraftDisposition": null,
+    "governanceRoster": null,
+    "worktreeReconciliation": null,
+    "traceabilityAndDeferrals": null,
+    "supportedVersions": null,
+    "riskRegister": null,
+    "ciGovernance": null,
+    "independentReproduction": null,
+    "decisions": {
+      "D-01": null,
+      "D-02": null,
+      "D-03": null,
+      "D-04": null,
+      "D-05": null,
+      "D-06": null,
+      "D-07": null,
+      "D-08": null,
+      "D-09": null,
+      "D-10": null
+    },
+    "endpointMatrix": null
+  },
+  "remoteControls": {
+    "branchProtection": {
+      "status": "BLOCKED",
+      "evidenceUri": null,
+      "evidenceSha256": null,
+      "checkedAt": null,
+      "candidateSha": null,
+      "approvalRecordId": null
+    },
+    "protectedEnvironment": {
+      "status": "BLOCKED",
+      "evidenceUri": null,
+      "evidenceSha256": null,
+      "checkedAt": null,
+      "candidateSha": null,
+      "approvalRecordId": null
+    },
+    "restrictedActions": {
+      "status": "BLOCKED",
+      "evidenceUri": null,
+      "evidenceSha256": null,
+      "checkedAt": null,
+      "candidateSha": null,
+      "approvalRecordId": null
+    },
+    "independentReviewerAccess": {
+      "status": "BLOCKED",
+      "evidenceUri": null,
+      "evidenceSha256": null,
+      "checkedAt": null,
+      "candidateSha": null,
+      "approvalRecordId": null
+    },
+    "releaseLabels": {
+      "status": "BLOCKED",
+      "evidenceUri": null,
+      "evidenceSha256": null,
+      "checkedAt": null,
+      "candidateSha": null,
+      "approvalRecordId": null
+    },
+    "repositoryVisibility": {
+      "status": "BLOCKED",
+      "evidenceUri": null,
+      "evidenceSha256": null,
+      "checkedAt": null,
+      "candidateSha": null,
+      "approvalRecordId": null
+    }
+  },
+  "authoritativeEvidence": {
+    "repository": null,
+    "sourceSha": null,
+    "sourceRef": null,
+    "runId": null,
+    "runAttempt": null,
+    "runUri": null,
+    "conclusion": "BLOCKED",
+    "lockfileSha256": null,
+    "containerPolicySha256": null,
+    "jobs": {
+      "verify": {
+        "name": "verify",
+        "sourceSha": null,
+        "conclusion": "BLOCKED",
+        "artifactId": null,
+        "artifactDigest": null,
+        "manifestSha256": null,
+        "stepSummarySha256": null
+      },
+      "containerSecurity": {
+        "name": "container-security",
+        "sourceSha": null,
+        "conclusion": "BLOCKED",
+        "artifactId": null,
+        "artifactDigest": null,
+        "manifestSha256": null,
+        "scanSummarySha256": null
+      }
+    },
+    "independentReviewerApprovalRecordId": null
+  },
+  "independentReproduction": {
+    "repository": null,
+    "sourceSha": null,
+    "sourceRef": null,
+    "runId": null,
+    "runAttempt": null,
+    "runUri": null,
+    "conclusion": "BLOCKED",
+    "actor": {
+      "name": null,
+      "identity": null,
+      "roleId": null
+    },
+    "lockfileSha256": null,
+    "containerPolicySha256": null,
+    "jobs": {
+      "verify": {
+        "name": "verify",
+        "sourceSha": null,
+        "conclusion": "BLOCKED",
+        "artifactId": null,
+        "artifactDigest": null,
+        "manifestSha256": null,
+        "stepSummarySha256": null
+      },
+      "containerSecurity": {
+        "name": "container-security",
+        "sourceSha": null,
+        "conclusion": "BLOCKED",
+        "artifactId": null,
+        "artifactDigest": null,
+        "manifestSha256": null,
+        "scanSummarySha256": null
+      }
+    },
+    "approvalRecordId": null
+  }
+}

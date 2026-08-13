@@ -68,8 +68,8 @@ function validManifest() {
       targetUri: "s3://mecoflow-offsite-backups/production",
       kmsKeyReference: "kms://recovery/offsite-backup-key",
       retentionDays: 35,
-      rpoHours: 24,
-      rtoHours: 4,
+      rpoHours: 4,
+      rtoHours: 8,
       crossFailureDomain: true,
       immutableOrVersioned: true,
       latestEvidenceFile: "evidence/offsite-backup.json",
@@ -216,6 +216,19 @@ test("rejects staging, placeholder, insecure endpoint, and incomplete ownership 
       error.fields.includes("candidate.sourceRevision") &&
       error.fields.includes("objectStorage.endpoint") &&
       error.fields.includes("owners.security"),
+  );
+});
+
+test("rejects recovery objectives weaker than the Phase 0 decision", () => {
+  const manifest = validManifest();
+  manifest.offsiteBackup.rpoHours = 5;
+  manifest.offsiteBackup.rtoHours = 9;
+  assert.throws(
+    () => validateProductionControlManifest(manifest, NOW),
+    (error) =>
+      error instanceof ProductionControlError &&
+      error.fields.includes("offsiteBackup.rpoHours") &&
+      error.fields.includes("offsiteBackup.rtoHours"),
   );
 });
 

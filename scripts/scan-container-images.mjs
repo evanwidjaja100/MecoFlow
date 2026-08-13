@@ -6,6 +6,7 @@ import {
   collectFindings,
   evaluateFindings,
   expandImage,
+  requireCandidateImageVersion,
   validatePolicy,
 } from "./container-scan-policy.mjs";
 
@@ -18,8 +19,17 @@ const policyPath = path.join(
 const policy = JSON.parse(readFileSync(policyPath, "utf8"));
 validatePolicy(policy);
 
-const appVersion = process.env.APP_VERSION?.trim() || "0.1.0";
 const requestedImages = process.env.IMAGE_SCAN_IMAGES?.trim();
+const diagnosticMode = Boolean(requestedImages);
+const appVersion = process.env.APP_VERSION?.trim();
+if (diagnosticMode && process.env.IMAGE_SCAN_MODE !== "diagnostic") {
+  throw new Error(
+    "IMAGE_SCAN_IMAGES is diagnostic-only; set IMAGE_SCAN_MODE=diagnostic. A subset can never pass the release gate.",
+  );
+}
+if (!diagnosticMode) {
+  requireCandidateImageVersion(appVersion, process.env.GITHUB_SHA?.trim());
+}
 const images = [
   ...new Set(
     (requestedImages
@@ -49,6 +59,44 @@ let scanFailed = false;
 
 for (const [index, image] of images.entries()) {
   console.log(`[${index + 1}/${images.length}] Scanning ${image}`);
+  const identity = spawnSync(
+    "docker",
+    [
+      "image",
+      "inspect",
+      "--format",
+      '{{.Id}}|{{join .RepoDigests ","}}',
+      image,
+    ],
+    { cwd: repositoryRoot, encoding: "utf8", windowsHide: true },
+  );
+  if (identity.status !== 0 || !identity.stdout?.trim()) {
+    scanFailed = true;
+    results.push({
+      image,
+      status: "identity-error",
+      exitCode: identity.status,
+      error:
+        "Docker could not resolve the local image ID/digest before scanning.",
+    });
+    console.error("  ERROR: image identity could not be resolved");
+    continue;
+  }
+  const [resolvedIdentity, repoDigestText = ""] = identity.stdout
+    .trim()
+    .split("|", 2);
+  if (!/^sha256:[0-9a-f]{64}$/u.test(resolvedIdentity ?? "")) {
+    scanFailed = true;
+    results.push({
+      image,
+      status: "identity-error",
+      exitCode: identity.status,
+      error: "Docker returned an invalid immutable image ID before scanning.",
+    });
+    console.error("  ERROR: immutable image ID is invalid");
+    continue;
+  }
+  const repoDigests = repoDigestText.split(",").filter(Boolean);
   const scan = spawnSync(
     "docker",
     [
@@ -69,7 +117,7 @@ for (const [index, image] of images.entries()) {
       "--no-progress",
       "--timeout",
       process.env.TRIVY_TIMEOUT?.trim() || "10m",
-      image,
+      resolvedIdentity,
     ],
     {
       cwd: repositoryRoot,
@@ -116,10 +164,27 @@ for (const [index, image] of images.entries()) {
     continue;
   }
 
+  if (!Array.isArray(report.Results) || report.Results.length === 0) {
+    scanFailed = true;
+    results.push({
+      image,
+      resolvedIdentity,
+      repoDigests,
+      status: "scan-error",
+      exitCode: scan.status,
+      error: "Trivy JSON did not contain a non-empty Results array.",
+      reportPath: path.relative(repositoryRoot, reportPath),
+      logPath: path.relative(repositoryRoot, logPath),
+    });
+    console.error("  ERROR: scanner returned no result targets");
+    continue;
+  }
   const findings = collectFindings(report, image);
   const evaluation = evaluateFindings(findings, policy.exceptions);
   results.push({
     image,
+    resolvedIdentity,
+    repoDigests,
     status: evaluation.blocking.length === 0 ? "passed" : "blocked",
     findingCount: findings.length,
     acceptedCount: evaluation.accepted.length,
@@ -141,8 +206,10 @@ const summary = {
   scannerImage: policy.scannerImage,
   severities: policy.severities,
   appVersion,
-  result:
-    scanFailed || results.some((result) => result.status !== "passed")
+  diagnosticMode,
+  result: diagnosticMode
+    ? "diagnostic"
+    : scanFailed || results.some((result) => result.status !== "passed")
       ? "failed"
       : "passed",
   results,
@@ -151,7 +218,12 @@ const summaryPath = path.join(reportDirectory, "summary.json");
 writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
 
 console.log(`Scan evidence: ${path.relative(repositoryRoot, summaryPath)}`);
-if (summary.result !== "passed") {
+if (diagnosticMode) {
+  console.error(
+    "Container image scan completed in DIAGNOSTIC mode; subset results never pass the release gate.",
+  );
+  process.exitCode = 2;
+} else if (summary.result !== "passed") {
   console.error(
     "Container image gate FAILED. Fix every blocker or obtain a narrow, time-bound approved exception.",
   );

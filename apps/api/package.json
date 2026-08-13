@@ -11,8 +11,8 @@
     "openapi:generate": "tsx src/generate-openapi.ts",
     "start": "node dist/main.js",
     "test": "vitest run -c vitest.config.ts",
-    "test:authorization": "vitest run -c vitest.authorization.config.ts",
-    "test:integration": "vitest run -c vitest.integration.config.ts --passWithNoTests",
+    "test:authorization": "node ../../scripts/verify-test-prerequisites.mjs authorization && vitest run -c vitest.authorization.config.ts",
+    "test:integration": "node ../../scripts/verify-test-prerequisites.mjs integration && vitest run -c vitest.integration.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

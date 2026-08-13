@@ -17,6 +17,7 @@ test-results/
 *.tsbuildinfo
 .idea/
 .vscode/
+.opencode/
 Thumbs.db
 .DS_Store
 repomix-output.md

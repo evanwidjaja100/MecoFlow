@@ -414,9 +414,9 @@ export function validateProductionControlManifest(manifest, now = new Date()) {
     fields.push("offsiteBackup.kmsKeyReference");
   if (!isPositiveInteger(backup?.retentionDays, 3650))
     fields.push("offsiteBackup.retentionDays");
-  if (!isPositiveInteger(backup?.rpoHours, 168))
+  if (!isPositiveInteger(backup?.rpoHours, 4))
     fields.push("offsiteBackup.rpoHours");
-  if (!isPositiveInteger(backup?.rtoHours, 168))
+  if (!isPositiveInteger(backup?.rtoHours, 8))
     fields.push("offsiteBackup.rtoHours");
   if (backup?.crossFailureDomain !== true)
     fields.push("offsiteBackup.crossFailureDomain");

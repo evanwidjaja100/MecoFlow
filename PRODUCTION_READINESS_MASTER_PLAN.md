@@ -1,6 +1,6 @@
 # MECO Flow Production Readiness Master Implementation Plan
 
-**Status:** PLANNING COMPLETE — IMPLEMENTATION NOT STARTED  
+**Status:** PHASE 0 IN PROGRESS — BLOCKED PENDING OWNERS, DECISIONS, REMOTE CONTROLS, AND IMMUTABLE EVIDENCE
 **Release classification:** NOT READY  
 **Plan date:** 2026-08-10  
 **Execution model:** One explicitly authorized phase at a time
@@ -12,7 +12,7 @@ for making MECO Flow production ready. It is deliberately phase gated:
 
 - The phase numbers in this plan are production-readiness remediation gates.
   They do not rename the historical delivery phases recorded in
-  docs/IMPLEMENTATION_STATUS.md.
+  IMPLEMENTATION_STATUS.md.
 - Start only the phase explicitly authorized by the user.
 - Give that phase its own goal, scope, non-goals, tests, and exit criteria.
 - Work in an implement–test–review loop until every phase gate passes.
@@ -41,7 +41,7 @@ Before changing code in any phase, read:
 - docs/AUTHORIZATION_MATRIX.md
 - docs/API_CONVENTIONS.md
 - docs/TEST_STRATEGY.md
-- docs/IMPLEMENTATION_STATUS.md
+- IMPLEMENTATION_STATUS.md
 - all applicable accepted ADRs
 - the root AGENTS.md and every nested AGENTS.md governing changed files
 
@@ -75,7 +75,7 @@ Repository invariants remain mandatory throughout the program:
 
 The recommended user instruction for beginning a phase is:
 
-    Start Phase 0 from docs/PRODUCTION_READINESS_MASTER_PLAN.md.
+    Start Phase 0 from PRODUCTION_READINESS_MASTER_PLAN.md.
     Do not start Phase 1.
 
 Replace the phase number only after the prior phase has been closed and the user
@@ -133,7 +133,7 @@ A phase is complete only when all of the following are true:
 4. The final diff, database schema, migrations, OpenAPI output, configuration,
    generated artifacts, and documentation have been inspected.
 5. An independent reviewer has signed off on the phase evidence.
-6. docs/IMPLEMENTATION_STATUS.md and all affected governing documents reflect
+6. IMPLEMENTATION_STATUS.md and all affected governing documents reflect
    reality.
 7. A closure report records assumptions, security implications, residual risks,
    limitations, rollback instructions, and evidence locations.
@@ -270,27 +270,27 @@ reviewer.
 
 ## 6. Phase map
 
-| Phase | Name                                                              | Initial state  |
-| ----- | ----------------------------------------------------------------- | -------------- |
-| 0     | Governance, decisions, and immutable baseline                     | READY TO START |
-| 1     | Systemic authorization and audit attribution                      | LOCKED         |
-| 2     | Immediate dependency and image blocker containment                | LOCKED         |
-| 3     | Inspection, receiving-time, and evidence safety                   | LOCKED         |
-| 4     | Supplier reporting correctness                                    | LOCKED         |
-| 5     | Readiness, worker, and database reliability                       | LOCKED         |
-| 6     | Shared frontend, capability, and locale foundation                | LOCKED         |
-| 7     | Purchase-order revision and supplier commitments                  | LOCKED         |
-| 8     | ASN, receiving, and immutable corrections                         | LOCKED         |
-| 9     | Documents, evidence, and inspection configuration                 | LOCKED         |
-| 10    | Bounded APIs and performance                                      | LOCKED         |
-| 11    | Localization, accessibility, and responsive operation             | LOCKED         |
-| 12    | Architecture, maintainability, and documentation closure          | LOCKED         |
-| 13    | Dependency convergence and application-security hardening         | LOCKED         |
-| 14    | Supported identity, object storage, CI, and artifact supply chain | LOCKED         |
-| 15    | Production platform, secrets, TLS, and KMS                        | LOCKED         |
-| 16    | Backup, DR, monitoring, paging, and capacity                      | LOCKED         |
-| 17    | Immutable staging, security review, UAT, and final qualification  | LOCKED         |
-| 18    | Controlled deployment and measurable hypercare                    | LOCKED         |
+| Phase | Name                                                              | Current state         |
+| ----- | ----------------------------------------------------------------- | --------------------- |
+| 0     | Governance, decisions, and immutable baseline                     | IN PROGRESS — BLOCKED |
+| 1     | Systemic authorization and audit attribution                      | LOCKED                |
+| 2     | Immediate dependency and image blocker containment                | LOCKED                |
+| 3     | Inspection, receiving-time, and evidence safety                   | LOCKED                |
+| 4     | Supplier reporting correctness                                    | LOCKED                |
+| 5     | Readiness, worker, and database reliability                       | LOCKED                |
+| 6     | Shared frontend, capability, and locale foundation                | LOCKED                |
+| 7     | Purchase-order revision and supplier commitments                  | LOCKED                |
+| 8     | ASN, receiving, and immutable corrections                         | LOCKED                |
+| 9     | Documents, evidence, and inspection configuration                 | LOCKED                |
+| 10    | Bounded APIs and performance                                      | LOCKED                |
+| 11    | Localization, accessibility, and responsive operation             | LOCKED                |
+| 12    | Architecture, maintainability, and documentation closure          | LOCKED                |
+| 13    | Dependency convergence and application-security hardening         | LOCKED                |
+| 14    | Supported identity, object storage, CI, and artifact supply chain | LOCKED                |
+| 15    | Production platform, secrets, TLS, and KMS                        | LOCKED                |
+| 16    | Backup, DR, monitoring, paging, and capacity                      | LOCKED                |
+| 17    | Immutable staging, security review, UAT, and final qualification  | LOCKED                |
+| 18    | Controlled deployment and measurable hypercare                    | LOCKED                |
 
 ## 7. Detailed implementation phases
 
@@ -1520,7 +1520,7 @@ demonstrate stable production operation through the defined hypercare period.
 - No unresolved P0/P1 or Sev-1/Sev-2 incident, integrity discrepancy, security
   blocker, or critical workflow defect remains.
 - Backup, paging, ownership, and support remain operational.
-- docs/IMPLEMENTATION_STATUS.md records the deployed version and verified
+- IMPLEMENTATION_STATUS.md records the deployed version and verified
   limitations.
 - The status becomes **PRODUCTION DEPLOYMENT VALIDATED / READINESS PROGRAM
   CLOSED** only now.

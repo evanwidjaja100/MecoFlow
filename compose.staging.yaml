@@ -62,7 +62,7 @@ services:
       args: *image-build-args
       context: .
       dockerfile: infra/docker/postgres.Dockerfile
-    image: mecoflow/postgres:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_POSTGRES_IMAGE:?required}
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-mecoflow}
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
@@ -89,7 +89,7 @@ services:
       args: *image-build-args
       context: .
       dockerfile: infra/docker/postgres.Dockerfile
-    image: mecoflow/postgres:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_POSTGRES_IMAGE:?required}
     environment:
       POSTGRES_DB: ${KEYCLOAK_DATABASE_NAME:-keycloak}
       POSTGRES_PASSWORD_FILE: /run/secrets/keycloak_database_password
@@ -112,7 +112,7 @@ services:
       - keycloak-postgres-staging-data:/var/lib/postgresql
 
   redis:
-    image: redis:8.2-alpine
+    image: redis:8.2-alpine@sha256:a7859ed111db3c1f5404a973a4747505d559fb5ca32d37e447afc0ef845a2103
     command:
       - -ec
       - >-
@@ -145,7 +145,7 @@ services:
       args: *image-build-args
       context: .
       dockerfile: infra/docker/minio.Dockerfile
-    image: mecoflow/minio:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_MINIO_IMAGE:?required}
     command:
       - -ec
       - >-
@@ -172,7 +172,7 @@ services:
       - minio-staging-data:/data
 
   minio-init:
-    image: mecoflow/operations:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_OPERATIONS_IMAGE:?required}
     command:
       - -ec
       - >-
@@ -229,7 +229,7 @@ services:
       args: *image-build-args
       context: .
       dockerfile: infra/docker/clamav.Dockerfile
-    image: mecoflow/clamav:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_CLAMAV_IMAGE:?required}
     healthcheck:
       test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
       interval: 15s
@@ -249,7 +249,7 @@ services:
       - clamav-staging-data:/var/lib/clamav
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7.0
+    image: quay.io/keycloak/keycloak:26.7.0@sha256:0f198be292568439d700cdbfb893e69a6009bb43a94a06a945b1d3d506c76b13
     command:
       - -ec
       - >-
@@ -307,7 +307,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_MIGRATIONS_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -333,7 +333,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_MIGRATIONS_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -372,7 +372,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_MIGRATIONS_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -403,7 +403,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    image: mecoflow/migrations:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_MIGRATIONS_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -447,7 +447,7 @@ services:
       retries: 20
       start_period: 15s
       timeout: 5s
-    image: mecoflow/api:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_API_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -493,7 +493,7 @@ services:
       retries: 20
       start_period: 15s
       timeout: 5s
-    image: mecoflow/worker:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_WORKER_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -533,7 +533,7 @@ services:
       retries: 20
       start_period: 15s
       timeout: 5s
-    image: mecoflow/web:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_WEB_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -565,7 +565,7 @@ services:
       args: *image-build-args
       context: .
       dockerfile: infra/docker/proxy.Dockerfile
-    image: mecoflow/proxy:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_PROXY_IMAGE:?required}
     logging: *default-logging
     networks:
       edge:
@@ -616,7 +616,7 @@ services:
       S3_BUCKET: mecoflow-staging-private
       S3_ENDPOINT: http://minio:9000
       S3_SECRET_KEY_FILE: /run/secrets/s3_secret_key
-    image: mecoflow/operations:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_OPERATIONS_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
@@ -651,7 +651,7 @@ services:
       S3_BUCKET: mecoflow-staging-private
       S3_ENDPOINT: http://minio:9000
       S3_SECRET_KEY_FILE: /run/secrets/s3_secret_key
-    image: mecoflow/operations:${APP_VERSION:-0.0.0-staging}
+    image: ${MECOFLOW_OPERATIONS_IMAGE:?required}
     logging: *default-logging
     networks:
       - backend
