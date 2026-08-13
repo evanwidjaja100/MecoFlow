@@ -10,8 +10,8 @@ import { isAbsolute, relative, resolve } from "node:path";
 import {
   collectFindings,
   evaluateFindings,
+  parseAndValidatePhaseZeroScanSummary,
   requireCandidateImageVersion,
-  validatePhaseZeroScanEvidence,
   validatePolicy,
 } from "./container-scan-policy.mjs";
 import { buildEnvironmentIdentity } from "./ci-command-evidence-policy.mjs";
@@ -147,23 +147,20 @@ let summary;
 let summaryText;
 const summaryPath = summaries[0];
 if (summaryPath) {
-  if (["passed", "blocked"].includes(result.status))
-    try {
-      summaryText = readFileSync(summaryPath, "utf8");
-      summary = JSON.parse(summaryText);
-      errors.push(
-        ...validatePhaseZeroScanEvidence({
-          summary,
-          policy,
-          appVersion,
-          stepOutcome,
-        }),
-      );
-    } catch (error) {
-      errors.push(
-        `container scan summary is invalid: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
+  try {
+    summaryText = readFileSync(summaryPath, "utf8");
+    const validation = parseAndValidatePhaseZeroScanSummary(summaryText, {
+      policy,
+      appVersion,
+      stepOutcome,
+    });
+    summary = validation.summary;
+    errors.push(...validation.errors);
+  } catch (error) {
+    errors.push(
+      `container scan summary is invalid: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
 
 const retainedResults = [];

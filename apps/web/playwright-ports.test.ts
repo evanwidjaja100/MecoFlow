@@ -1,3 +1,5 @@
+import { spawnSync } from "node:child_process";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   default as playwrightConfig,
@@ -48,6 +50,35 @@ describe("Playwright service environment", () => {
     expect(webServers[0]?.env?.E2E_API_ORIGIN).toBe(
       environment.NEXT_PUBLIC_API_BASE_URL,
     );
+  });
+
+  it("rejects callback origins that drift from the canonical API origin", () => {
+    for (const unsafe of [
+      "http://localhost:3001",
+      "http://example.com:3001",
+      "https://127.0.0.1:3001",
+      "http://user:secret@127.0.0.1:3001",
+      "http://127.0.0.1:3002",
+      "http://127.0.0.1:3001/path",
+      "http://127.0.0.1:3001/?query=value",
+      "http://127.0.0.1:3001/#fragment",
+    ]) {
+      const result = spawnSync(
+        process.execPath,
+        [resolve(import.meta.dirname, "../../tests/oidc-mock.mjs")],
+        {
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            E2E_API_ORIGIN: unsafe,
+            E2E_API_PORT: "3001",
+          },
+          timeout: 5_000,
+        },
+      );
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("canonical 127.0.0.1 origin");
+    }
   });
 
   it("uses the credentials of the isolated CI storage started by the workflow", () => {

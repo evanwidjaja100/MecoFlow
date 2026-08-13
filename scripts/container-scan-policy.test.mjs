@@ -5,6 +5,7 @@ import {
   candidateBuildTimestamp,
   evaluateFindings,
   expandImage,
+  parseAndValidatePhaseZeroScanSummary,
   requireCandidateImageVersion,
   validatePhaseZeroScanEvidence,
   validatePolicy,
@@ -185,6 +186,29 @@ test("accepts complete blocked scans as retained Phase 2 diagnostics", () => {
       stepOutcome: "failure",
     }),
     [],
+  );
+});
+
+test("parses a retained scan summary before validating blocked evidence", () => {
+  const fixture = phaseZeroFixture();
+  const validation = parseAndValidatePhaseZeroScanSummary(
+    JSON.stringify(fixture.summary),
+    {
+      policy: fixture.policy,
+      appVersion: "ci",
+      stepOutcome: "failure",
+    },
+  );
+  assert.deepEqual(validation.errors, []);
+  assert.equal(validation.summary.results[0].status, "blocked");
+  assert.throws(
+    () =>
+      parseAndValidatePhaseZeroScanSummary("not JSON", {
+        policy: fixture.policy,
+        appVersion: "ci",
+        stepOutcome: "failure",
+      }),
+    SyntaxError,
   );
 });
 

@@ -215,3 +215,19 @@ export function validatePhaseZeroScanEvidence({
 
   return errors;
 }
+
+export function parseAndValidatePhaseZeroScanSummary(
+  summaryText,
+  { policy, appVersion, stepOutcome },
+) {
+  const summary = JSON.parse(summaryText);
+  return {
+    errors: validatePhaseZeroScanEvidence({
+      summary,
+      policy,
+      appVersion,
+      stepOutcome,
+    }),
+    summary,
+  };
+}

@@ -24,11 +24,18 @@ if (
 const issuer = `http://127.0.0.1:${oidcPort}`;
 const clientId = "mecoflow-web";
 const apiOrigin = process.env.E2E_API_ORIGIN ?? `http://127.0.0.1:${apiPort}`;
-const parsedApiOrigin = new URL(apiOrigin);
+let parsedApiOrigin;
+try {
+  parsedApiOrigin = new URL(apiOrigin);
+} catch {
+  throw new Error("E2E_API_ORIGIN must be a valid URL");
+}
 if (
   parsedApiOrigin.protocol !== "http:" ||
   parsedApiOrigin.hostname !== "127.0.0.1" ||
-  Number(parsedApiOrigin.port) !== apiPort ||
+  parsedApiOrigin.username ||
+  parsedApiOrigin.password ||
+  Number(parsedApiOrigin.port || "80") !== apiPort ||
   parsedApiOrigin.pathname !== "/" ||
   parsedApiOrigin.search ||
   parsedApiOrigin.hash
