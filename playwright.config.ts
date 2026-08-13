@@ -24,9 +24,10 @@ export function resolveE2ePorts(
 }
 
 const ports = resolveE2ePorts();
-const apiBaseUrl = `http://localhost:${ports.api}`;
+const loopbackHost = "127.0.0.1";
+const apiBaseUrl = `http://${loopbackHost}:${ports.api}`;
 const oidcIssuer = `http://127.0.0.1:${ports.oidc}`;
-const webBaseUrl = `http://localhost:${ports.web}`;
+const webBaseUrl = `http://${loopbackHost}:${ports.web}`;
 
 export function resolveE2eServiceEnvironment(
   environment: Readonly<Record<string, string | undefined>> = process.env,
@@ -73,6 +74,7 @@ export default defineConfig({
     {
       command: "node tests/oidc-mock.mjs",
       env: {
+        E2E_API_ORIGIN: apiBaseUrl,
         E2E_API_PORT: String(ports.api),
       },
       port: ports.oidc,

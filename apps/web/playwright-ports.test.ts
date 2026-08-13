@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  default as playwrightConfig,
   resolveE2ePorts,
   resolveE2eServiceEnvironment,
 } from "../../playwright.config.js";
@@ -32,6 +33,23 @@ describe("Playwright service port isolation", () => {
 });
 
 describe("Playwright service environment", () => {
+  it("keeps the web, API, and OIDC callback on one canonical loopback host", () => {
+    const environment = resolveE2eServiceEnvironment({});
+    expect(environment.CORS_ORIGINS).toBe("http://127.0.0.1:3000");
+    expect(environment.NEXT_PUBLIC_API_BASE_URL).toBe("http://127.0.0.1:3001");
+    expect(environment.OIDC_REDIRECT_URI).toBe(
+      "http://127.0.0.1:3001/api/v1/auth/callback",
+    );
+    expect(environment.WEB_BASE_URL).toBe("http://127.0.0.1:3000");
+    expect(playwrightConfig.use?.baseURL).toBe("http://127.0.0.1:3000");
+    const webServers = Array.isArray(playwrightConfig.webServer)
+      ? playwrightConfig.webServer
+      : [playwrightConfig.webServer];
+    expect(webServers[0]?.env?.E2E_API_ORIGIN).toBe(
+      environment.NEXT_PUBLIC_API_BASE_URL,
+    );
+  });
+
   it("uses the credentials of the isolated CI storage started by the workflow", () => {
     const environment = resolveE2eServiceEnvironment({
       S3_ACCESS_KEY: "ci-access",

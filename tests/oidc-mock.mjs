@@ -23,7 +23,24 @@ if (
 }
 const issuer = `http://127.0.0.1:${oidcPort}`;
 const clientId = "mecoflow-web";
-const redirectUri = `http://localhost:${apiPort}/api/v1/auth/callback`;
+const apiOrigin = process.env.E2E_API_ORIGIN ?? `http://127.0.0.1:${apiPort}`;
+const parsedApiOrigin = new URL(apiOrigin);
+if (
+  parsedApiOrigin.protocol !== "http:" ||
+  parsedApiOrigin.hostname !== "127.0.0.1" ||
+  Number(parsedApiOrigin.port) !== apiPort ||
+  parsedApiOrigin.pathname !== "/" ||
+  parsedApiOrigin.search ||
+  parsedApiOrigin.hash
+) {
+  throw new Error(
+    "E2E_API_ORIGIN must be the canonical 127.0.0.1 origin for E2E_API_PORT",
+  );
+}
+const redirectUri = new URL(
+  "/api/v1/auth/callback",
+  parsedApiOrigin,
+).toString();
 const { privateKey, publicKey } = generateKeyPairSync("rsa", {
   modulusLength: 2048,
 });
