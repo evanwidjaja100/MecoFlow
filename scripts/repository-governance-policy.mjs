@@ -429,6 +429,26 @@ export function validateCiWorkflowStructure(text) {
   if (!container) errors.push("CI workflow: container-security job is missing");
   if (!verify || !container) return errors;
 
+  for (const [jobName, job] of [
+    ["verify", verify],
+    ["container-security", container],
+  ]) {
+    if (
+      !job.includes(
+        "PHASE_ZERO_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}",
+      ) ||
+      !job.includes(
+        "PHASE_ZERO_SOURCE_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}",
+      ) ||
+      !job.includes("fetch-depth: 0") ||
+      !job.includes("ref: ${{ env.PHASE_ZERO_SOURCE_SHA }}")
+    ) {
+      errors.push(
+        `CI workflow: ${jobName} must check out and bind the exact candidate source with full history`,
+      );
+    }
+  }
+
   const verifySteps = namedStepBlocks(verify);
   for (const [id] of requiredCiSteps) {
     const step = verifySteps.find((block) =>
@@ -456,6 +476,14 @@ export function validateCiWorkflowStructure(text) {
     ) {
       errors.push(`CI workflow: ${id} must use the command-evidence wrapper`);
     }
+  }
+  const openapi = verifySteps.find((block) =>
+    new RegExp("^        id: openapi$", "mu").test(block),
+  );
+  if (!openapi?.includes("APP_VERSION: 0.1.0")) {
+    errors.push(
+      "CI workflow: OpenAPI drift check must use the canonical artifact version",
+    );
   }
 
   const containerSteps = namedStepBlocks(container);

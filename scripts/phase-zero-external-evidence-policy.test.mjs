@@ -93,6 +93,16 @@ function fixture() {
     artifactFiles,
     resources: new Map(),
     inputDigests,
+    independentReviewerRoster: [
+      {
+        roleId: "INDEPENDENT-SECURITY",
+        identity: "github:security-reviewer",
+      },
+      {
+        roleId: "INDEPENDENT-DATA-RELEASE",
+        identity: "github:independent",
+      },
+    ],
     expectedPublicApiBaseUrl: publicApiBaseUrl,
     now: new Date("2026-08-13T00:00:00Z"),
   };
@@ -271,6 +281,13 @@ test("rejects image identity drift between independent candidate runs", () => {
   );
 });
 
+test("requires two distinct roster-bound independent GitHub identities", () => {
+  const evidence = fixture();
+  evidence.independentReviewerRoster[0].identity = "github:independent";
+  const errors = validatePhaseZeroExternalEvidence(evidence);
+  assert.ok(errors.some((error) => error.includes("two distinct GitHub")));
+});
+
 test("rejects approval records whose GitHub resource does not authenticate the signer", () => {
   const evidence = fixture();
   evidence.approvals.records.push({
@@ -295,4 +312,98 @@ test("rejects approval records whose GitHub resource does not authenticate the s
   });
   const errors = validatePhaseZeroExternalEvidence(evidence);
   assert.ok(errors.some((error) => error.includes("does not authenticate")));
+});
+
+test("rejects controls that are not bound to the exact independent roster identities", () => {
+  const evidence = fixture();
+  const environmentUri =
+    "https://api.github.com/repos/owner/repository/environments/production";
+  const environment = {
+    name: "production",
+    can_admins_bypass: true,
+    protection_rules: [
+      {
+        type: "required_reviewers",
+        prevent_self_review: false,
+        reviewers: [
+          { type: "User", reviewer: { login: "unrelated-reviewer" } },
+        ],
+      },
+    ],
+  };
+  const environmentBytes = Buffer.from(JSON.stringify(environment));
+  evidence.closure.remoteControls.protectedEnvironment = {
+    evidenceUri: environmentUri,
+    evidenceSha256: hash(environmentBytes),
+  };
+  evidence.resources.set(environmentUri, {
+    bytes: environmentBytes,
+    json: environment,
+  });
+
+  const collaboratorsUri =
+    "https://api.github.com/repos/owner/repository/collaborators?affiliation=all&per_page=100";
+  const collaborators = [
+    { login: "unrelated-one", permissions: { pull: true, admin: false } },
+    { login: "unrelated-two", permissions: { pull: true, admin: false } },
+  ];
+  const collaboratorsBytes = Buffer.from(JSON.stringify(collaborators));
+  evidence.closure.remoteControls.independentReviewerAccess = {
+    evidenceUri: collaboratorsUri,
+    evidenceSha256: hash(collaboratorsBytes),
+  };
+  evidence.resources.set(collaboratorsUri, {
+    bytes: collaboratorsBytes,
+    json: collaborators,
+  });
+
+  const errors = validatePhaseZeroExternalEvidence(evidence);
+  assert.ok(errors.some((error) => error.includes("protectedEnvironment")));
+  assert.ok(
+    errors.some((error) => error.includes("independentReviewerAccess")),
+  );
+});
+
+test("accepts a non-bypassable environment and repository access bound to the roster", () => {
+  const evidence = fixture();
+  const environmentUri =
+    "https://api.github.com/repos/owner/repository/environments/production";
+  const environment = {
+    name: "production",
+    can_admins_bypass: false,
+    protection_rules: [
+      {
+        type: "required_reviewers",
+        prevent_self_review: true,
+        reviewers: [{ type: "User", reviewer: { login: "independent" } }],
+      },
+    ],
+  };
+  const environmentBytes = Buffer.from(JSON.stringify(environment));
+  evidence.closure.remoteControls.protectedEnvironment = {
+    evidenceUri: environmentUri,
+    evidenceSha256: hash(environmentBytes),
+  };
+  evidence.resources.set(environmentUri, {
+    bytes: environmentBytes,
+    json: environment,
+  });
+
+  const collaboratorsUri =
+    "https://api.github.com/repos/owner/repository/collaborators?affiliation=all&per_page=100";
+  const collaborators = [
+    { login: "security-reviewer", permissions: { pull: true, admin: false } },
+    { login: "independent", permissions: { pull: true, admin: false } },
+  ];
+  const collaboratorsBytes = Buffer.from(JSON.stringify(collaborators));
+  evidence.closure.remoteControls.independentReviewerAccess = {
+    evidenceUri: collaboratorsUri,
+    evidenceSha256: hash(collaboratorsBytes),
+  };
+  evidence.resources.set(collaboratorsUri, {
+    bytes: collaboratorsBytes,
+    json: collaborators,
+  });
+
+  assert.deepEqual(validatePhaseZeroExternalEvidence(evidence), []);
 });

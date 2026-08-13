@@ -35,6 +35,8 @@ function environment() {
     GITHUB_REPOSITORY: "example/mecoflow",
     GITHUB_REPOSITORY_ID: "9876",
     GITHUB_SHA: "a".repeat(40),
+    PHASE_ZERO_SOURCE_REF: "main",
+    PHASE_ZERO_SOURCE_SHA: "a".repeat(40),
     GITHUB_REF: "refs/heads/main",
     GITHUB_EVENT_NAME: "push",
     GITHUB_ACTOR: "reviewer",
@@ -84,7 +86,10 @@ test("fails closed for incomplete attribution or an invalid job status", () => {
   const root = fixture();
   assert.throws(
     () =>
-      buildCiEvidence({ root, env: { ...environment(), GITHUB_SHA: "abc" } }),
+      buildCiEvidence({
+        root,
+        env: { ...environment(), PHASE_ZERO_SOURCE_SHA: "abc" },
+      }),
     /full 40-character/u,
   );
   assert.throws(

@@ -48,8 +48,11 @@ Phase 0 edits. All rows are intentional Phase 0 governance/readiness work and
 remain attributable to this Phase 0 candidate even after they are committed.
 Each row below carries its own exact classification from the five Phase 0
 categories; no classification is inherited from prose or inferred from purpose.
-The reconciled current inventory contains 96 paths; an executable read-only comparison
-found zero changed or untracked paths missing from the table.
+The reconciled current inventory contains 96 paths, all committed as the
+candidate delta at `d6587a8fd76b2986c942e7f4f7a1b8687daeba5d`; an executable
+read-only comparison found zero candidate-delta or untracked paths missing from
+the table. Approval, merge, and successful retained evidence remain
+outstanding.
 
 | Current path                                           | Classification             | Purpose                                                                        | Attribution and disposition                                                             |
 | ------------------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
@@ -91,7 +94,7 @@ found zero changed or untracked paths missing from the table.
 | `docs/readiness/supported-versions.md`                 | `intentional product work` | Exact runtime/tool/image baseline                                              | Current untracked Phase 0 record                                                        |
 | `docs/readiness/supported-versions.json`               | `intentional product work` | Typed runtime, data, browser, OS, deployment, and lockfile support matrix      | Current Phase 0 governance file                                                         |
 | `docs/readiness/traceability.md`                       | `intentional product work` | Exactly-one-primary-phase finding routing                                      | Entry draft edited in place and extended; B-15 applies                                  |
-| `docs/readiness/worktree-reconciliation.md`            | `intentional product work` | Entry/current worktree attribution record                                      | Current untracked Phase 0 record                                                        |
+| `docs/readiness/worktree-reconciliation.md`            | `intentional product work` | Entry/current worktree attribution record                                      | Committed candidate Phase 0 record                                                      |
 | `infra/docker/clamav.Dockerfile`                       | `intentional product work` | Immutable external base reference                                              | Current Phase 0 provenance edit                                                         |
 | `infra/docker/migrations.Dockerfile`                   | `intentional product work` | Immutable external base references                                             | Current Phase 0 provenance edit                                                         |
 | `infra/docker/minio.Dockerfile`                        | `intentional product work` | Immutable external base references                                             | Current Phase 0 provenance edit                                                         |

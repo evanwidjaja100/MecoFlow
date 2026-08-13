@@ -28,27 +28,33 @@ const apiBaseUrl = `http://localhost:${ports.api}`;
 const oidcIssuer = `http://127.0.0.1:${ports.oidc}`;
 const webBaseUrl = `http://localhost:${ports.web}`;
 
-const serviceEnvironment = {
-  APP_ENV: "test",
-  APP_VERSION: "0.1.0",
-  API_PORT: String(ports.api),
-  CORS_ORIGINS: webBaseUrl,
-  DATABASE_URL:
-    process.env.DATABASE_URL ??
-    "postgresql://mecoflow_local:local_only_change_me@127.0.0.1:5432/mecoflow?schema=public",
-  NEXT_PUBLIC_API_BASE_URL: apiBaseUrl,
-  OIDC_CLIENT_ID: "mecoflow-web",
-  OIDC_ISSUER: oidcIssuer,
-  OIDC_REDIRECT_URI: `${apiBaseUrl}/api/v1/auth/callback`,
-  REDIS_URL: "redis://127.0.0.1:6379",
-  S3_ACCESS_KEY: "mecoflow_local",
-  S3_BUCKET: "mecoflow-private",
-  S3_ENDPOINT: "http://127.0.0.1:9000",
-  S3_REGION: "us-east-1",
-  S3_SECRET_KEY: "local_only_minio_change_me",
-  SESSION_SECRET: "local_only_session_secret_change_me_32_chars",
-  WEB_BASE_URL: webBaseUrl,
-};
+export function resolveE2eServiceEnvironment(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+) {
+  return {
+    APP_ENV: "test",
+    APP_VERSION: environment.APP_VERSION ?? "0.1.0",
+    API_PORT: String(ports.api),
+    CORS_ORIGINS: webBaseUrl,
+    DATABASE_URL:
+      environment.DATABASE_URL ??
+      "postgresql://mecoflow_local:local_only_change_me@127.0.0.1:5432/mecoflow?schema=public",
+    NEXT_PUBLIC_API_BASE_URL: apiBaseUrl,
+    OIDC_CLIENT_ID: "mecoflow-web",
+    OIDC_ISSUER: oidcIssuer,
+    OIDC_REDIRECT_URI: `${apiBaseUrl}/api/v1/auth/callback`,
+    REDIS_URL: environment.REDIS_URL ?? "redis://127.0.0.1:6379",
+    S3_ACCESS_KEY: environment.S3_ACCESS_KEY ?? "mecoflow_local",
+    S3_BUCKET: environment.S3_BUCKET ?? "mecoflow-private",
+    S3_ENDPOINT: environment.S3_ENDPOINT ?? "http://127.0.0.1:9000",
+    S3_REGION: environment.S3_REGION ?? "us-east-1",
+    S3_SECRET_KEY: environment.S3_SECRET_KEY ?? "local_only_minio_change_me",
+    SESSION_SECRET: "local_only_session_secret_change_me_32_chars",
+    WEB_BASE_URL: webBaseUrl,
+  };
+}
+
+const serviceEnvironment = resolveE2eServiceEnvironment();
 
 export default defineConfig({
   testDir: "./tests/e2e",

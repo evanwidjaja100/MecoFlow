@@ -2,7 +2,9 @@
 
 ## In-repository implementation state
 
-The current Phase 0 worktree (not yet committed or owner-approved) implements:
+The committed Phase 0 candidate
+`d6587a8fd76b2986c942e7f4f7a1b8687daeba5d` (pull request #1; not yet
+owner-approved or merged) implements:
 
 - full-commit-SHA references for all third-party GitHub Actions;
 - workflow-level `contents: read`, while GitHub reports default workflow
@@ -53,62 +55,79 @@ without rebuilding. Final registry digests, SBOM, provenance,
 signature/attestation, and immutable deployment-manifest linkage remain Phase
 14 work. No evidence may claim that final artifact control already exists.
 
-The evidence-retention workflow is implemented but uncommitted and has not yet
-produced an artifact. GitHub run logs plus `steps.json`, per-command JSON/logs,
-the uploaded manifest, and the artifact ID/digest must be recorded in the
-evidence index after a clean run; repository configuration alone is not
-accepted as baseline evidence.
+The evidence-retention workflow is committed on the candidate. Its first pull
+request run, `31707913394`, produced two retained artifacts, but all three
+required checks failed. Those artifacts are diagnostic only. GitHub run logs
+plus `steps.json`, per-command JSON/logs, the uploaded manifest, and artifact
+IDs/digests must validate after a successful clean run; repository
+configuration or a retained failing artifact is not accepted as baseline
+evidence.
 
 ## Live GitHub control-plane evidence — 2026-08-13
 
-Read-only `gh` inspection of `evanwidjaja100/MecoFlow` showed:
+Authenticated `gh` inspection of `evanwidjaja100/MecoFlow` after the approved
+control-plane mutations showed:
 
-- repository visibility `public`; default branch `main` (visibility changed
-  after the 2026-08-11 diagnostic and before this read-only recheck);
-- `main` branch-protection API returns HTTP 404 (`Branch not protected`) and
-  the repository-ruleset API returns an empty list; unlike the 2026-08-11
-  response, the current API result does not establish a plan limitation;
-- no GitHub environments exist (`total_count: 0`);
+- repository visibility `public`; default branch `main`. User intent is known,
+  but no authenticated, candidate-bound visibility approval is recorded;
+- `main` is protected with one required approval, stale-review dismissal,
+  last-push approval, conversation resolution, administrator enforcement,
+  strict up-to-date enforcement, and the exact required checks
+  `dependency-review`, `verify`, and `container-security`; force pushes and
+  deletion are disabled;
+- the `production` environment exists and accepts protected branches, but has
+  no required reviewers and reports `can_admins_bypass: true`;
 - Actions are enabled with `allowed_actions: all` and organization/repository
-  `sha_pinning_required: false`;
-- default workflow permissions are read-only and workflows cannot approve PRs.
+  `sha_pinning_required: false`. The owner approved deferring restriction until
+  the candidate's full-SHA workflow reaches `main`, because the workflow still
+  on `main` contains mutable references; the deferred control remains open;
+- default workflow permissions are read-only and workflows cannot approve PRs;
+- dependency alerts and the dependency graph are now enabled; authenticated
+  SBOM readback returned 633 packages. Run `31707913394` predates that control
+  mutation, so its dependency-review failure remains a valid historical
+  diagnostic rather than current-state evidence;
 - the repository has exactly one collaborator (the administrator), so an
-  independent repository reviewer cannot currently approve changes.
-- the labels API returns only GitHub's nine default labels; required `BLOCKER`,
-  `CRITICAL`, `HIGH`, `LATER-PHASE`, and `IMPLEMENTED-UNCOMMITTED` labels do not
-  exist.
+  independent repository reviewer cannot currently approve pull request #1;
+- the exact governed labels `BLOCKER`, `CRITICAL`, `HIGH`, `LATER-PHASE`, and
+  `IMPLEMENTED-UNCOMMITTED` exist with governed descriptions; and
+- pull request #1 run `31707913394` failed all three required checks.
+  `dependency-review` reported that the dependency graph was not enabled at
+  run time;
+  `verify` failed its aggregate evidence validation; and `container-security`
+  failed endpoint, image, and scan-evidence validation.
 
-Therefore required reviews, required checks, no-force-push/no-delete controls,
-and a protected release environment are **not enforced**. Repository policy
-files are useful defense in depth but cannot replace control-plane enforcement
-while direct pushes to an unprotected branch remain possible.
+Branch mutation protections and the three required check names are now
+enforced, but the checks are failing and no independent reviewer is available.
+The release environment, Actions restriction, visibility approval, and
+candidate-bound immutable evidence are incomplete. Phase 0 therefore remains
+blocked.
 
 ## Required owner actions
 
 1. Add an independent repository collaborator with the appropriate review-only
    access before enabling a mandatory independent approval.
-2. Protect `main` with pull requests and at least one independent approving review; dismiss
-   stale approvals.
-3. Require an up-to-date branch and the exact checks `dependency-review`,
-   `verify`, `container-security`, and `phase-zero-finalization`. The latter
-   three pass Phase 0 only when
-   every required gate succeeds and the recorded Phase 2 diagnostics complete
-   with attributable evidence; unresolved advisory findings remain blockers in
-   their owning phases.
-4. Disallow force pushes and branch deletion, including for administrators.
-5. Restrict allowed Actions and enable SHA-pinning enforcement.
-6. Create a protected `production` environment with independent reviewers and
-   least-privilege deployment permissions before accepting release evidence.
-7. Create the exact governed defect/release labels `BLOCKER`, `CRITICAL`,
-   `HIGH`, `LATER-PHASE`, and `IMPLEMENTED-UNCOMMITTED` with descriptions that
-   preserve the semantics in `governance.md`.
-8. Obtain owner approval for the intended repository visibility and its
+2. Complete an independent approval of pull request #1 under the existing
+   `main` protection after every required check passes.
+3. Correct and rerun the exact required checks `dependency-review`, `verify`,
+   and `container-security`; retain candidate-bound successful evidence. The
+   recorded Phase 2 diagnostics must complete with attributable evidence, while
+   unresolved advisory findings remain blockers in their owning phases.
+4. Preserve the existing administrator enforcement and force-push/deletion
+   denial, and retain authenticated evidence bound to the candidate.
+5. After the pinned candidate workflow reaches `main`, restrict allowed Actions
+   and enable SHA-pinning enforcement; retain authenticated evidence of both.
+6. Add independent required reviewers to `production`, disable administrator
+   bypass, and enforce least-privilege deployment permissions before accepting
+   release evidence.
+7. Retain authenticated, candidate-bound evidence and approval for the five
+   governed labels and their descriptions.
+8. Record authenticated owner approval for the intended repository visibility and its
    security implications, or restore the repository to its approved visibility.
 9. Re-run and retain the read-only API output tied to the committed Phase 0
    source SHA.
 
-Until these actions pass, B-11/B-12/B-17/B-18 block Phase 0 closure and later
-evidence is not accepted as immutable governance evidence.
+Until these actions pass, B-11/B-12/B-13/B-17/B-18 block Phase 0 closure and
+later evidence is not accepted as immutable governance evidence.
 
 ## Machine-validated control record
 

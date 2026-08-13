@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { resolveE2ePorts } from "../../playwright.config.js";
+import {
+  resolveE2ePorts,
+  resolveE2eServiceEnvironment,
+} from "../../playwright.config.js";
 
 describe("Playwright service port isolation", () => {
   it("uses the documented defaults and accepts distinct overrides", () => {
@@ -25,5 +28,16 @@ describe("Playwright service port isolation", () => {
     expect(() => resolveE2ePorts({ E2E_API_PORT: "4310" })).toThrow(
       /must be distinct/u,
     );
+  });
+});
+
+describe("Playwright service environment", () => {
+  it("uses the credentials of the isolated CI storage started by the workflow", () => {
+    const environment = resolveE2eServiceEnvironment({
+      S3_ACCESS_KEY: "ci-access",
+      S3_SECRET_KEY: "ci-secret",
+    });
+    expect(environment.S3_ACCESS_KEY).toBe("ci-access");
+    expect(environment.S3_SECRET_KEY).toBe("ci-secret");
   });
 });

@@ -7,7 +7,7 @@ import {
 import { resolveApprovedBuildApiBaseUrl } from "./phase-zero-closure-policy.mjs";
 
 const appVersion = process.env.APP_VERSION?.trim();
-const sourceSha = process.env.GITHUB_SHA?.trim();
+const sourceSha = process.env.PHASE_ZERO_SOURCE_SHA?.trim();
 const publicApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
 const approvedPublicApiBaseUrl = resolveApprovedBuildApiBaseUrl(
   JSON.parse(readFileSync("docs/readiness/endpoint-matrix.json", "utf8")),

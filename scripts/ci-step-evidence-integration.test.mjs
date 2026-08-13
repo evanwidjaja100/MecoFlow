@@ -58,16 +58,22 @@ function fixture({ omit, fail } = {}) {
         appEnv: "ci",
         database: { host: "localhost", name: "mecoflow_ci" },
         publicApiBaseUrl:
-          commandIndex < endpointStepIndex
+          commandIndex <= endpointStepIndex
             ? "http://127.0.0.1:3001"
             : "https://api.example.test",
       },
     });
     if (testCommands.has(id)) {
       evidence.testPolicy = {
-        passed: true,
+        passed: id !== fail,
         format: "fixture",
-        totals: { total: 1, passed: 1, failed: 0, skipped: 0, todo: 0 },
+        totals: {
+          total: 1,
+          passed: id === fail ? 0 : 1,
+          failed: id === fail ? 1 : 0,
+          skipped: 0,
+          todo: 0,
+        },
         parseErrors: [],
         violations: [],
       };
@@ -81,7 +87,7 @@ function fixture({ omit, fail } = {}) {
   }
   const env = {
     ...process.env,
-    GITHUB_SHA: sourceSha,
+    PHASE_ZERO_SOURCE_SHA: sourceSha,
     APP_ENV: "ci",
     DATABASE_URL: "postgresql://user:password@localhost:5432/mecoflow_ci",
     PHASE_ZERO_TEST_API_BASE_URL: "http://127.0.0.1:3001",

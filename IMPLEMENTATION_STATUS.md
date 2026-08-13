@@ -18,8 +18,9 @@ isolated databases. This is not a production-readiness claim.
 Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
 **IN PROGRESS / BLOCKED**. Phases 1 and 2 remain locked.
 
-The current uncommitted working tree adds or corrects Phase 0 repository
-controls: full-SHA Actions, digest-pinned external Dockerfile/Compose/scan
+The committed Phase 0 candidate `d6587a8fd76b2986c942e7f4f7a1b8687daeba5d`
+on `codex/phase-zero-candidate` adds or corrects repository controls: full-SHA
+Actions, digest-pinned external Dockerfile/Compose/scan
 references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
 CI, non-short-circuiting uncached command-level evidence with output hashes and
 exact environment identity and zero-skip/test-total enforcement, root
@@ -53,10 +54,13 @@ external verifier downloads the two runs' artifacts and checks live repository,
 workflow, job, actor, artifact, approval, remote-control, input-hash, endpoint,
 and expiry data instead of trusting locally asserted IDs and digests.
 
-This work is not a completed baseline. There is no owner-approved committed
-Phase 0 SHA, clean-checkout CI result, immutable retained output, or independent
-reviewer. The latest local uncached formatting, lint, typecheck, 44-file/233-test
-unit, OpenAPI, and build diagnostics pass, as do all 74 governance tests and all
+This work is not a completed baseline. Pull request #1 exists for the committed
+candidate, but it is not owner-approved or merged and has no independent
+reviewer. Its first clean GitHub Actions run, `31707913394`, failed all three
+required checks (`dependency-review`, `verify`, and `container-security`). The
+two retained artifacts are failing diagnostics, not authoritative evidence.
+The latest local uncached formatting, lint, typecheck, 44-file/233-test
+unit, OpenAPI, and build diagnostics pass, as do all 80 governance tests and all
 12 container-policy tests with zero skipped/todo. The fail-closed closure check
 correctly rejects the current dirty/incomplete record. The security audit still
 reports the four exact High advisories recorded in `blockers.md`, all assigned
@@ -70,18 +74,25 @@ authoritative seed completed, integration passed 29 files/116 tests,
 authorization passed 14 files/53 tests, and the browser gate passed 15/15 with
 isolated API/web ports. Failed missing-database, invalid-`APP_ENV`, occupied-port,
 and changed-OIDC-issuer attempts were retained as diagnostics and did not touch
-the developer database or services. These dirty-worktree runs are not
+the developer database or services. These local dirty-worktree runs are not
 authoritative baseline evidence. GitHub now reports that the repository is
-public, `main` is unprotected, no repository rulesets or protected release environments exist,
-only one collaborator is present, all Actions are permitted without SHA-pinning
-enforcement, and all five governed Phase 0 labels are absent. The current APIs
-no longer reproduce the earlier plan-limitation response, but no remote control
-has been changed without owner authorization. Production
+public and `main` is protected with one approval, strict up-to-date enforcement,
+the three required checks, stale-review dismissal, last-push approval,
+conversation resolution, administrator enforcement, and force-push/deletion
+denial. Only one collaborator is present, so the required independent approval
+remains impossible. The `production` environment exists and is limited to
+protected branches, but it has no required reviewers and still permits
+administrator bypass. All five governed Phase 0 labels now exist. Actions
+remain unrestricted and repository SHA-pinning enforcement remains disabled by
+an owner-approved temporary sequencing decision until the candidate's pinned
+workflow reaches `main`; this control must still be enforced and evidenced
+before Phase 0 closes. Public visibility remains blocked because the available
+user intent is not an authenticated, candidate-bound attestation. Production
 providers/endpoints, exact browser support, SLO/RPO/
 RTO/retention/capacity decisions, procurement/support ownership, and the human
 owner/reviewer roster are unapproved. The project-image immutability mechanism
-is implemented but still lacks a committed candidate and retained build/Compose
-evidence. Release status therefore remains **NOT READY**.
+is committed in the candidate but its retained build/Compose evidence failed
+validation. Release status therefore remains **NOT READY**.
 
 On 2026-08-02 the repository gained a provider-neutral production-control
 contract and preflight for external secret files, trusted TLS, KMS-backed

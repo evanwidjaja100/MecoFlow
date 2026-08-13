@@ -117,7 +117,14 @@ function authenticatesApproval(resource, record) {
   });
 }
 
-function validatesControl(name, control, resource, repository, candidate) {
+function validatesControl(
+  name,
+  control,
+  resource,
+  repository,
+  candidate,
+  independentReviewers,
+) {
   const path = apiPath(control.evidenceUri);
   const body = resource.json;
   if (name === "branchProtection") {
@@ -142,12 +149,22 @@ function validatesControl(name, control, resource, repository, candidate) {
     );
   }
   if (name === "protectedEnvironment") {
+    const reviewerRules = (body.protection_rules ?? []).filter(
+      (rule) => rule.type === "required_reviewers",
+    );
+    const reviewerLogins = new Set(
+      reviewerRules
+        .flatMap((rule) => rule.reviewers ?? [])
+        .filter((reviewer) => reviewer.type === "User")
+        .map((reviewer) => login(reviewer.reviewer?.login)),
+    );
     return (
       path === `/repos/${repository.full_name}/environments/production` &&
       body.name === "production" &&
-      (body.protection_rules ?? []).some(
-        (rule) =>
-          rule.type === "required_reviewers" && rule.reviewers?.length > 0,
+      body.can_admins_bypass === false &&
+      reviewerRules.some((rule) => rule.prevent_self_review === true) &&
+      [...independentReviewers.values()].some((reviewerLogin) =>
+        reviewerLogins.has(reviewerLogin),
       )
     );
   }
@@ -160,15 +177,19 @@ function validatesControl(name, control, resource, repository, candidate) {
     );
   }
   if (name === "independentReviewerAccess") {
-    const independent = new Set(
-      (body ?? [])
-        .filter((entry) => entry.permissions?.admin !== true)
-        .map((entry) => login(entry.login)),
+    const collaborators = new Map(
+      (body ?? []).map((entry) => [login(entry.login), entry]),
     );
     return (
       path ===
         `/repos/${repository.full_name}/collaborators?affiliation=all&per_page=100` &&
-      independent.size >= 2
+      [...independentReviewers.values()].every((reviewerLogin) => {
+        const collaborator = collaborators.get(reviewerLogin);
+        return (
+          collaborator?.permissions?.pull === true &&
+          collaborator.permissions.admin !== true
+        );
+      })
     );
   }
   if (name === "releaseLabels") {
@@ -395,6 +416,7 @@ function validateApprovalResources({
   approvals,
   resources,
   repository,
+  independentReviewers,
   errors,
 }) {
   for (const record of approvals.records ?? []) {
@@ -425,7 +447,14 @@ function validateApprovalResources({
       !githubApiEvidenceUri(control.evidenceUri, repository.full_name) ||
       !resource ||
       digest(resource.bytes) !== normalizedDigest(control.evidenceSha256) ||
-      !validatesControl(name, control, resource, repository, closure.candidate)
+      !validatesControl(
+        name,
+        control,
+        resource,
+        repository,
+        closure.candidate,
+        independentReviewers,
+      )
     ) {
       errors.push(
         `remoteControls.${name}: authenticated GitHub control evidence is missing or has the wrong digest`,
@@ -467,6 +496,7 @@ export function validatePhaseZeroExternalEvidence({
   artifactFiles,
   resources = new Map(),
   inputDigests = {},
+  independentReviewerRoster = [],
   expectedPublicApiBaseUrl,
   now = new Date(),
 }) {
@@ -474,6 +504,12 @@ export function validatePhaseZeroExternalEvidence({
   const candidate = closure?.candidate ?? {};
   const authoritative = closure?.authoritativeEvidence ?? {};
   const reproduction = closure?.independentReproduction ?? {};
+  const independentReviewers = new Map(
+    independentReviewerRoster.map((reviewer) => [
+      reviewer?.roleId,
+      identityLogin(reviewer?.identity),
+    ]),
+  );
   if (
     closure?.schemaVersion !== 1 ||
     closure?.status !== "COMPLETE" ||
@@ -494,6 +530,17 @@ export function validatePhaseZeroExternalEvidence({
     return [
       "external evidence requires a COMPLETE candidate and the canonical GitHub repository",
     ];
+  }
+  if (
+    independentReviewers.size !== INDEPENDENT_ROLES.size ||
+    [...INDEPENDENT_ROLES].some(
+      (roleId) => !independentReviewers.get(roleId),
+    ) ||
+    new Set(independentReviewers.values()).size !== INDEPENDENT_ROLES.size
+  ) {
+    errors.push(
+      "external evidence requires two distinct GitHub identities for the independent security and data/release roster roles",
+    );
   }
 
   for (const [label, claim] of [
@@ -550,6 +597,8 @@ export function validatePhaseZeroExternalEvidence({
     login(reproductionRun?.triggering_actor?.login) !== reproductionLogin ||
     login(reproductionRun?.actor?.login) !== reproductionLogin ||
     !INDEPENDENT_ROLES.has(reproduction.actor?.roleId) ||
+    independentReviewers.get(reproduction.actor?.roleId) !==
+      reproductionLogin ||
     login(authoritativeRun?.triggering_actor?.login) === reproductionLogin
   ) {
     errors.push(
@@ -562,6 +611,7 @@ export function validatePhaseZeroExternalEvidence({
     approvals,
     resources,
     repository,
+    independentReviewers,
     errors,
   });
   const authoritativeScan = scanIdentityMap(

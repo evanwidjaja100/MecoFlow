@@ -116,8 +116,9 @@ has decision `APPROVED`.
 
 These are repository labels, not prose-only categories. Phase 0 closure
 requires candidate-bound GitHub API evidence that all five exact labels exist
-with descriptions preserving these meanings. The current repository has only
-GitHub's default labels, so label establishment remains blocked.
+with descriptions preserving these meanings. The five labels now exist, but
+label establishment remains blocked until authenticated evidence and approval
+are bound to the candidate.
 
 ## Evidence acceptance and invalidation
 

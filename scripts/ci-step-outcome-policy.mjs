@@ -49,9 +49,11 @@ function environmentName(id) {
 }
 
 export function buildCiStepSummary({ env, now = new Date() }) {
-  const sourceSha = required(env, "GITHUB_SHA");
+  const sourceSha = required(env, "PHASE_ZERO_SOURCE_SHA");
   if (!SHA_1.test(sourceSha)) {
-    throw new Error("GITHUB_SHA must be a full 40-character commit SHA");
+    throw new Error(
+      "PHASE_ZERO_SOURCE_SHA must be a full 40-character commit SHA",
+    );
   }
 
   const steps = requiredCiSteps.map(

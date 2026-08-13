@@ -155,7 +155,7 @@ test("redacts secrets split across output chunks before console emission", () =>
       env: {
         ...process.env,
         APP_ENV: "ci",
-        GITHUB_SHA: "a".repeat(40),
+        PHASE_ZERO_SOURCE_SHA: "a".repeat(40),
         SESSION_SECRET: secret,
       },
       encoding: "utf8",
@@ -169,4 +169,38 @@ test("redacts secrets split across output chunks before console emission", () =>
     "utf8",
   );
   assert.equal(retained, "[REDACTED]");
+});
+
+test("retains endpoint-command evidence when endpoint approval fails", () => {
+  const root = mkdtempSync(join(tmpdir(), "mecoflow-endpoint-evidence-"));
+  const script = resolve(import.meta.dirname, "run-ci-evidence-command.mjs");
+  const result = spawnSync(
+    process.execPath,
+    [
+      script,
+      "endpoint_environment",
+      "--",
+      process.execPath,
+      "-e",
+      "process.stderr.write('approval missing'); process.exit(1)",
+    ],
+    {
+      cwd: root,
+      env: {
+        ...process.env,
+        APP_ENV: "ci",
+        NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:3001",
+        PHASE_ZERO_SOURCE_SHA: "a".repeat(40),
+      },
+      encoding: "utf8",
+    },
+  );
+  assert.equal(result.status, 1);
+  const retained = JSON.parse(
+    readFileSync(
+      join(root, ".runtime/evidence/verify/commands/endpoint_environment.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(retained.exitCode, 1);
 });

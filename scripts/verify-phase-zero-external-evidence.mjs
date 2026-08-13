@@ -19,6 +19,10 @@ const closure = JSON.parse(
 const approvals = JSON.parse(
   readFileSync(join(root, "docs/readiness/approvals.json"), "utf8"),
 );
+const governance = readFileSync(
+  join(root, "docs/readiness/governance.md"),
+  "utf8",
+);
 
 function fail(message) {
   throw new Error(message);
@@ -84,6 +88,24 @@ function evidenceApiUri(value, repository) {
     );
   }
   return parsed.href;
+}
+
+function independentReviewerRoster(markdown) {
+  const requiredRoles = new Set([
+    "INDEPENDENT-SECURITY",
+    "INDEPENDENT-DATA-RELEASE",
+  ]);
+  return markdown
+    .split(/\r?\n/u)
+    .filter((line) => line.startsWith("|"))
+    .map((line) =>
+      line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.replaceAll("`", "").trim()),
+    )
+    .filter((cells) => requiredRoles.has(cells[1]))
+    .map((cells) => ({ roleId: cells[1], identity: cells[3] }));
 }
 
 function filesUnder(directory) {
@@ -280,6 +302,7 @@ try {
     artifactFiles,
     resources,
     inputDigests,
+    independentReviewerRoster: independentReviewerRoster(governance),
     expectedPublicApiBaseUrl: endpointMatrix.build?.nextPublicApiBaseUrl,
   });
   if (errors.length > 0) {

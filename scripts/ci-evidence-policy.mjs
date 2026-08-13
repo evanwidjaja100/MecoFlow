@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 
 const SHA_1 = /^[0-9a-f]{40}$/u;
+const BRANCH = /^(?![./])(?!.*(?:\.\.|\/\/|@\{))[A-Za-z0-9._/-]+(?<![./])$/u;
 const JOB_STATUSES = new Set(["success", "failure", "cancelled"]);
 const EVENT_NAMES = new Set(["pull_request", "push", "workflow_dispatch"]);
 
@@ -24,7 +25,8 @@ export function buildCiEvidence({
 }) {
   const repository = required(env, "GITHUB_REPOSITORY");
   const repositoryId = required(env, "GITHUB_REPOSITORY_ID");
-  const sourceSha = required(env, "GITHUB_SHA");
+  const sourceSha = required(env, "PHASE_ZERO_SOURCE_SHA");
+  const sourceBranch = required(env, "PHASE_ZERO_SOURCE_REF");
   const runId = required(env, "GITHUB_RUN_ID");
   const runAttempt = required(env, "GITHUB_RUN_ATTEMPT");
   const job = required(env, "PHASE_ZERO_JOB");
@@ -33,11 +35,14 @@ export function buildCiEvidence({
   const actorLogin = required(env, "GITHUB_ACTOR");
   const actorId = required(env, "GITHUB_ACTOR_ID");
   const triggeringActor = required(env, "GITHUB_TRIGGERING_ACTOR");
-  const workflowRef = required(env, "GITHUB_WORKFLOW_REF");
-  const workflowSha = required(env, "GITHUB_WORKFLOW_SHA");
 
   if (!SHA_1.test(sourceSha)) {
-    throw new Error("GITHUB_SHA must be a full 40-character commit SHA");
+    throw new Error(
+      "PHASE_ZERO_SOURCE_SHA must be a full 40-character commit SHA",
+    );
+  }
+  if (!BRANCH.test(sourceBranch)) {
+    throw new Error("PHASE_ZERO_SOURCE_REF must be an unqualified branch name");
   }
   if (!JOB_STATUSES.has(jobStatus)) {
     throw new Error(
@@ -52,11 +57,6 @@ export function buildCiEvidence({
   }
   if (!/^\d+$/u.test(repositoryId)) {
     throw new Error("GITHUB_REPOSITORY_ID must be a stable numeric identity");
-  }
-  if (!SHA_1.test(workflowSha)) {
-    throw new Error(
-      "GITHUB_WORKFLOW_SHA must be a full 40-character commit SHA",
-    );
   }
 
   const packageManifest = JSON.parse(
@@ -115,10 +115,10 @@ export function buildCiEvidence({
       repository,
       repositoryId,
       sha: sourceSha,
-      ref: required(env, "GITHUB_REF"),
+      ref: `refs/heads/${sourceBranch}`,
       workflow: required(env, "GITHUB_WORKFLOW"),
-      workflowRef,
-      workflowSha,
+      workflowRef: `${repository}/.github/workflows/ci.yml@refs/heads/${sourceBranch}`,
+      workflowSha: sourceSha,
     },
     run: {
       id: runId,

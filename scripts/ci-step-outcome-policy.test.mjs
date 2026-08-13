@@ -7,7 +7,7 @@ import {
 
 function environment(outcome = "success") {
   return Object.fromEntries([
-    ["GITHUB_SHA", "a".repeat(40)],
+    ["PHASE_ZERO_SOURCE_SHA", "a".repeat(40)],
     ...requiredCiSteps.map(([id]) => [
       `PHASE_ZERO_STEP_${id.toUpperCase()}`,
       outcome,
@@ -41,7 +41,9 @@ test("fails closed for failed, skipped, missing, or unattributed outcomes", () =
   assert.throws(() => buildCiStepSummary({ env: missing }), /BUILD.*required/u);
   assert.throws(
     () =>
-      buildCiStepSummary({ env: { ...environment(), GITHUB_SHA: "short" } }),
+      buildCiStepSummary({
+        env: { ...environment(), PHASE_ZERO_SOURCE_SHA: "short" },
+      }),
     /full 40-character/u,
   );
 });

@@ -24,7 +24,7 @@ const policy = JSON.parse(
   readFileSync(resolve(root, "security/container-scan-policy.json"), "utf8"),
 );
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
-const sourceSha = process.env.GITHUB_SHA?.trim() ?? "";
+const sourceSha = process.env.PHASE_ZERO_SOURCE_SHA?.trim() ?? "";
 const appVersion = process.env.APP_VERSION?.trim() ?? "";
 const stepOutcome = process.env.PHASE_ZERO_CONTAINER_SCAN_OUTCOME?.trim() ?? "";
 const errors = [];
@@ -68,7 +68,7 @@ try {
   errors.push(error instanceof Error ? error.message : String(error));
 }
 if (!/^[0-9a-f]{40}$/u.test(sourceSha)) {
-  errors.push("GITHUB_SHA must be a full 40-character commit SHA");
+  errors.push("PHASE_ZERO_SOURCE_SHA must be a full 40-character commit SHA");
 }
 try {
   requireCandidateImageVersion(appVersion, sourceSha);
@@ -90,6 +90,11 @@ for (const expected of requiredCommands) {
     const metadata = JSON.parse(jsonText);
     const stdout = readFileSync(stdoutPath);
     const stderr = readFileSync(stderrPath);
+    const commandEnvironment = { ...process.env };
+    if (expected.id === "endpoint_environment") {
+      commandEnvironment.NEXT_PUBLIC_API_BASE_URL =
+        process.env.PHASE_ZERO_TEST_API_BASE_URL;
+    }
     if (
       metadata.id !== expected.id ||
       metadata.sourceSha !== sourceSha ||
@@ -97,7 +102,7 @@ for (const expected of requiredCommands) {
       metadata.stdout?.sha256 !== sha256(stdout) ||
       metadata.stderr?.sha256 !== sha256(stderr) ||
       JSON.stringify(metadata.environment) !==
-        JSON.stringify(buildEnvironmentIdentity(process.env)) ||
+        JSON.stringify(buildEnvironmentIdentity(commandEnvironment)) ||
       !["success", "failure"].includes(expected.outcome) ||
       (expected.outcome === "success" && metadata.exitCode !== 0) ||
       (expected.outcome === "failure" && metadata.exitCode === 0) ||
@@ -142,22 +147,23 @@ let summary;
 let summaryText;
 const summaryPath = summaries[0];
 if (summaryPath) {
-  try {
-    summaryText = readFileSync(summaryPath, "utf8");
-    summary = JSON.parse(summaryText);
-    errors.push(
-      ...validatePhaseZeroScanEvidence({
-        summary,
-        policy,
-        appVersion,
-        stepOutcome,
-      }),
-    );
-  } catch (error) {
-    errors.push(
-      `container scan summary is invalid: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
+  if (["passed", "blocked"].includes(result.status))
+    try {
+      summaryText = readFileSync(summaryPath, "utf8");
+      summary = JSON.parse(summaryText);
+      errors.push(
+        ...validatePhaseZeroScanEvidence({
+          summary,
+          policy,
+          appVersion,
+          stepOutcome,
+        }),
+      );
+    } catch (error) {
+      errors.push(
+        `container scan summary is invalid: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
 }
 
 const retainedResults = [];

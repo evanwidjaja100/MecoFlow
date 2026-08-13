@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   buildCommandEvidence,
@@ -9,7 +9,6 @@ import {
   secretValues,
 } from "./ci-command-evidence-policy.mjs";
 import { evaluateTestOutput } from "./test-output-policy.mjs";
-import { resolveApprovedBuildApiBaseUrl } from "./phase-zero-closure-policy.mjs";
 
 const TEST_COMMAND_FORMATS = new Map([
   ["governance_tests", "node"],
@@ -33,13 +32,6 @@ if (separator !== "--" || argv.length === 0) {
 
 const root = process.cwd();
 const commandEnvironment = { ...process.env };
-if (id === "endpoint_environment") {
-  const matrix = JSON.parse(
-    readFileSync("docs/readiness/endpoint-matrix.json", "utf8"),
-  );
-  commandEnvironment.NEXT_PUBLIC_API_BASE_URL =
-    resolveApprovedBuildApiBaseUrl(matrix);
-}
 const directory = resolveCommandEvidenceDirectory(
   root,
   process.env.PHASE_ZERO_EVIDENCE_DIR ?? ".runtime/evidence",
@@ -90,7 +82,7 @@ child.on("close", (code, signal) => {
     const evidence = buildCommandEvidence({
       id,
       argv,
-      sourceSha: process.env.GITHUB_SHA ?? "",
+      sourceSha: process.env.PHASE_ZERO_SOURCE_SHA ?? "",
       startedAt,
       endedAt,
       exitCode: effectiveCode,

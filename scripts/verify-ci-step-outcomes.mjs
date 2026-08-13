@@ -53,7 +53,7 @@ try {
       const expectedCommand = expectedCommands.get(id);
       const outcome = outcomeById.get(id);
       const commandEnvironment = { ...process.env };
-      if (commandIndex < endpointStepIndex) {
+      if (commandIndex <= endpointStepIndex) {
         commandEnvironment.NEXT_PUBLIC_API_BASE_URL =
           process.env.PHASE_ZERO_TEST_API_BASE_URL;
       }
@@ -69,8 +69,10 @@ try {
         (outcome === "success" && evidence.exitCode !== 0) ||
         (outcome === "failure" && evidence.exitCode === 0) ||
         (TEST_COMMAND_IDS.has(id) &&
-          (evidence.testPolicy?.passed !== true ||
-            !(evidence.testPolicy?.totals?.total > 0)))
+          (outcome === "success"
+            ? evidence.testPolicy?.passed !== true ||
+              !(evidence.testPolicy?.totals?.total > 0)
+            : evidence.testPolicy?.passed !== false))
       ) {
         commandEvidenceErrors.push(
           `${id}: retained evidence does not match command/source/outcome/output`,

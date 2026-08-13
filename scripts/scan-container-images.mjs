@@ -28,7 +28,10 @@ if (diagnosticMode && process.env.IMAGE_SCAN_MODE !== "diagnostic") {
   );
 }
 if (!diagnosticMode) {
-  requireCandidateImageVersion(appVersion, process.env.GITHUB_SHA?.trim());
+  requireCandidateImageVersion(
+    appVersion,
+    process.env.PHASE_ZERO_SOURCE_SHA?.trim(),
+  );
 }
 const images = [
   ...new Set(
@@ -59,6 +62,9 @@ let scanFailed = false;
 
 for (const [index, image] of images.entries()) {
   console.log(`[${index + 1}/${images.length}] Scanning ${image}`);
+  const safeName = `${String(index + 1).padStart(2, "0")}-${image.replaceAll(/[^a-zA-Z0-9_.-]/g, "_")}`;
+  const reportPath = path.join(reportDirectory, `${safeName}.json`);
+  const logPath = path.join(reportDirectory, `${safeName}.log`);
   const identity = spawnSync(
     "docker",
     [
@@ -71,13 +77,22 @@ for (const [index, image] of images.entries()) {
     { cwd: repositoryRoot, encoding: "utf8", windowsHide: true },
   );
   if (identity.status !== 0 || !identity.stdout?.trim()) {
+    const error =
+      "Docker could not resolve the local image ID/digest before scanning.";
+    writeFileSync(
+      reportPath,
+      `${JSON.stringify({ schemaVersion: 1, image, stage: "identity", error }, null, 2)}\n`,
+      "utf8",
+    );
+    writeFileSync(logPath, identity.stderr ?? error, "utf8");
     scanFailed = true;
     results.push({
       image,
       status: "identity-error",
       exitCode: identity.status,
-      error:
-        "Docker could not resolve the local image ID/digest before scanning.",
+      error,
+      reportPath: path.relative(repositoryRoot, reportPath),
+      logPath: path.relative(repositoryRoot, logPath),
     });
     console.error("  ERROR: image identity could not be resolved");
     continue;
@@ -86,12 +101,22 @@ for (const [index, image] of images.entries()) {
     .trim()
     .split("|", 2);
   if (!/^sha256:[0-9a-f]{64}$/u.test(resolvedIdentity ?? "")) {
+    const error =
+      "Docker returned an invalid immutable image ID before scanning.";
+    writeFileSync(
+      reportPath,
+      `${JSON.stringify({ schemaVersion: 1, image, stage: "identity", error }, null, 2)}\n`,
+      "utf8",
+    );
+    writeFileSync(logPath, error, "utf8");
     scanFailed = true;
     results.push({
       image,
       status: "identity-error",
       exitCode: identity.status,
-      error: "Docker returned an invalid immutable image ID before scanning.",
+      error,
+      reportPath: path.relative(repositoryRoot, reportPath),
+      logPath: path.relative(repositoryRoot, logPath),
     });
     console.error("  ERROR: immutable image ID is invalid");
     continue;
@@ -127,9 +152,6 @@ for (const [index, image] of images.entries()) {
     },
   );
 
-  const safeName = `${String(index + 1).padStart(2, "0")}-${image.replaceAll(/[^a-zA-Z0-9_.-]/g, "_")}`;
-  const reportPath = path.join(reportDirectory, `${safeName}.json`);
-  const logPath = path.join(reportDirectory, `${safeName}.log`);
   writeFileSync(logPath, scan.stderr ?? "", "utf8");
 
   if (scan.status !== 0 || !scan.stdout?.trim()) {
