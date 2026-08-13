@@ -176,6 +176,8 @@ jobs:
         id: e2e
         if: always()
         continue-on-error: true
+        env:
+          DEBUG: pw:webserver
         run: node scripts/run-ci-evidence-command.mjs e2e -- pnpm test:e2e
       - name: Load approved production build endpoint
         id: endpoint_environment
