@@ -50,7 +50,7 @@ Each row below carries its own exact classification from the five Phase 0
 categories; no classification is inherited from prose or inferred from purpose.
 The reconciled current inventory contains 96 paths in the candidate delta
 through `e7db0eb03ba184dbed1e3d35d294c583153867d7` plus the current
-documentation reconciliation and uncommitted scan-parser follow-up. Commits
+documentation reconciliation and committed scan-parser follow-up. Commits
 `db503f3`/`e7db0eb` and the three locally modified scan-policy/verifier paths
 are already classified below; they add no inventory row. An executable
 read-only comparison found zero candidate-delta or untracked paths missing from

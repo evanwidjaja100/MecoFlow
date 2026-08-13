@@ -118,7 +118,7 @@ control-plane mutations showed:
 - a post-run local fix now preserves `identity-error` as an incomplete
   diagnostic instead of attempting to parse its placeholder output as a
   completed Trivy report. Governance 82/82 and container-policy 14/14 pass
-  locally, but this follow-up is uncommitted and has no remote candidate
+  locally; this follow-up is committed in the candidate tip but has no accepted remote
   evidence.
 
 Branch mutation protections and the three required check names are now

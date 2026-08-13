@@ -84,7 +84,7 @@ unit, OpenAPI, and build diagnostics pass, as do all 82 governance tests and all
 14 container-policy tests with zero skipped/todo. After run `31717030980`, a
 local follow-up corrected the scan verifier so an `identity-error` diagnostic is
 not parsed as though it were a completed Trivy report. That fix and its
-regression coverage are implemented but uncommitted and unverified in remote
+regression coverage are committed in the candidate tip but unverified in remote
 CI; they do not alter the endpoint/provider approval blocker. The fail-closed closure check
 correctly rejects the current dirty/incomplete record. The security audit still
 reports the four exact High advisories recorded in `blockers.md`, all assigned
