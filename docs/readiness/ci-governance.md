@@ -2,8 +2,8 @@
 
 ## In-repository implementation state
 
-The committed Phase 0 candidate
-`d6587a8fd76b2986c942e7f4f7a1b8687daeba5d` (pull request #1; not yet
+The latest committed Phase 0 candidate
+`e7db0eb03ba184dbed1e3d35d294c583153867d7` (pull request #1; not yet
 owner-approved or merged) implements:
 
 - full-commit-SHA references for all third-party GitHub Actions;
@@ -55,12 +55,18 @@ without rebuilding. Final registry digests, SBOM, provenance,
 signature/attestation, and immutable deployment-manifest linkage remain Phase
 14 work. No evidence may claim that final artifact control already exists.
 
-The evidence-retention workflow is committed on the candidate. Its first pull
-request run, `31707913394`, produced two retained artifacts, but all three
-required checks failed. Those artifacts are diagnostic only. GitHub run logs
-plus `steps.json`, per-command JSON/logs, the uploaded manifest, and artifact
+The evidence-retention workflow is committed on the candidate. Run
+`31707913394` failed all three required checks. Runs `31712296742`,
+`31713053533`, and `31713790180` passed `dependency-review` but failed `verify`
+and `container-security`. Run `31716612512` for commit `db503f3` was superseded
+and cancelled after dependency review passed and container security failed.
+Replacement run `31717030980` evaluated commit `e7db0eb`: dependency review and
+all 15 browser scenarios passed, but verify and container security failed on
+the still-unapproved endpoint and dependent image/scan evidence. All artifacts
+from incomplete, cancelled, or failed runs are diagnostic only. GitHub run logs plus
+`steps.json`, per-command JSON/logs, the uploaded manifest, and artifact
 IDs/digests must validate after a successful clean run; repository
-configuration or a retained failing artifact is not accepted as baseline
+configuration or retained non-passing artifacts are not accepted as baseline
 evidence.
 
 ## Live GitHub control-plane evidence — 2026-08-13
@@ -90,14 +96,34 @@ control-plane mutations showed:
   independent repository reviewer cannot currently approve pull request #1;
 - the exact governed labels `BLOCKER`, `CRITICAL`, `HIGH`, `LATER-PHASE`, and
   `IMPLEMENTED-UNCOMMITTED` exist with governed descriptions; and
-- pull request #1 run `31707913394` failed all three required checks.
-  `dependency-review` reported that the dependency graph was not enabled at
-  run time;
-  `verify` failed its aggregate evidence validation; and `container-security`
-  failed endpoint, image, and scan-evidence validation.
+- pull request #1 run `31707913394` failed all three required checks because
+  the dependency graph was not enabled and verify/container evidence was
+  incomplete;
+- runs `31712296742`, `31713053533`, and `31713790180` passed dependency review
+  but failed verify/container. The first two could not start the E2E web server;
+  the third ran all 15 scenarios but failed authentication/navigation. All
+  three rejected the unapproved production endpoint and dependent image builds.
+  Their container verifier also threw `ReferenceError: result is not defined`;
+- commits `db503f3` and `e7db0eb` canonicalize the E2E loopback origin, add
+  negative origin coverage, and replace the undefined scan-verifier access with
+  parsed structured validation; and
+- run `31716612512` was superseded/cancelled. Replacement run `31717030980`
+  proved the E2E fix with 15/15 passing and executed the repaired container
+  verifier without the former exception. It still failed verify on
+  `endpoint_environment` and `application_images`, while container verification
+  rejected endpoint/release-image evidence and all 14 incomplete scans. Before
+  those approval-dependent failures, governance 81/81, unit 236, integration
+  151, authorization 53, E2E 15/15, build, policies, Compose, and cleanliness
+  passed. Neither run is accepted closure evidence.
+- a post-run local fix now preserves `identity-error` as an incomplete
+  diagnostic instead of attempting to parse its placeholder output as a
+  completed Trivy report. Governance 82/82 and container-policy 14/14 pass
+  locally, but this follow-up is uncommitted and has no remote candidate
+  evidence.
 
 Branch mutation protections and the three required check names are now
-enforced, but the checks are failing and no independent reviewer is available.
+enforced, but required checks have not produced an accepted passing candidate
+run and no independent reviewer is available.
 The release environment, Actions restriction, visibility approval, and
 candidate-bound immutable evidence are incomplete. Phase 0 therefore remains
 blocked.
@@ -108,8 +134,9 @@ blocked.
    access before enabling a mandatory independent approval.
 2. Complete an independent approval of pull request #1 under the existing
    `main` protection after every required check passes.
-3. Correct and rerun the exact required checks `dependency-review`, `verify`,
-   and `container-security`; retain candidate-bound successful evidence. The
+3. Supply the approved endpoint record, commit the post-run scan-parser fix,
+   and rerun until the exact required checks `dependency-review`, `verify`, and
+   `container-security` all pass; retain candidate-bound successful evidence. The
    recorded Phase 2 diagnostics must complete with attributable evidence, while
    unresolved advisory findings remain blockers in their owning phases.
 4. Preserve the existing administrator enforcement and force-push/deletion

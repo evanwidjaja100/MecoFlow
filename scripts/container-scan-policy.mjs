@@ -231,3 +231,34 @@ export function parseAndValidatePhaseZeroScanSummary(
     summary,
   };
 }
+
+export function validateRetainedTrivyReport({
+  reportText,
+  result,
+  exceptions,
+}) {
+  if (!["passed", "blocked"].includes(result?.status)) return [];
+  try {
+    const report = JSON.parse(reportText);
+    if (!Array.isArray(report.Results) || report.Results.length === 0) {
+      throw new Error("Trivy report has no result targets");
+    }
+    const findings = collectFindings(report, result.image);
+    const evaluation = evaluateFindings(findings, exceptions);
+    const expectedStatus =
+      evaluation.blocking.length === 0 ? "passed" : "blocked";
+    if (
+      result.findingCount !== findings.length ||
+      result.acceptedCount !== evaluation.accepted.length ||
+      result.blockingCount !== evaluation.blocking.length ||
+      result.status !== expectedStatus
+    ) {
+      return ["retained Trivy report contradicts the scan summary"];
+    }
+    return [];
+  } catch (error) {
+    return [
+      `retained Trivy report cannot be independently evaluated: ${error instanceof Error ? error.message : String(error)}`,
+    ];
+  }
+}

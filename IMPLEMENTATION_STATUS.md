@@ -18,7 +18,8 @@ isolated databases. This is not a production-readiness claim.
 Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
 **IN PROGRESS / BLOCKED**. Phases 1 and 2 remain locked.
 
-The committed Phase 0 candidate `d6587a8fd76b2986c942e7f4f7a1b8687daeba5d`
+The latest committed Phase 0 candidate
+`e7db0eb03ba184dbed1e3d35d294c583153867d7`
 on `codex/phase-zero-candidate` adds or corrects repository controls: full-SHA
 Actions, digest-pinned external Dockerfile/Compose/scan
 references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
@@ -56,12 +57,35 @@ and expiry data instead of trusting locally asserted IDs and digests.
 
 This work is not a completed baseline. Pull request #1 exists for the committed
 candidate, but it is not owner-approved or merged and has no independent
-reviewer. Its first clean GitHub Actions run, `31707913394`, failed all three
-required checks (`dependency-review`, `verify`, and `container-security`). The
-two retained artifacts are failing diagnostics, not authoritative evidence.
+reviewer. Run `31707913394` failed all three required checks. Runs
+`31712296742`, `31713053533`, and `31713790180` then passed
+`dependency-review` but failed `verify` and `container-security`; their retained
+artifacts remain diagnostics, not authoritative evidence. Those runs exposed
+an E2E loopback-origin defect, an undefined container-verifier variable, and
+the expected fail-closed rejection of the unapproved production endpoint and
+the dependent project-image build. Commits `db503f3` and `e7db0eb` bind the
+browser/OIDC flow to one loopback origin, add negative origin tests, and repair
+structured container-scan-summary validation. Run `31716612512` for `db503f3`
+was superseded and cancelled after dependency review passed and container
+security failed. Replacement run `31717030980` for `e7db0eb` passed dependency
+review and all 15 browser scenarios, proving the loopback/OIDC repair in clean
+CI, but still failed `verify` because `endpoint_environment` and
+`application_images` correctly rejected missing APR-backed endpoint approval.
+`container-security` also failed: the repaired verifier ran without its former
+exception and rejected endpoint/release-image evidence plus all 14 incomplete
+scan reports. Both retained artifacts remain diagnostic. The run is not closure
+evidence, and every separate approval/control requirement remains open. Before
+the two expected approval-dependent verify failures, the clean run passed all
+81 governance tests, 236 unit tests, 151 integration tests, 53 authorization
+tests, formatting, lint, typecheck, OpenAPI, build, policy checks, Compose,
+workspace cleanliness, and the 15 browser scenarios.
 The latest local uncached formatting, lint, typecheck, 44-file/233-test
-unit, OpenAPI, and build diagnostics pass, as do all 80 governance tests and all
-12 container-policy tests with zero skipped/todo. The fail-closed closure check
+unit, OpenAPI, and build diagnostics pass, as do all 82 governance tests and all
+14 container-policy tests with zero skipped/todo. After run `31717030980`, a
+local follow-up corrected the scan verifier so an `identity-error` diagnostic is
+not parsed as though it were a completed Trivy report. That fix and its
+regression coverage are implemented but uncommitted and unverified in remote
+CI; they do not alter the endpoint/provider approval blocker. The fail-closed closure check
 correctly rejects the current dirty/incomplete record. The security audit still
 reports the four exact High advisories recorded in `blockers.md`, all assigned
 to locked Phase 2. A current diagnostic resolved 5/14 immutable image

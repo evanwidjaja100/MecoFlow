@@ -9,6 +9,7 @@ import {
   requireCandidateImageVersion,
   validatePhaseZeroScanEvidence,
   validatePolicy,
+  validateRetainedTrivyReport,
 } from "./container-scan-policy.mjs";
 
 const approvedException = {
@@ -209,6 +210,39 @@ test("parses a retained scan summary before validating blocked evidence", () => 
         stepOutcome: "failure",
       }),
     SyntaxError,
+  );
+});
+
+test("recomputes completed Trivy reports but preserves incomplete diagnostics", () => {
+  const fixture = phaseZeroFixture("passed");
+  const result = fixture.summary.results[0];
+  assert.deepEqual(
+    validateRetainedTrivyReport({
+      reportText: JSON.stringify({
+        schemaVersion: 1,
+        stage: "identity",
+        error: "image identity could not be resolved",
+      }),
+      result: { ...result, status: "identity-error" },
+      exceptions: [],
+    }),
+    [],
+  );
+  assert.match(
+    validateRetainedTrivyReport({
+      reportText: JSON.stringify({ Results: [] }),
+      result,
+      exceptions: [],
+    })[0],
+    /no result targets/u,
+  );
+  assert.deepEqual(
+    validateRetainedTrivyReport({
+      reportText: JSON.stringify({ Results: [{ Target: "image" }] }),
+      result,
+      exceptions: [],
+    }),
+    [],
   );
 });
 

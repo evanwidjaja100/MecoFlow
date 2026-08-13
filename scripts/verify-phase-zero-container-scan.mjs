@@ -8,11 +8,10 @@ import {
 } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 import {
-  collectFindings,
-  evaluateFindings,
   parseAndValidatePhaseZeroScanSummary,
   requireCandidateImageVersion,
   validatePolicy,
+  validateRetainedTrivyReport,
 } from "./container-scan-policy.mjs";
 import { buildEnvironmentIdentity } from "./ci-command-evidence-policy.mjs";
 
@@ -198,29 +197,14 @@ for (const result of summary?.results ?? []) {
       retained[field] = sha256(readFileSync(absolutePath));
     }
   }
-  try {
-    const reportPath = resolve(root, String(result.reportPath ?? ""));
-    const report = JSON.parse(readFileSync(reportPath, "utf8"));
-    if (!Array.isArray(report.Results) || report.Results.length === 0) {
-      throw new Error("Trivy report has no result targets");
-    }
-    const findings = collectFindings(report, result.image);
-    const evaluation = evaluateFindings(findings, policy.exceptions);
-    const expectedStatus =
-      evaluation.blocking.length === 0 ? "passed" : "blocked";
-    if (
-      result.findingCount !== findings.length ||
-      result.acceptedCount !== evaluation.accepted.length ||
-      result.blockingCount !== evaluation.blocking.length ||
-      result.status !== expectedStatus
-    ) {
-      errors.push(
-        `${result.image}: retained Trivy report contradicts the scan summary`,
-      );
-    }
-  } catch (error) {
+  const reportPath = resolve(root, String(result.reportPath ?? ""));
+  if (existsSync(reportPath)) {
     errors.push(
-      `${result.image}: retained Trivy report cannot be independently evaluated: ${error instanceof Error ? error.message : String(error)}`,
+      ...validateRetainedTrivyReport({
+        reportText: readFileSync(reportPath, "utf8"),
+        result,
+        exceptions: policy.exceptions,
+      }).map((error) => `${result.image}: ${error}`),
     );
   }
   retainedResults.push(retained);
