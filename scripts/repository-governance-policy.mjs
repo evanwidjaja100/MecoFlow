@@ -845,6 +845,17 @@ export function validateRepository(root) {
           "package.json: test:e2e must run the fail-closed prerequisite check",
         );
       }
+      for (const application of ["api", "worker"]) {
+        if (
+          !manifest.scripts?.["test:e2e"]?.includes(
+            `pnpm --filter @mecoflow/${application} build`,
+          )
+        ) {
+          errors.push(
+            `package.json: test:e2e must build the ${application} start artifact before Playwright`,
+          );
+        }
+      }
       if (
         !manifest.scripts?.test?.includes("verify-test-prerequisites.mjs unit")
       ) {

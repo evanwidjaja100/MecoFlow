@@ -51,7 +51,7 @@
     "staging:pilot-acceptance": "powershell -NoProfile -ExecutionPolicy Bypass -File infra/scripts/run-pilot-acceptance.ps1",
     "test": "node scripts/verify-test-prerequisites.mjs unit && turbo run test",
     "test:authorization": "turbo run test:authorization",
-    "test:e2e": "node scripts/verify-test-prerequisites.mjs e2e && pnpm --filter @mecoflow/web build && playwright test",
+    "test:e2e": "node scripts/verify-test-prerequisites.mjs e2e && pnpm --filter @mecoflow/api build && pnpm --filter @mecoflow/worker build && pnpm --filter @mecoflow/web build && playwright test",
     "test:integration": "turbo run test:integration",
     "test:staging-smoke": "playwright test --config playwright.staging.config.ts",
     "typecheck": "turbo run typecheck",
