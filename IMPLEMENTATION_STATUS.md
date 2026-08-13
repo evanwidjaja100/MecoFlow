@@ -18,8 +18,8 @@ isolated databases. This is not a production-readiness claim.
 Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
 **IN PROGRESS / BLOCKED**. Phases 1 and 2 remain locked.
 
-The latest committed Phase 0 candidate
-`e7db0eb03ba184dbed1e3d35d294c583153867d7`
+The latest fully evaluated Phase 0 implementation candidate
+`e443e5beca2cfdbf3c2240c732fb9af6167a4ad0`
 on `codex/phase-zero-candidate` adds or corrects repository controls: full-SHA
 Actions, digest-pinned external Dockerfile/Compose/scan
 references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
@@ -83,9 +83,13 @@ The latest local uncached formatting, lint, typecheck, 44-file/233-test
 unit, OpenAPI, and build diagnostics pass, as do all 82 governance tests and all
 14 container-policy tests with zero skipped/todo. After run `31717030980`, a
 local follow-up corrected the scan verifier so an `identity-error` diagnostic is
-not parsed as though it were a completed Trivy report. That fix and its
-regression coverage are committed in the candidate tip but unverified in remote
-CI; they do not alter the endpoint/provider approval blocker. The fail-closed closure check
+not parsed as though it were a completed Trivy report. Final implementation run
+`31718073882` at `e443e5b` verified that correction: the retained container
+record contains only the two approval-dependent command failures and 14
+incomplete scans, with zero false Trivy-format errors. Dependency review and all
+executable verify gates again passed, including 15/15 browser scenarios; the
+aggregate jobs still failed on the absent APR-backed endpoint and dependent
+images. The fix does not alter that endpoint/provider approval blocker. The fail-closed closure check
 correctly rejects the current dirty/incomplete record. The security audit still
 reports the four exact High advisories recorded in `blockers.md`, all assigned
 to locked Phase 2. A current diagnostic resolved 5/14 immutable image

@@ -2,8 +2,8 @@
 
 ## In-repository implementation state
 
-The latest committed Phase 0 candidate
-`e7db0eb03ba184dbed1e3d35d294c583153867d7` (pull request #1; not yet
+The latest fully evaluated Phase 0 implementation candidate
+`e443e5beca2cfdbf3c2240c732fb9af6167a4ad0` (pull request #1; not yet
 owner-approved or merged) implements:
 
 - full-commit-SHA references for all third-party GitHub Actions;
@@ -68,6 +68,11 @@ from incomplete, cancelled, or failed runs are diagnostic only. GitHub run logs 
 IDs/digests must validate after a successful clean run; repository
 configuration or retained non-passing artifacts are not accepted as baseline
 evidence.
+Run `31718073882` evaluated the final implementation candidate `e443e5b`:
+dependency review and every executable verify gate passed again, including
+E2E 15/15, while the aggregate jobs failed only on the absent APR-backed
+endpoint and its dependent images/scans. The retained container record contains
+zero false Trivy-format errors for its 14 incomplete identity diagnostics.
 
 ## Live GitHub control-plane evidence — 2026-08-13
 
@@ -115,11 +120,11 @@ control-plane mutations showed:
   those approval-dependent failures, governance 81/81, unit 236, integration
   151, authorization 53, E2E 15/15, build, policies, Compose, and cleanliness
   passed. Neither run is accepted closure evidence.
-- a post-run local fix now preserves `identity-error` as an incomplete
+- a post-run fix now preserves `identity-error` as an incomplete
   diagnostic instead of attempting to parse its placeholder output as a
   completed Trivy report. Governance 82/82 and container-policy 14/14 pass
-  locally; this follow-up is committed in the candidate tip but has no accepted remote
-  evidence.
+  locally. Run `31718073882` verified the behavior remotely, but remains failing
+  diagnostic evidence because the endpoint/image gates did not pass.
 
 Branch mutation protections and the three required check names are now
 enforced, but required checks have not produced an accepted passing candidate
