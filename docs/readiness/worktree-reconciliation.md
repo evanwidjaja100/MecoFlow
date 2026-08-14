@@ -49,8 +49,10 @@ remain attributable to this Phase 0 candidate even after they are committed.
 Each row below carries its own exact classification from the five Phase 0
 categories; no classification is inherited from prose or inferred from purpose.
 The reconciled current inventory contains 96 paths in the candidate delta
-through source-affecting candidate `6d91208a6d5912508178f981f575ff4345e34430`
-plus the evidence-only documentation reconciliation through `1f83021`.
+through source-affecting candidate `6d91208a6d5912508178f981f575ff4345e34430`.
+Evidence-only documentation checkpoints `1f83021` and `96f3120`, plus this
+reconciliation commit, do not change that inventory or promote a different
+source-affecting candidate.
 Commits `db503f3`/`e7db0eb` and the three scan-policy/verifier paths
 are already classified below; they add no inventory row. An executable
 read-only comparison found zero candidate-delta or untracked paths missing from

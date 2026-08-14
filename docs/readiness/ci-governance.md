@@ -81,7 +81,7 @@ with zero skips/todos. The aggregate jobs failed only the unchanged
 endpoint/application-image and dependent 14-image identity chain. Its retained
 artifacts remain diagnostic only.
 
-## Live GitHub control-plane evidence — 2026-08-13
+## Live GitHub control-plane evidence — 2026-08-14
 
 Authenticated `gh` inspection of `evanwidjaja100/MecoFlow` after the approved
 control-plane mutations showed:
@@ -157,9 +157,10 @@ blocked.
    denial, and retain authenticated evidence bound to the candidate.
 5. After the pinned candidate workflow reaches `main`, restrict allowed Actions
    and enable SHA-pinning enforcement; retain authenticated evidence of both.
-6. Add independent required reviewers to `production`, disable administrator
-   bypass, and enforce least-privilege deployment permissions before accepting
-   release evidence.
+6. Preserve disabled administrator bypass; add real roster-bound independent
+   required-reviewer protection and self-review prevention to `production`;
+   and add the protected least-privilege `PHASE_ZERO_READ_TOKEN` before
+   accepting release evidence.
 7. Retain authenticated, candidate-bound evidence and approval for the five
    governed labels and their descriptions.
 8. Record authenticated owner approval for the intended repository visibility and its
