@@ -27,8 +27,8 @@
     "D-02": {
       "rpoHours": 4,
       "rtoHours": 8,
-      "recoveryScope": null,
-      "completeSetDefinition": null,
+      "recoveryScope": "Coordinated recovery of application PostgreSQL, Keycloak PostgreSQL and realm, and object storage",
+      "completeSetDefinition": "A checksummed application PostgreSQL, Keycloak PostgreSQL and realm, and object-storage set copied to an approved target in a separate failure domain, encrypted with an independently approved backup KMS key, remotely checksum-verified, and held under the approved immutable/versioned retention policy",
       "verificationOwnerRoleId": "DATA-OWNER"
     },
     "D-03": {
@@ -92,7 +92,7 @@
       "procurementEvidenceUri": null,
       "procurementEvidenceSha256": null,
       "exitStrategy": null,
-      "realmClientClaimContract": null,
+      "realmClientClaimContract": "Keycloak OIDC Authorization Code with S256 PKCE; one-time database-backed authorization transactions; browser-bound state and nonce; RS256 ID-token verification through discovery/JWKS; profile synchronization; opaque server-side sessions; no access or refresh tokens persisted or exposed to the web application",
       "mfaRecoveryBreakGlassContract": null,
       "keyRotationRevocationBackupContract": null
     },
@@ -110,10 +110,10 @@
       "procurementEvidenceUri": null,
       "procurementEvidenceSha256": null,
       "exitStrategy": null,
-      "kmsAndPrivatePolicyContract": null,
+      "kmsAndPrivatePolicyContract": "Private HTTPS S3-compatible storage with explicit aws:kms encryption and key ID, or AES256 only with evidence that SSE-S3 is backed by the approved external KMS; provider evidence must prove encrypted write/read, denial of unencrypted writes, anonymous-access denial, and versioning",
       "retentionVersioningLegalHoldContract": null,
-      "malwareScanningContract": null,
-      "replicationAndRecoveryContract": null
+      "malwareScanningContract": "Objects remain quarantined until completion verifies metadata, size, SHA-256, detected type, and ClamAV result; disabled, unavailable, error, timeout, or malware detection remains SCAN_FAILED; only CLEAN review or approved versions may receive authorized short-lived downloads",
+      "replicationAndRecoveryContract": "Copy the coordinated checksummed application PostgreSQL, Keycloak PostgreSQL and realm, and object-storage set to an approved target in a separate failure domain; encrypt with the independently approved backup KMS key, verify the remote checksum, apply approved immutable/versioned retention, and retain evidence of a clean restore rehearsal"
     },
     "D-10": {
       "endpointMatrixRef": "docs/readiness/endpoint-matrix.json"

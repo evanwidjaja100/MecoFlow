@@ -86,8 +86,10 @@ control-plane mutations showed:
   strict up-to-date enforcement, and the exact required checks
   `dependency-review`, `verify`, and `container-security`; force pushes and
   deletion are disabled;
-- the `production` environment exists and accepts protected branches, but has
-  no required reviewers and reports `can_admins_bypass: true`;
+- the `production` environment exists, reports `can_admins_bypass: false`, and
+  its GET readback exposes only the protected-branch deployment policy with no
+  required-reviewer rule or least-privilege deployment secret; self-review
+  prevention must be configured and read back with real reviewers;
 - Actions are enabled with `allowed_actions: all` and organization/repository
   `sha_pinning_required: false`. The owner approved deferring restriction until
   the candidate's full-SHA workflow reaches `main`, because the workflow still

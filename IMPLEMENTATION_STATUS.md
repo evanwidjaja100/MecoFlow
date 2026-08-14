@@ -109,8 +109,11 @@ the three required checks, stale-review dismissal, last-push approval,
 conversation resolution, administrator enforcement, and force-push/deletion
 denial. Only one collaborator is present, so the required independent approval
 remains impossible. The `production` environment exists and is limited to
-protected branches, but it has no required reviewers and still permits
-administrator bypass. All five governed Phase 0 labels now exist. Actions
+protected branches and administrator bypass is now disabled, but it has no
+required-reviewer rule or least-privilege deployment secret. Self-review
+prevention must be configured and read back together with real reviewers. This
+mechanical hardening does not constitute approval. All
+five governed Phase 0 labels now exist. Actions
 remain unrestricted and repository SHA-pinning enforcement remains disabled by
 an owner-approved temporary sequencing decision until the candidate's pinned
 workflow reaches `main`; this control must still be enforced and evidenced
@@ -121,6 +124,19 @@ RTO/retention/capacity decisions, procurement/support ownership, and the human
 owner/reviewer roster are unapproved. The project-image immutability mechanism
 is committed in the candidate but its retained build/Compose evidence failed
 validation. Release status therefore remains **NOT READY**.
+
+A 2026-08-14 mechanical derivation audit confirmed that the typed readiness
+records now contain every non-approval value justified by accepted
+repository sources. Role IDs, required boundary names, D-05 locale/time/currency
+requirements, Keycloak/OIDC direction, the S3-compatible abstraction with
+MinIO development-only, coordinated recovery scope, KMS/private storage,
+fail-closed malware scanning, off-site recovery, and provisional tool/image
+versions are source-backed.
+Exact production people, stable identities, endpoints, provider/support terms,
+remaining D-01–D-10 choices, approval records, and closure evidence are not
+derivable and remain intentionally `BLOCKED`/`null`. No repository actor,
+diagnostic run, or local/staging value was promoted into a human approval or
+production choice.
 
 On 2026-08-02 the repository gained a provider-neutral production-control
 contract and preflight for external secret files, trusted TLS, KMS-backed

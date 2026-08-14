@@ -22,6 +22,25 @@ linkage.
 | D-09 | Production object storage | MinIO remains development-only. Phase 0 must name a supported S3-compatible provider with KMS SSE, private policy, scanning, retention/versioning, replication/off-site recovery, support owner, procurement, and exit strategy; qualification/migration executes in Phase 14                      | `BLOCKED`          | Storage/platform, security, data, procurement     | 2026-08-11    |
 | D-10 | Production endpoints      | Exact values are required in `endpoint-matrix.md`; none is currently assigned or approved                                                                                                                                                                                                          | `BLOCKED`          | Platform, identity, security, application/release | 2026-08-11    |
 
+## Repository-derived field boundary
+
+The accepted repository sources determine only the following non-approval
+facts. They are already represented in `decisions.json`; this audit does not
+change any decision status or create an approval.
+
+| Decisions | Repository-derived fields already recorded                                                                                                                                                | Values that still require accountable humans                                                                                                                              |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D-01–D-04 | Proposed service/recovery, retention, headroom, and queue-recovery bounds; coordinated recovery scope and complete-set definition from `PRODUCTION_CONTROLS.md`; canonical owner role IDs | Exact service scope, measurement/error-budget policy, remaining retention/legal-hold periods, capacity model, growth, horizon, and approval                               |
+| D-05      | `en`/`id`, `Asia/Jakarta`, `IDR`, metric units, and `PRODUCT-OWNER` role from the product requirements and accepted ADR-0013                                                              | Named owner identity and candidate-bound signoff                                                                                                                          |
+| D-06–D-07 | Device/input/accessibility proposal, WCAG target, and supported-version record reference                                                                                                  | Exact browser/OS/deployment support matrix, named reviewers, and approval                                                                                                 |
+| D-08      | Keycloak, `IDENTITY-OWNER`, and the implemented OIDC Authorization Code + S256 PKCE/session/token-validation baseline from the security model                                             | Supported distribution/version, hosting/region/HA/support, production realm specifics, MFA/recovery/rotation contracts, procurement evidence, exit strategy, and approval |
+| D-09      | S3-compatible abstraction, MinIO development-only rule, `PLATFORM-OWNER`, and source-fixed KMS/private, fail-closed malware-scan, and off-site recovery baselines                         | Production provider/tier/region/support, exact retention/versioning/legal-hold contract, procurement evidence, exit strategy, and approval                                |
+| D-10      | Authoritative endpoint-matrix record reference                                                                                                                                            | Every production value, change-control record, named signer, independent reviewer, and approval                                                                           |
+
+Null fields are intentional fail-closed inputs. Local Compose values, staging
+values, GitHub usernames, commits, pull requests, and diagnostic runs do not
+truthfully supply the missing production choices or human authority.
+
 ## Approved decisions
 
 None. Phase 0 cannot close, and Phase 1/2 are not unlocked, until each row is

@@ -23,6 +23,16 @@ build-time/public API match.
 | Internal worker/service dependency names   | Unassigned           | `BLOCKED` | Cloud/platform owner                     |
 | Build-time `NEXT_PUBLIC_API_BASE_URL`      | Unassigned           | `BLOCKED` | Application/release owner                |
 
+## Derivation boundary
+
+Repository sources define the required boundaries and consistency rules, but
+they do not define a production DNS zone, origin, issuer, callback, proxy path,
+service-discovery namespace, or public build value. Local Compose and staging
+names are deliberately non-production and cannot populate
+`endpoint-matrix.json`. Every exact value therefore remains `null`/`BLOCKED`
+until the provisioned production topology is supplied and approved by named
+owners.
+
 ## Approval and change control
 
 - The Phase 0 owner must choose the supported production identity and object

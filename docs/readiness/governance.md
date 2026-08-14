@@ -38,6 +38,51 @@ One person may hold multiple accountable roles, but nobody may approve their
 own security-, data-, or release-critical work. Approval records include name,
 role, date, reviewed source SHA, scope, findings, and decision.
 
+The canonical role IDs and role requirements are repository-derived. Named
+humans and stable identities are not. A repository username, commit author,
+pull-request actor, or environment administrator must not be mapped to a role
+without an explicit human assignment. Accordingly, the roster remains
+`BLOCKED`, and `approvals.json` remains empty.
+
+## Operator-ready Phase 0 human handoff
+
+Complete these steps in order; do not replace any item with an agent-authored
+placeholder or an unbound chat statement.
+
+1. The business sponsor assigns named humans and stable identities to every
+   required role in the roster, including independent security and
+   data/release review. Confirm that critical-work reviewers are distinct from
+   implementers and primary approvers.
+2. Accountable owners supply the missing D-01–D-07 scope, policy, retention,
+   capacity, supported browser/OS/deployment, and signoff values listed in
+   `decision-log.md` and `supported-versions.md`.
+3. Identity, platform, security, procurement, and support owners select the
+   D-08 Keycloak distribution/hosting/support contracts and the D-09 supported
+   S3-compatible production provider/contracts. Record procurement evidence,
+   evidence digests, exit strategies, and named operational owners.
+4. Platform, identity, security, application, and release owners populate every
+   exact production boundary in `endpoint-matrix.json`, including DNS zones,
+   HTTPS origins, OIDC callbacks, proxy hops, service names, and the build-time
+   API value. Validate the provisioned topology before approval.
+5. The repository administrator supplies authenticated candidate-bound
+   evidence for branch protection, labels, visibility, and Actions restriction.
+   The release manager adds independent required reviewers, self-review
+   prevention, and least-privilege secrets to the `production` environment;
+   administrator bypass is already disabled, but that mechanical hardening is
+   not an approval.
+6. After the candidate SHA and all evidence artifacts are frozen, named role
+   signers create complete digest-bound records in `approvals.json`. Use a
+   distinct independent reviewer and bind every record to its exact subject,
+   scope, source SHA, and evidence URI.
+7. Populate `phase-zero-closure.json` only from those accepted records and two
+   clean, successful, candidate-identical runs: the authoritative run and a
+   reviewer-operated independent reproduction with non-overlapping artifacts.
+   Then run the local closure policy and authenticated remote verifier.
+
+Known branch names, commit SHAs, diagnostic run IDs, and observed control-plane
+state remain useful diagnostics in `ci-governance.md`; they are not closure
+fields until candidate-bound evidence and human approval meet the schema.
+
 ## Canonical role IDs and aliases
 
 Records use these stable IDs. Existing prose labels map to these IDs and do
