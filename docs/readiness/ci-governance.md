@@ -2,8 +2,8 @@
 
 ## In-repository implementation state
 
-The latest fully evaluated Phase 0 implementation candidate
-`e443e5beca2cfdbf3c2240c732fb9af6167a4ad0` (pull request #1; not yet
+The latest fully evaluated Phase 0 candidate
+`6d91208a6d5912508178f981f575ff4345e34430` (pull request #1; not yet
 owner-approved or merged) implements:
 
 - full-commit-SHA references for all third-party GitHub Actions;
@@ -73,6 +73,13 @@ dependency review and every executable verify gate passed again, including
 E2E 15/15, while the aggregate jobs failed only on the absent APR-backed
 endpoint and its dependent images/scans. The retained container record contains
 zero false Trivy-format errors for its 14 incomplete identity diagnostics.
+Run `31759036677` then evaluated commit `6d91208`, which added source-derived
+readiness values without supplying any human approval or production endpoint.
+Dependency review passed; governance 82/82, unit 236/236, integration 151/151,
+authorization 53/53, E2E 15/15, and all other executable verify gates passed
+with zero skips/todos. The aggregate jobs failed only the unchanged
+endpoint/application-image and dependent 14-image identity chain. Its retained
+artifacts remain diagnostic only.
 
 ## Live GitHub control-plane evidence — 2026-08-13
 
@@ -141,8 +148,8 @@ blocked.
    access before enabling a mandatory independent approval.
 2. Complete an independent approval of pull request #1 under the existing
    `main` protection after every required check passes.
-3. Supply the approved endpoint record, commit the post-run scan-parser fix,
-   and rerun until the exact required checks `dependency-review`, `verify`, and
+3. Supply the approved endpoint record and rerun until the exact required
+   checks `dependency-review`, `verify`, and
    `container-security` all pass; retain candidate-bound successful evidence. The
    recorded Phase 2 diagnostics must complete with attributable evidence, while
    unresolved advisory findings remain blockers in their owning phases.

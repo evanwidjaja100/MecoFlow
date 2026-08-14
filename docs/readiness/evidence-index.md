@@ -5,7 +5,7 @@
 - Entry branch: `main`
 - Entry HEAD: `434a89cf1c88d3c84bf22211eba863ef19768122`
 - Candidate branch: `codex/phase-zero-candidate`
-- Latest fully evaluated implementation candidate SHA: `e443e5beca2cfdbf3c2240c732fb9af6167a4ad0`
+- Latest fully evaluated Phase 0 candidate SHA: `6d91208a6d5912508178f981f575ff4345e34430`
 - Candidate pull request: `https://github.com/evanwidjaja100/MecoFlow/pull/1`
 - Remote: `origin https://github.com/evanwidjaja100/MecoFlow.git`
 - Entry worktree: dirty; see `worktree-reconciliation.md`
@@ -72,6 +72,7 @@ evidence.
 | 2026-08-13 | Post-run scan-parser regression checks      | committed candidate follow-up     | Local Node/pnpm; three existing inventory paths modified             | 0            | Governance 82/82 and container policy 14/14 passed; identity errors remain incomplete diagnostics instead of false Trivy reports                                                                                                                               | Current task tool output; committed but not accepted remote evidence                              |
 | 2026-08-13 | GitHub Actions run `31718073882`            | candidate `e443e5b`               | GitHub-hosted pull-request runner                                    | 1            | Dependency review and every executable verify gate passed, including E2E 15/15; endpoint/images and 14 scans failed; zero false Trivy-format errors                                                                                                            | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31718073882`; diagnostic only            |
 | 2026-08-14 | GitHub control-plane mutation verification  | public remote; candidate PR #1    | Authenticated `gh`; approved mutations                               | blocked      | `main` protected with three strict checks; dependency graph/alerts enabled with 633-package SBOM readback; labels exist; `production` is branch-limited with admin bypass disabled but lacks required reviewers and a least-privilege secret; Actions deferred | `ci-governance.md`; authenticated candidate-bound approval/evidence still required                |
+| 2026-08-14 | GitHub Actions run `31759036677`            | candidate `6d91208`               | GitHub-hosted pull-request runner                                    | 1            | Dependency review and all executable verify gates passed: governance 82, unit 236, integration 151, authorization 53, E2E 15; endpoint/images and 14 identities failed closed; zero skips/todos                                                                | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31759036677`; diagnostic only            |
 
 Run `31707913394` retained diagnostic artifacts
 `phase-zero-verify-31707913394-1` (artifact ID `9184116059`, SHA-256
@@ -119,6 +120,20 @@ container steps
 `d6ee699b8c1ed9ec7e9c5c36115e07dda6dcaf9fed58cebf73da6e70f1556084`,
 and scan summary
 `c6690e09ce01c710a14227484fe6d9046308b8c7311e06d59d2e60ccc75249de`.
+Run `31759036677` retained verify artifact ID `9203966129` (SHA-256
+`11b407939a951e65c21a39b786563715688897eeecdec5b1b6caca9964dd05a2`)
+and container artifact ID `9203865443` (SHA-256
+`131c2334c70e94e47211e90f037121f489d968b93bd68114b95d4ed41d4dc967`).
+Downloaded diagnostic contents hash to verify manifest
+`d6c09651c2c34b24fe75fff855788ccda76150df4d45ba97581d511ea016d895`,
+verify steps
+`0a0e412acadfa5ec61d8b7bce11c1f68242639a043f198cd51521dc01dd2601f`,
+container manifest
+`14bb4ecfa622727392529851fad53fdf4f20ce23625046245c11e23729d5f8b2`,
+container steps
+`8f62955ec5c9a1fcf46cad6eaa51f29b77a0691f110701fe3751fceb64f6e615`,
+and scan summary
+`b178bfc1837a2acc912eb6a4763f0be07dc82a19440f523a8654557949ed6388`.
 Cancelled, incomplete, or failing artifacts are never authoritative evidence.
 
 ## Authoritative Phase 0 run log

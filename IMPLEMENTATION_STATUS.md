@@ -13,13 +13,13 @@ The full formatting/lint/type/unit/integration/
 build gate and the complete 15-scenario browser gate are green on clean
 isolated databases. This is not a production-readiness claim.
 
-## Production-readiness remediation status — 2026-08-13
+## Production-readiness remediation status — 2026-08-14
 
 Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
 **IN PROGRESS / BLOCKED**. Phases 1 and 2 remain locked.
 
-The latest fully evaluated Phase 0 implementation candidate
-`e443e5beca2cfdbf3c2240c732fb9af6167a4ad0`
+The latest fully evaluated Phase 0 candidate
+`6d91208a6d5912508178f981f575ff4345e34430`
 on `codex/phase-zero-candidate` adds or corrects repository controls: full-SHA
 Actions, digest-pinned external Dockerfile/Compose/scan
 references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
@@ -89,7 +89,16 @@ record contains only the two approval-dependent command failures and 14
 incomplete scans, with zero false Trivy-format errors. Dependency review and all
 executable verify gates again passed, including 15/15 browser scenarios; the
 aggregate jobs still failed on the absent APR-backed endpoint and dependent
-images. The fix does not alter that endpoint/provider approval blocker. The fail-closed closure check
+images. Commit `6d91208` then added only source-derived D-02/D-08/D-09
+readiness values and the operator-ready human handoff. Run `31759036677`
+evaluated that exact source: dependency review passed; governance 82/82, unit
+236/236, integration 151/151, authorization 53/53, E2E 15/15, and every other
+executable verify gate passed with zero skips/todos. Verify failed only
+`endpoint_environment` and `application_images`; container evidence failed the
+same endpoint/release-image prerequisites and retained 14 incomplete image
+identities. No implementation regression appeared, and the run remains
+diagnostic rather than closure evidence. The fix does not alter that
+endpoint/provider approval blocker. The fail-closed closure check
 correctly rejects the current dirty/incomplete record. The security audit still
 reports the four exact High advisories recorded in `blockers.md`, all assigned
 to locked Phase 2. A current diagnostic resolved 5/14 immutable image
