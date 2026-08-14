@@ -99,7 +99,7 @@ same endpoint/release-image prerequisites and retained 14 incomplete image
 identities. No implementation regression appeared, and the run remains
 diagnostic rather than closure evidence. The fix does not alter that
 endpoint/provider approval blocker. The fail-closed closure check
-correctly rejects the current dirty/incomplete record. The security audit still
+correctly rejects the current incomplete record. The security audit still
 reports the four exact High advisories recorded in `blockers.md`, all assigned
 to locked Phase 2. A current diagnostic resolved 5/14 immutable image
 identities: Redis passed, while Keycloak/Prometheus/Alertmanager/Blackbox
