@@ -8,30 +8,30 @@ is its human-readable index. Closure validates HTTPS origins and callbacks,
 DNS/zone coverage, proxy-hop consistency, internal service names, and the
 build-time/public API match.
 
-| Boundary                                   | Required exact value | Status    | Accountable owner                        |
-| ------------------------------------------ | -------------------- | --------- | ---------------------------------------- |
-| Public web URL                             | Unassigned           | `BLOCKED` | Cloud/platform owner                     |
-| Public API base URL                        | Unassigned           | `BLOCKED` | Cloud/platform owner / application owner |
-| Public DNS names and zones                 | Unassigned           | `BLOCKED` | Cloud/platform owner                     |
-| Allowed CORS origins                       | Unassigned           | `BLOCKED` | Security owner / application owner       |
-| OIDC issuer URL                            | Unassigned           | `BLOCKED` | Identity owner                           |
-| OIDC callback URL set                      | Unassigned           | `BLOCKED` | Identity owner / application owner       |
-| Identity-provider hostname                 | Unassigned           | `BLOCKED` | Identity owner                           |
-| External proxy chain and trusted hop count | Unassigned           | `BLOCKED` | Security owner / cloud-platform owner    |
-| Internal API service name                  | Unassigned           | `BLOCKED` | Cloud/platform owner                     |
-| Internal web service name                  | Unassigned           | `BLOCKED` | Cloud/platform owner                     |
-| Internal worker/service dependency names   | Unassigned           | `BLOCKED` | Cloud/platform owner                     |
-| Build-time `NEXT_PUBLIC_API_BASE_URL`      | Unassigned           | `BLOCKED` | Application/release owner                |
+| Boundary                                   | Required exact value                                                                                                          | Status             | Accountable owner                        |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------------------------------------- |
+| Public web URL                             | `https://flow.meco.co.id`                                                                                                     | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
+| Public API base URL                        | `https://api.flow.meco.co.id` (origin; application routes append `/api/v1`)                                                   | `REQUIRED-SIGNOFF` | Cloud/platform owner / application owner |
+| Public DNS names and zones                 | `flow.meco.co.id`, `api.flow.meco.co.id`, `id.flow.meco.co.id`; delegated zone `flow.meco.co.id`                              | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
+| Allowed CORS origins                       | `https://flow.meco.co.id`                                                                                                     | `REQUIRED-SIGNOFF` | Security owner / application owner       |
+| OIDC issuer URL                            | `https://id.flow.meco.co.id/realms/mecoflow`                                                                                  | `REQUIRED-SIGNOFF` | Identity owner                           |
+| OIDC callback URL set                      | `https://api.flow.meco.co.id/api/v1/auth/callback`                                                                            | `REQUIRED-SIGNOFF` | Identity owner / application owner       |
+| Identity-provider hostname                 | `id.flow.meco.co.id`                                                                                                          | `REQUIRED-SIGNOFF` | Identity owner                           |
+| External proxy chain and trusted hop count | `AWS Application Load Balancer`; `1` trusted hop. WAF/Route 53/ACM are not proxy hops                                         | `REQUIRED-SIGNOFF` | Security owner / cloud-platform owner    |
+| Internal API service name                  | `api.svc.flow.meco.internal`                                                                                                  | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
+| Internal web service name                  | `web.svc.flow.meco.internal`                                                                                                  | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
+| Internal worker/service dependency names   | `worker`, `postgres`, `redis`, `object-storage`, `clamav`, `keycloak`, and `keycloak-postgres` under `svc.flow.meco.internal` | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
+| Build-time `NEXT_PUBLIC_API_BASE_URL`      | `https://api.flow.meco.co.id`                                                                                                 | `REQUIRED-SIGNOFF` | Application/release owner                |
 
 ## Derivation boundary
 
-Repository sources define the required boundaries and consistency rules, but
-they do not define a production DNS zone, origin, issuer, callback, proxy path,
-service-discovery namespace, or public build value. Local Compose and staging
-names are deliberately non-production and cannot populate
-`endpoint-matrix.json`. Every exact value therefore remains `null`/`BLOCKED`
-until the provisioned production topology is supplied and approved by named
-owners.
+The user-approved implementation plan supplies an exact proposed production
+DNS, origin, issuer, callback, proxy, service-discovery, and build contract.
+These values are recorded in `endpoint-matrix.json`, but they remain
+`BLOCKED` rather than approved until named owners provide the DNS reservation,
+change-control reference, stable identities, candidate-bound signatures, and
+independent review. Local Compose and staging values remain unacceptable
+substitutes.
 
 ## Approval and change control
 

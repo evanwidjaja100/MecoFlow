@@ -26,7 +26,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "governance:check": "node scripts/verify-repository-governance.mjs",
-    "governance:test": "node --test scripts/ci-command-evidence-policy.test.mjs scripts/ci-evidence-policy.test.mjs scripts/ci-step-evidence-integration.test.mjs scripts/ci-step-outcome-policy.test.mjs scripts/ci-trigger-policy.test.mjs scripts/container-scan-policy.test.mjs scripts/dependency-audit-policy.test.mjs scripts/phase-zero-closure-policy.test.mjs scripts/phase-zero-external-evidence-policy.test.mjs scripts/repository-governance-policy.test.mjs scripts/test-output-policy.test.mjs scripts/test-prerequisite-policy.test.mjs",
+    "governance:test": "node --test scripts/ci-command-evidence-policy.test.mjs scripts/ci-evidence-policy.test.mjs scripts/ci-step-evidence-integration.test.mjs scripts/ci-step-outcome-policy.test.mjs scripts/ci-trigger-policy.test.mjs scripts/container-scan-policy.test.mjs scripts/dependency-audit-policy.test.mjs scripts/github-remote-control-evidence.test.mjs scripts/phase-zero-closure-policy.test.mjs scripts/phase-zero-external-evidence-policy.test.mjs scripts/repository-governance-policy.test.mjs scripts/test-output-policy.test.mjs scripts/test-prerequisite-policy.test.mjs",
     "lint": "turbo run lint",
     "monitoring:config": "docker compose --env-file .runtime/staging/staging.env -f compose.staging.yaml -f compose.monitoring.yaml --profile monitoring config --quiet",
     "monitoring:validate": "node scripts/validate-monitoring-config.mjs",

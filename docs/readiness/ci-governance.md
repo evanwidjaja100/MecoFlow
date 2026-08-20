@@ -2,9 +2,14 @@
 
 ## In-repository implementation state
 
-The latest fully evaluated Phase 0 candidate
-`6d91208a6d5912508178f981f575ff4345e34430` (pull request #1; not yet
-owner-approved or merged) implements:
+The historical source-affecting Phase 0 candidate is
+`6d91208a6d5912508178f981f575ff4345e34430`. The pre-repair pull-request head is
+`c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12` after evidence-only commits
+`1f83021`, `96f3120`, and `c919ab1`; pull request #1 is not yet owner-approved
+or merged. The current worktree adds source-affecting closure-contract,
+canonical-control-evidence, typed-topology, and regression changes whose
+candidate SHA is pending commit. The final Phase 0 candidate must be the
+protected merge result on `main`. The Phase 0 implementation provides:
 
 - full-commit-SHA references for all third-party GitHub Actions;
 - workflow-level `contents: read`, while GitHub reports default workflow
@@ -41,6 +46,10 @@ owner-approved or merged) implements:
   both candidate-run artifact sets and verifies live GitHub repository, run,
   job, actor, artifact, approval, remote-control, input-hash, endpoint, digest,
   and expiry data before the local closure record can pass.
+- closure schema version 2 records the exact
+  `mecoflow/github-control/v1` projection schema for each GitHub control. The
+  finalizer re-reads the live APIs and hashes only stable security-relevant
+  fields; approval comments continue to use exact raw-response byte digests.
 
 The Keycloak 26.7.0 immutable reference is
 `sha256:0f198be292568439d700cdbfb893e69a6009bb43a94a06a945b1d3d506c76b13`.
@@ -80,11 +89,21 @@ authorization 53/53, E2E 15/15, and all other executable verify gates passed
 with zero skips/todos. The aggregate jobs failed only the unchanged
 endpoint/application-image and dependent 14-image identity chain. Its retained
 artifacts remain diagnostic only.
+Runs `31759673383`, `31760236777`, and `31760932202` evaluated the three later
+evidence-only heads. Each passed dependency review and the executable verify
+baseline, then failed the same unapproved endpoint/application-image and
+incomplete 14-image identity chain. The current-head run `31760932202` retained
+verify artifact `9204654001` with digest
+`3475e2fdaf6239ee4c63b5fa1eff001c8a655b632b4e4411c3ffeadd916efab0` and
+container artifact `9204550945` with digest
+`6d7b794781b5409bb7f06db847e79b3a75b9a8bf3494770ad2298313e8f80320`.
+All three are failed pull-request diagnostics, not candidate-bound closure
+evidence.
 
-## Live GitHub control-plane evidence — 2026-08-14
+## Live GitHub control-plane evidence — refreshed 2026-08-20
 
-Authenticated `gh` inspection of `evanwidjaja100/MecoFlow` after the approved
-control-plane mutations showed:
+Authenticated `gh` inspection of `evanwidjaja100/MecoFlow`, refreshed on
+2026-08-20 without changing remote state, showed:
 
 - repository visibility `public`; default branch `main`. User intent is known,
   but no authenticated, candidate-bound visibility approval is recorded;
@@ -97,10 +116,12 @@ control-plane mutations showed:
   its GET readback exposes only the protected-branch deployment policy with no
   required-reviewer rule or least-privilege deployment secret; self-review
   prevention must be configured and read back with real reviewers;
-- Actions are enabled with `allowed_actions: all` and organization/repository
-  `sha_pinning_required: false`. The owner approved deferring restriction until
-  the candidate's full-SHA workflow reaches `main`, because the workflow still
-  on `main` contains mutable references; the deferred control remains open;
+- Actions are enabled with `allowed_actions: selected`, repository
+  `sha_pinning_required: true`, both broad GitHub-owned/verified toggles false,
+  and the exact patterns `actions/checkout@*`,
+  `actions/dependency-review-action@*`, `actions/setup-node@*`, and
+  `actions/upload-artifact@*`. This 2026-08-20 hardening is mechanically live
+  but still lacks a candidate-bound canonical digest and named approval;
 - default workflow permissions are read-only and workflows cannot approve PRs;
 - dependency alerts and the dependency graph are now enabled; authenticated
   SBOM readback returned 633 packages. Run `31707913394` predates that control
@@ -133,21 +154,25 @@ control-plane mutations showed:
   diagnostic instead of attempting to parse its placeholder output as a
   completed Trivy report. Governance 82/82 and container-policy 14/14 pass
   locally. Run `31718073882` verified the behavior remotely, but remains failing
-  diagnostic evidence because the endpoint/image gates did not pass.
+  diagnostic evidence because the endpoint/image gates did not pass; and
+- the current pull-request head `c919ab1` was evaluated by run `31760932202`.
+  Dependency review passed, while verify/container failed only the unchanged
+  endpoint/application-image and incomplete-scan prerequisites. The two
+  retained artifacts are diagnostic and unapproved.
 
 Branch mutation protections and the three required check names are now
 enforced, but required checks have not produced an accepted passing candidate
 run and no independent reviewer is available.
-The release environment, Actions restriction, visibility approval, and
+The release environment, Actions approval/evidence, visibility approval, and
 candidate-bound immutable evidence are incomplete. Phase 0 therefore remains
 blocked.
 
 ## Required owner actions
 
-1. Add an independent repository collaborator with the appropriate review-only
-   access before enabling a mandatory independent approval.
-2. Complete an independent approval of pull request #1 under the existing
-   `main` protection after every required check passes.
+1. Add both named independent reviewers as non-administrator collaborators
+   with write access so counted review and workflow dispatch are available.
+2. Complete the required independent approval of pull request #1 under the
+   existing `main` protection after every required check passes.
 3. Supply the approved endpoint record and rerun until the exact required
    checks `dependency-review`, `verify`, and
    `container-security` all pass; retain candidate-bound successful evidence. The

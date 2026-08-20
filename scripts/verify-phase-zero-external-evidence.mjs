@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import process from "node:process";
+import { githubRemoteControlAuxiliaryApiPaths } from "./github-remote-control-evidence.mjs";
 import { validatePhaseZeroExternalEvidence } from "./phase-zero-external-evidence-policy.mjs";
 
 const root = process.cwd();
@@ -75,13 +76,15 @@ function evidenceApiUri(value, repository) {
   } catch {
     fail("approval/control evidence must use the canonical GitHub API");
   }
+  const repositoryPath = `/repos/${repository}`;
   if (
     parsed.protocol !== "https:" ||
     parsed.hostname !== "api.github.com" ||
     parsed.username ||
     parsed.password ||
     parsed.hash ||
-    !parsed.pathname.startsWith(`/repos/${repository}/`)
+    (parsed.pathname !== repositoryPath &&
+      !parsed.pathname.startsWith(`${repositoryPath}/`))
   ) {
     fail(
       "approval/control evidence must use the candidate repository GitHub API namespace",
@@ -106,6 +109,20 @@ function independentReviewerRoster(markdown) {
     )
     .filter((cells) => requiredRoles.has(cells[1]))
     .map((cells) => ({ roleId: cells[1], identity: cells[3] }));
+}
+
+function governanceRoleIdentity(markdown, roleId) {
+  const row = markdown
+    .split(/\r?\n/u)
+    .filter((line) => line.startsWith("|"))
+    .map((line) =>
+      line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.replaceAll("`", "").trim()),
+    )
+    .find((cells) => cells[1] === roleId);
+  return row?.[3] ?? "";
 }
 
 function filesUnder(directory) {
@@ -150,7 +167,7 @@ function evidenceFile(files, candidates, label) {
   fail(`${label}: required evidence file is missing`);
 }
 
-function downloadArtifact({ repository, runId, runAttempt, name, jobName }) {
+function downloadArtifact({ repository, runId, name, jobName }) {
   const directory = mkdtempSync(
     join(tmpdir(), "mecoflow-phase-zero-artifact-"),
   );
@@ -209,7 +226,7 @@ function downloadArtifact({ repository, runId, runAttempt, name, jobName }) {
 }
 
 try {
-  if (closure.schemaVersion !== 1 || closure.status !== "COMPLETE") {
+  if (closure.schemaVersion !== 2 || closure.status !== "COMPLETE") {
     fail(
       "phase-zero-closure.json must be COMPLETE before external evidence verification",
     );
@@ -254,7 +271,6 @@ try {
         downloadArtifact({
           repository: repositoryName,
           runId,
-          runAttempt,
           name: `${prefix}-${runId}-${runAttempt}`,
           jobName: claimName === "verify" ? "verify" : "container-security",
         }),
@@ -273,6 +289,15 @@ try {
     const safeUri = evidenceApiUri(uri, repositoryName);
     const bytes = api(safeUri, { bytes: true });
     resources.set(uri, { bytes, json: JSON.parse(bytes) });
+  }
+  for (const [name, control] of Object.entries(closure.remoteControls ?? {})) {
+    const resource = resources.get(control.evidenceUri);
+    if (!resource) continue;
+    resource.projectionInputs = Object.fromEntries(
+      Object.entries(
+        githubRemoteControlAuxiliaryApiPaths(name, repositoryName),
+      ).map(([inputName, endpoint]) => [inputName, apiJson(endpoint)]),
+    );
   }
 
   const inputDigests = Object.fromEntries(
@@ -303,6 +328,10 @@ try {
     resources,
     inputDigests,
     independentReviewerRoster: independentReviewerRoster(governance),
+    implementationOperatorIdentity: governanceRoleIdentity(
+      governance,
+      "IMPLEMENTATION-OPERATOR",
+    ),
     expectedPublicApiBaseUrl: endpointMatrix.build?.nextPublicApiBaseUrl,
   });
   if (errors.length > 0) {

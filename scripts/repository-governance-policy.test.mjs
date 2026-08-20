@@ -7,6 +7,7 @@ import {
   validateActionReferences,
   validateCiWorkflowStructure,
   validateExternalImages,
+  validatePhaseZeroFinalizationWorkflow,
   validatePhaseZeroRequirementMatrix,
   validateRepository,
   validateSecretExposureEntries,
@@ -147,6 +148,125 @@ test("requires hidden Phase 0 evidence directories to be retained", () => {
   assert.ok(
     validateCiWorkflowStructure(withoutHiddenEvidence).some((error) =>
       error.includes("verify retained artifact"),
+    ),
+  );
+});
+
+test("preserves the raw container scan failure and final verifier gate", () => {
+  const workflow = readFileSync(".github/workflows/ci.yml", "utf8");
+
+  const strictImageScan = workflow.replace(
+    /(?<scan> {6}- name: Scan every release image\n {8}id: image_scan\n {8}if: always\(\)\n) {8}continue-on-error: true\n/u,
+    "$<scan>",
+  );
+  assert.ok(
+    validateCiWorkflowStructure(strictImageScan).some((error) =>
+      error.includes("retained container command is invalid: image_scan"),
+    ),
+  );
+
+  const permissiveVerifier = workflow.replace(
+    /(?<verifier> {6}- name: Verify complete Phase 0 container baseline evidence\n {8}if: always\(\)\n)/u,
+    "$<verifier>        continue-on-error: true\n",
+  );
+  assert.ok(
+    validateCiWorkflowStructure(permissiveVerifier).some((error) =>
+      error.includes("complete container baseline evidence verification"),
+    ),
+  );
+
+  const conditionalVerifier = workflow.replace(
+    /(?<verifier> {6}- name: Verify complete Phase 0 container baseline evidence\n) {8}if: always\(\)\n/u,
+    "$<verifier>",
+  );
+  assert.ok(
+    validateCiWorkflowStructure(conditionalVerifier).some((error) =>
+      error.includes("complete container baseline evidence verification"),
+    ),
+  );
+
+  const unboundOutcome = workflow.replace(
+    "PHASE_ZERO_CONTAINER_SCAN_OUTCOME: ${{ steps.image_scan.outcome }}",
+    "PHASE_ZERO_CONTAINER_SCAN_OUTCOME: failure",
+  );
+  assert.ok(
+    validateCiWorkflowStructure(unboundOutcome).some((error) =>
+      error.includes("complete container baseline evidence verification"),
+    ),
+  );
+});
+
+test("accepts the source-bound Phase Zero finalization workflow", () => {
+  const workflow = readFileSync(
+    ".github/workflows/phase-zero-finalize.yml",
+    "utf8",
+  );
+  assert.deepEqual(validatePhaseZeroFinalizationWorkflow(workflow), []);
+});
+
+test("rejects missing or mismatched finalization source bindings", () => {
+  const workflow = readFileSync(
+    ".github/workflows/phase-zero-finalize.yml",
+    "utf8",
+  );
+  const missingSourceSha = workflow.replace(
+    "      PHASE_ZERO_SOURCE_SHA: ${{ inputs.closure_sha }}",
+    "",
+  );
+  assert.ok(
+    validatePhaseZeroFinalizationWorkflow(missingSourceSha).some((error) =>
+      error.includes("PHASE_ZERO_SOURCE_SHA"),
+    ),
+  );
+
+  const mismatchedDispatch = workflow.replace(
+    "      PHASE_ZERO_DISPATCH_CANDIDATE_SHA: ${{ inputs.closure_sha }}",
+    "      PHASE_ZERO_DISPATCH_CANDIDATE_SHA: ${{ github.sha }}",
+  );
+  assert.ok(
+    validatePhaseZeroFinalizationWorkflow(mismatchedDispatch).some((error) =>
+      error.includes("PHASE_ZERO_DISPATCH_CANDIDATE_SHA"),
+    ),
+  );
+});
+
+test("rejects a finalization checkout not bound to closure_sha", () => {
+  const workflow = readFileSync(
+    ".github/workflows/phase-zero-finalize.yml",
+    "utf8",
+  ).replace(
+    "          ref: ${{ inputs.closure_sha }}",
+    "          ref: ${{ github.sha }}",
+  );
+  assert.ok(
+    validatePhaseZeroFinalizationWorkflow(workflow).some((error) =>
+      error.includes("checkout"),
+    ),
+  );
+});
+
+test("rejects the wrong finalization branch or trigger", () => {
+  const workflow = readFileSync(
+    ".github/workflows/phase-zero-finalize.yml",
+    "utf8",
+  );
+  const wrongBranch = workflow.replace(
+    "      PHASE_ZERO_SOURCE_REF: main",
+    "      PHASE_ZERO_SOURCE_REF: feature/closure",
+  );
+  assert.ok(
+    validatePhaseZeroFinalizationWorkflow(wrongBranch).some((error) =>
+      error.includes("PHASE_ZERO_SOURCE_REF"),
+    ),
+  );
+
+  const extraTrigger = workflow.replace(
+    "  workflow_dispatch:",
+    "  push:\n    branches: [main]\n  workflow_dispatch:",
+  );
+  assert.ok(
+    validatePhaseZeroFinalizationWorkflow(extraTrigger).some((error) =>
+      error.includes("only trigger"),
     ),
   );
 });

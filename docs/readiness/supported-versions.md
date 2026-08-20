@@ -36,6 +36,9 @@ The lockfile SHA-256 at the initial source baseline is
 | GitHub CLI used for control-plane inspection    | `2.97.0`                                                                                     |
 | ripgrep used for repository inventory           | `15.1.0`                                                                                     |
 | Standalone PostgreSQL client (`psql`)           | Unavailable; Dockerized PostgreSQL tooling is required for local evidence                    |
+| Production application compute                  | AWS ECS Fargate in `ap-southeast-3` across multiple Availability Zones                       |
+| Production identity compute                     | Red Hat build of Keycloak `26.6.5`; RHEL 9 x86_64 EC2; OpenJDK 21                            |
+| Production deployment definition                | AWS CloudFormation template format `2010-09-09`                                              |
 
 Container base and service versions are further frozen by the sha256 digests
 in Dockerfiles, Compose files, CI, and `security/container-scan-policy.json`.
@@ -45,17 +48,28 @@ Phase 14 responsibilities.
 
 ## Supported user environment decisions
 
-| User component  | Exact supported version/status                         |
-| --------------- | ------------------------------------------------------ |
-| Chromium/Chrome | `BLOCKED` — exact major versions unapproved            |
-| Microsoft Edge  | `BLOCKED` — exact major versions unapproved            |
-| Firefox         | `BLOCKED` — exact major versions unapproved            |
-| Safari/WebKit   | `BLOCKED` — exact macOS/iOS/Safari versions unapproved |
+| User component  | Exact proposed supported version/status                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| Chromium/Chrome | Major `151`; recorded from the 2026-08-04 Chrome Stable desktop release; candidate approval still required |
+| Microsoft Edge  | Major `151`; Edge 152 was not scheduled for Stable until 2026-08-27; candidate approval still required     |
+| Firefox         | Major `154`, released 2026-08-18; candidate approval still required                                        |
+| Safari/WebKit   | Safari `26.6`; candidate approval still required                                                           |
+| Windows         | Windows 11 `25H2`; `26H1` additionally supported only on compatible OEM hardware                           |
+| macOS           | macOS Tahoe `26.6.1`                                                                                       |
+| iOS / iPadOS    | `26.6` / `26.6`                                                                                            |
+| Android         | Android `16`; Android 17 beta is not a supported production target                                         |
 
-The proposed locale, timezone, device, and accessibility matrix is in
-`decision-log.md` (D-05 through D-07). It remains unapproved; Playwright's
-bundled Chromium is test tooling and does not define the product support
-matrix.
+First-party freeze references: [Chrome Stable](https://chromereleases.googleblog.com/2026/08/stable-channel-update-for-desktop.html),
+[Edge Stable](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-relnote-stable-channel),
+[Mozilla release schedule](https://wiki.mozilla.org/Release_Management/Release_owners),
+[Apple security releases](https://support.apple.com/en-us/100100),
+[Windows release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information),
+and [Android 16](https://developer.android.com/about/versions/16/get).
+
+The exact proposed locale, timezone, device, browser/OS, and accessibility
+matrix is in `decision-log.md` (D-05 through D-07). It remains unapproved;
+Playwright's bundled Chromium is test tooling and does not define the product
+support matrix.
 
 ## Approval record
 

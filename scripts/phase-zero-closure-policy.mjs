@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { GITHUB_REMOTE_CONTROL_PROJECTION_SCHEMA } from "./github-remote-control-evidence.mjs";
 
 const SHA_1 = /^[0-9a-f]{40}$/u;
 const SHA_256 = /^(?:sha256:)?[0-9a-f]{64}$/u;
@@ -134,7 +135,13 @@ const APPROVAL_BINDINGS = Object.freeze({
 
 const DECISION_ROLE_COVERAGE = Object.freeze({
   "D-01": ["PRODUCT-OWNER", "SRE-OWNER", "BUSINESS-SPONSOR"],
-  "D-02": ["DATA-OWNER", "PRODUCT-OWNER", "SRE-OWNER", "BUSINESS-SPONSOR"],
+  "D-02": [
+    "DATA-OWNER",
+    "PRODUCT-OWNER",
+    "SRE-OWNER",
+    "PRIVACY-OWNER",
+    "BUSINESS-SPONSOR",
+  ],
   "D-03": ["DATA-OWNER", "PRODUCT-OWNER", "SRE-OWNER", "PRIVACY-OWNER"],
   "D-04": ["PRODUCT-OWNER", "SRE-OWNER", "BUSINESS-SPONSOR"],
   "D-05": ["PRODUCT-OWNER", "BUSINESS-SPONSOR"],
@@ -146,7 +153,13 @@ const DECISION_ROLE_COVERAGE = Object.freeze({
     "PLATFORM-OWNER",
     "PROCUREMENT-OWNER",
   ],
-  "D-09": ["SEC-OWNER", "DATA-OWNER", "PLATFORM-OWNER", "PROCUREMENT-OWNER"],
+  "D-09": [
+    "SEC-OWNER",
+    "DATA-OWNER",
+    "PLATFORM-OWNER",
+    "PRIVACY-OWNER",
+    "PROCUREMENT-OWNER",
+  ],
   "D-10": [
     "SE-OWNER",
     "SEC-OWNER",
@@ -190,12 +203,14 @@ const DECISION_FIELDS = Object.freeze({
     "peakConcurrentSessions",
     "projects",
     "itemsAndBomLines",
-    "documentsAndBytes",
+    "documentCount",
+    "documentStorageGb",
     "reportConcurrency",
-    "queueRateAndDepth",
+    "jobsPerMinute",
+    "maximumQueuedJobs",
     "annualGrowthPercent",
     "planningHorizonMonths",
-    "seasonality",
+    "peakSeasonalityMultiplier",
   ],
   "D-05": ["locales", "timezone", "currency", "units", "supportOwnerRoleId"],
   "D-06": [
@@ -288,6 +303,10 @@ const REMOTE_CONTROL_BINDINGS = Object.freeze({
   },
 });
 
+const RISK_ROLE_COVERAGE = Object.freeze({
+  "R-12": ["SRE-OWNER", "BUSINESS-SPONSOR", "SEC-OWNER", "REL-MANAGER"],
+});
+
 function decisionBinding(id) {
   return {
     subject: `phase-zero:decision:${id}`,
@@ -300,7 +319,7 @@ function riskBinding(id) {
   return {
     subject: `phase-zero:risk:${id}`,
     scope: `Phase 0 risk ${id}`,
-    requiredRoleIds: ["SEC-OWNER", "REL-MANAGER"],
+    requiredRoleIds: RISK_ROLE_COVERAGE[id] ?? ["SEC-OWNER", "REL-MANAGER"],
   };
 }
 
@@ -538,6 +557,7 @@ function validateEndpointMatrix(matrix, approvalReference, errors) {
     matrix.public.apiBaseUrl,
     "endpoint public.apiBaseUrl",
     errors,
+    { origin: true },
   );
   const issuer = productionHttpsUrl(
     matrix.identity.issuerUrl,
@@ -548,10 +568,19 @@ function validateEndpointMatrix(matrix, approvalReference, errors) {
     matrix.build.nextPublicApiBaseUrl,
     "endpoint build.nextPublicApiBaseUrl",
     errors,
+    { origin: true },
   );
   if (api && buildApi && api.href !== buildApi.href) {
     errors.push(
       "endpoint build-time API URL must equal the public API base URL",
+    );
+  }
+  if (
+    issuer &&
+    (issuer.search || !/^\/realms\/[A-Za-z0-9._~-]+$/u.test(issuer.pathname))
+  ) {
+    errors.push(
+      "endpoint OIDC issuer must use the exact Keycloak /realms/{realm} URL without a query",
     );
   }
 
@@ -642,16 +671,30 @@ function validateEndpointMatrix(matrix, approvalReference, errors) {
   ) {
     errors.push("endpoint proxy chain must exactly match trustedHopCount");
   }
+  const proxyNames = Array.isArray(matrix.proxy.chain)
+    ? matrix.proxy.chain
+    : [];
+  const workerNames = Array.isArray(matrix.internal.workerAndDependencies)
+    ? matrix.internal.workerAndDependencies
+    : [];
+  const internalNames = [
+    ...proxyNames,
+    matrix.internal.apiService,
+    matrix.internal.webService,
+    ...workerNames,
+  ];
   if (
     !INTERNAL_SERVICE.test(matrix.internal.apiService ?? "") ||
     !INTERNAL_SERVICE.test(matrix.internal.webService ?? "") ||
-    matrix.internal.apiService === matrix.internal.webService ||
     !stringArray(matrix.internal.workerAndDependencies) ||
     matrix.internal.workerAndDependencies.some(
       (name) => !INTERNAL_SERVICE.test(name),
-    )
+    ) ||
+    new Set(internalNames).size !== internalNames.length
   ) {
-    errors.push("endpoint internal service names must be exact and unique");
+    errors.push(
+      "endpoint proxy and internal service names must be globally unique",
+    );
   }
 }
 
@@ -787,6 +830,18 @@ function validateSupportedVersions(
       "supported OS and production deployment platform/tool/version must be exact",
     );
   }
+  if (
+    /(?:\bk8s\b|kubernetes|openshift|\beks\b|\bgke\b|\baks\b)/iu.test(
+      versions.deployment.platform ?? "",
+    ) ||
+    /(?:\bhelm\b|\bkubectl\b|\bkustomize\b|\bkubeadm\b)/iu.test(
+      `${versions.deployment.tool ?? ""} ${versions.deployment.version ?? ""}`,
+    )
+  ) {
+    errors.push(
+      "supported production deployment must preserve the non-Kubernetes container architecture",
+    );
+  }
 }
 
 function validateDecisionRecord(record, approvalReferences, errors) {
@@ -880,9 +935,25 @@ function validateDecisionRecord(record, approvalReferences, errors) {
     !(d04.minimumHeadroomPercent >= 30) ||
     !(d04.maximumQueueRecoverySeconds > 0) ||
     d04.maximumQueueRecoverySeconds > 300 ||
+    ![
+      "peakNamedUsers",
+      "peakConcurrentSessions",
+      "projects",
+      "itemsAndBomLines",
+      "documentCount",
+      "documentStorageGb",
+      "reportConcurrency",
+      "jobsPerMinute",
+      "maximumQueuedJobs",
+      "annualGrowthPercent",
+      "peakSeasonalityMultiplier",
+    ].every((field) => d04[field] > 0) ||
+    d04.peakConcurrentSessions > d04.peakNamedUsers ||
     !(d04.planningHorizonMonths > 0)
   ) {
-    errors.push("D-04: capacity/headroom/recovery values violate the baseline");
+    errors.push(
+      "D-04: positive capacity, growth, horizon, headroom, and recovery values must preserve the baseline",
+    );
   }
   const d05 = record.decisions["D-05"];
   if (
@@ -919,7 +990,7 @@ function validateDecisionRecord(record, approvalReferences, errors) {
     d07.warehouseQaTargetMaxPx !== 52
   ) {
     errors.push(
-      "D-07: WCAG 2.2 AA requires 44px general and 48-52px warehouse/QA targets",
+      "D-07: the WCAG 2.2 AA baseline and stricter product targets require 44px general and 48-52px warehouse/QA controls",
     );
   }
   const d08 = record.decisions["D-08"];
@@ -1121,11 +1192,11 @@ export function validatePhaseZeroClosure({
       "authoritativeEvidence",
       "independentReproduction",
     ]) ||
-    closure.schemaVersion !== 1 ||
+    closure.schemaVersion !== 2 ||
     closure.status !== "COMPLETE"
   ) {
     errors.push(
-      "phase-zero-closure.json: schemaVersion 1 with status COMPLETE is required",
+      "phase-zero-closure.json: schemaVersion 2 with status COMPLETE is required",
     );
   }
 
@@ -1230,6 +1301,7 @@ export function validatePhaseZeroClosure({
     const control = remoteControls[name];
     if (
       !exactKeys(control, [
+        "projectionSchema",
         "status",
         "evidenceUri",
         "evidenceSha256",
@@ -1237,6 +1309,7 @@ export function validatePhaseZeroClosure({
         "candidateSha",
         "approvalRecordId",
       ]) ||
+      control?.projectionSchema !== GITHUB_REMOTE_CONTROL_PROJECTION_SCHEMA ||
       control?.status !== "PASS" ||
       !HTTPS_URI.test(control.evidenceUri ?? "") ||
       !SHA_256.test(control.evidenceSha256 ?? "") ||

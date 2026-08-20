@@ -421,6 +421,117 @@ function namedStepBlocks(job) {
   return blocks;
 }
 
+export function validatePhaseZeroFinalizationWorkflow(text) {
+  const errors = [];
+  const workflowLines = lines(text);
+  const onIndex = workflowLines.findIndex((line) => line === "on:");
+  const onEnd =
+    onIndex < 0
+      ? -1
+      : workflowLines.findIndex(
+          (line, index) =>
+            index > onIndex &&
+            line.trim() &&
+            !line.startsWith(" ") &&
+            !line.startsWith("#"),
+        );
+  const triggerLines =
+    onIndex < 0
+      ? []
+      : workflowLines.slice(
+          onIndex + 1,
+          onEnd < 0 ? workflowLines.length : onEnd,
+        );
+  const triggers = triggerLines
+    .map((line) => line.match(/^  ([a-z][a-z0-9_-]*):\s*$/u)?.[1])
+    .filter(Boolean);
+  if (triggers.length !== 1 || triggers[0] !== "workflow_dispatch") {
+    errors.push(
+      "Phase Zero finalization workflow must use workflow_dispatch as its only trigger",
+    );
+  }
+
+  const closureInputIndex = triggerLines.findIndex(
+    (line) => line === "      closure_sha:",
+  );
+  const closureInputEnd =
+    closureInputIndex < 0
+      ? -1
+      : triggerLines.findIndex(
+          (line, index) =>
+            index > closureInputIndex &&
+            /^      [a-z][a-z0-9_-]*:\s*$/u.test(line),
+        );
+  const closureInput =
+    closureInputIndex < 0
+      ? ""
+      : triggerLines
+          .slice(
+            closureInputIndex,
+            closureInputEnd < 0 ? triggerLines.length : closureInputEnd,
+          )
+          .join("\n");
+  if (
+    !/^      closure_sha:\s*$/mu.test(closureInput) ||
+    !/^        required: true\s*$/mu.test(closureInput) ||
+    !/^        type: string\s*$/mu.test(closureInput)
+  ) {
+    errors.push(
+      "Phase Zero finalization workflow must require a string closure_sha dispatch input",
+    );
+  }
+
+  const job = workflowJob(text, "phase-zero-finalization");
+  if (!job) {
+    errors.push("Phase Zero finalization workflow job is missing");
+    return errors;
+  }
+
+  const requireJobBinding = (name, expected) => {
+    const values = lines(job)
+      .map((line) =>
+        line.match(new RegExp(`^\\s+${name}:\\s*(.+)$`, "u"))?.[1]?.trim(),
+      )
+      .filter((value) => value !== undefined);
+    if (values.length !== 1 || values[0] !== expected) {
+      errors.push(
+        `Phase Zero finalization workflow must bind ${name} to ${expected}`,
+      );
+    }
+  };
+  requireJobBinding(
+    "PHASE_ZERO_DISPATCH_CANDIDATE_SHA",
+    "${{ inputs.closure_sha }}",
+  );
+  requireJobBinding("PHASE_ZERO_SOURCE_SHA", "${{ inputs.closure_sha }}");
+  requireJobBinding("PHASE_ZERO_SOURCE_REF", "main");
+
+  const jobLines = lines(job);
+  const checkoutIndex = jobLines.findIndex((line) =>
+    /^\s+- uses: actions\/checkout@[0-9a-f]{40}(?:\s+#.*)?$/u.test(line),
+  );
+  const checkoutEnd =
+    checkoutIndex < 0
+      ? -1
+      : jobLines.findIndex(
+          (line, index) =>
+            index > checkoutIndex && /^\s{6}- (?:name|run|uses):/u.test(line),
+        );
+  const checkout =
+    checkoutIndex < 0
+      ? ""
+      : jobLines
+          .slice(checkoutIndex, checkoutEnd < 0 ? jobLines.length : checkoutEnd)
+          .join("\n");
+  if (!/^          ref: \$\{\{ inputs\.closure_sha \}\}\s*$/mu.test(checkout)) {
+    errors.push(
+      "Phase Zero finalization checkout must use the exact closure_sha dispatch input",
+    );
+  }
+
+  return errors;
+}
+
 export function validateCiWorkflowStructure(text) {
   const errors = [];
   const verify = workflowJob(text, "verify");
@@ -514,6 +625,7 @@ export function validateCiWorkflowStructure(text) {
   if (
     !containerEvidence ||
     !/^        if: always\(\)$/mu.test(containerEvidence) ||
+    /^ {8}continue-on-error:/mu.test(containerEvidence) ||
     !containerEvidence.includes(
       "PHASE_ZERO_CONTAINER_SCAN_OUTCOME: ${{ steps.image_scan.outcome }}",
     ) ||
@@ -957,6 +1069,7 @@ export function validateRepository(root) {
     errors,
   );
   if (finalizationText) {
+    errors.push(...validatePhaseZeroFinalizationWorkflow(finalizationText));
     for (const marker of [
       "name: Phase Zero Finalization",
       "workflow_dispatch:",

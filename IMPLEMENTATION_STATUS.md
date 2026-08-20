@@ -1,4 +1,4 @@
-# Current phase
+# Delivery phase and production-readiness phase
 
 Phase 9C — staging deployment, isolated backup/restore rehearsal, and controlled
 pilot preparation (deployment prepared 2026-07-30; restore and pilot acceptance
@@ -13,14 +13,23 @@ The full formatting/lint/type/unit/integration/
 build gate and the complete 15-scenario browser gate are green on clean
 isolated databases. This is not a production-readiness claim.
 
-## Production-readiness remediation status — 2026-08-14
+## Production-readiness remediation status — 2026-08-20
 
 Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
 **IN PROGRESS / BLOCKED**. Phases 1 and 2 remain locked.
 
-The latest fully evaluated Phase 0 candidate
+The historical source-affecting Phase 0 candidate
 `6d91208a6d5912508178f981f575ff4345e34430`
-on `codex/phase-zero-candidate` adds or corrects repository controls: full-SHA
+on `codex/phase-zero-candidate` adds or corrects repository controls. The
+pre-repair pull-request head is
+`c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12`; intervening commits
+`1f83021`, `96f3120`, and `c919ab1` change only closure-policy-permitted
+readiness/evidence documentation paths. The current worktree now contains
+source-affecting Phase 0 contract repairs, typed production proposals, and
+regression coverage; its candidate SHA remains pending until the integrated
+change is committed. None is the final Phase 0 candidate, which must be the
+protected merge result on `main`. The source-affecting work
+includes full-SHA
 Actions, digest-pinned external Dockerfile/Compose/scan
 references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
 CI, non-short-circuiting uncached command-level evidence with output hashes and
@@ -54,6 +63,9 @@ the local closure policy and a read-only authenticated GitHub verifier. The
 external verifier downloads the two runs' artifacts and checks live repository,
 workflow, job, actor, artifact, approval, remote-control, input-hash, endpoint,
 and expiry data instead of trusting locally asserted IDs and digests.
+Closure schema version 2 hashes stable, candidate-bound projections of the six
+GitHub controls while still performing live authenticated readback; volatile
+repository metadata cannot invalidate or accidentally satisfy a control.
 
 This work is not a completed baseline. Pull request #1 exists for the committed
 candidate, but it is not owner-approved or merged and has no independent
@@ -79,9 +91,15 @@ the two expected approval-dependent verify failures, the clean run passed all
 81 governance tests, 236 unit tests, 151 integration tests, 53 authorization
 tests, formatting, lint, typecheck, OpenAPI, build, policy checks, Compose,
 workspace cleanliness, and the 15 browser scenarios.
-The latest local uncached formatting, lint, typecheck, 44-file/233-test
-unit, OpenAPI, and build diagnostics pass, as do all 82 governance tests and all
-14 container-policy tests with zero skipped/todo. After run `31717030980`, a
+The integrated contract-repair worktree passes formatting, lint, typecheck,
+OpenAPI, build, 44 unit files/236 tests, all 113 governance tests, nine
+production-control tests, six operations-readiness tests, six capacity tests,
+and all 22 container-policy/executable tests with zero skipped/todo. The raw
+integration, authorization, and E2E commands still fail closed without their
+required isolated database/Redis/S3 environment. Docker Desktop was started to
+provide those prerequisites but its WSL engine could not start under the host's
+current paging/resource limit, so no database-backed pass is claimed from this
+worktree. After run `31717030980`, a
 local follow-up corrected the scan verifier so an `identity-error` diagnostic is
 not parsed as though it were a completed Trivy report. Final implementation run
 `31718073882` at `e443e5b` verified that correction: the retained container
@@ -97,7 +115,15 @@ executable verify gate passed with zero skips/todos. Verify failed only
 `endpoint_environment` and `application_images`; container evidence failed the
 same endpoint/release-image prerequisites and retained 14 incomplete image
 identities. No implementation regression appeared, and the run remains
-diagnostic rather than closure evidence. The fix does not alter that
+diagnostic rather than closure evidence. Evidence-only commits `1f83021`,
+`96f3120`, and `c919ab1` then produced runs `31759673383`, `31760236777`, and
+`31760932202`. Each passed dependency review and the same executable verify
+baseline, then failed only the unapproved endpoint, dependent application-image
+build, and incomplete image-identity chain. Each retained separate verify and
+container artifacts. These runs establish current-head diagnostic coverage but
+remain failed, unapproved, pull-request-event evidence and are not the required
+protected-`main` authoritative or independent reproduction runs. The fix does
+not alter that
 endpoint/provider approval blocker. The fail-closed closure check
 correctly rejects the current incomplete record. The security audit still
 reports the four exact High advisories recorded in `blockers.md`, all assigned
@@ -123,29 +149,30 @@ required-reviewer rule or least-privilege deployment secret. Self-review
 prevention must be configured and read back together with real reviewers. This
 mechanical hardening does not constitute approval. All
 five governed Phase 0 labels now exist. Actions
-remain unrestricted and repository SHA-pinning enforcement remains disabled by
-an owner-approved temporary sequencing decision until the candidate's pinned
-workflow reaches `main`; this control must still be enforced and evidenced
-before Phase 0 closes. Public visibility remains blocked because the available
-user intent is not an authenticated, candidate-bound attestation. Production
+are now restricted to the exact four required action patterns, both broad
+GitHub-owned/verified toggles are disabled, full-SHA pinning is required, and
+default workflow permissions remain read-only with pull-request approval
+denied. This live mechanical control still needs canonical candidate-bound
+evidence and named approval before Phase 0 closes. Public visibility remains
+blocked because the available user intent is not an authenticated,
+candidate-bound attestation. Production
 providers/endpoints, exact browser support, SLO/RPO/
 RTO/retention/capacity decisions, procurement/support ownership, and the human
 owner/reviewer roster are unapproved. The project-image immutability mechanism
 is committed in the candidate but its retained build/Compose evidence failed
 validation. Release status therefore remains **NOT READY**.
 
-A 2026-08-14 mechanical derivation audit confirmed that the typed readiness
-records now contain every non-approval value justified by accepted
-repository sources. Role IDs, required boundary names, D-05 locale/time/currency
-requirements, Keycloak/OIDC direction, the S3-compatible abstraction with
-MinIO development-only, coordinated recovery scope, KMS/private storage,
-fail-closed malware scanning, off-site recovery, and provisional tool/image
-versions are source-backed.
-Exact production people, stable identities, endpoints, provider/support terms,
-remaining D-01–D-10 choices, approval records, and closure evidence are not
-derivable and remain intentionally `BLOCKED`/`null`. No repository actor,
-diagnostic run, or local/staging value was promoted into a human approval or
-production choice.
+A 2026-08-20 decision pass populated the typed readiness records with the
+explicit plan-approved proposal: exact D-01–D-07 service, recovery, retention,
+capacity, locale, client, and accessibility values; RHBK 26.6.5 on RHEL 9 EC2;
+private AWS S3/KMS/Object Lock with Singapore recovery copies; exact public and
+private endpoints; and current browser/OS/deployment versions. Proposed
+ADR-0015 records the AWS Jakarta topology without claiming it is accepted or
+provisioned. Exact people, stable identities, procurement/account/change-ticket
+references, provider evidence, approvals, successful runs, and closure
+evidence remain intentionally `BLOCKED`/`null`. No repository actor,
+diagnostic run, chat statement, or local/staging value was promoted into a
+human approval, contract, or provisioned control.
 
 On 2026-08-02 the repository gained a provider-neutral production-control
 contract and preflight for external secret files, trusted TLS, KMS-backed

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "status": "BLOCKED",
   "candidate": {
     "branch": null,
@@ -32,6 +32,7 @@
   },
   "remoteControls": {
     "branchProtection": {
+      "projectionSchema": "mecoflow/github-control/v1",
       "status": "BLOCKED",
       "evidenceUri": null,
       "evidenceSha256": null,
@@ -40,6 +41,7 @@
       "approvalRecordId": null
     },
     "protectedEnvironment": {
+      "projectionSchema": "mecoflow/github-control/v1",
       "status": "BLOCKED",
       "evidenceUri": null,
       "evidenceSha256": null,
@@ -48,6 +50,7 @@
       "approvalRecordId": null
     },
     "restrictedActions": {
+      "projectionSchema": "mecoflow/github-control/v1",
       "status": "BLOCKED",
       "evidenceUri": null,
       "evidenceSha256": null,
@@ -56,6 +59,7 @@
       "approvalRecordId": null
     },
     "independentReviewerAccess": {
+      "projectionSchema": "mecoflow/github-control/v1",
       "status": "BLOCKED",
       "evidenceUri": null,
       "evidenceSha256": null,
@@ -64,6 +68,7 @@
       "approvalRecordId": null
     },
     "releaseLabels": {
+      "projectionSchema": "mecoflow/github-control/v1",
       "status": "BLOCKED",
       "evidenceUri": null,
       "evidenceSha256": null,
@@ -72,6 +77,7 @@
       "approvalRecordId": null
     },
     "repositoryVisibility": {
+      "projectionSchema": "mecoflow/github-control/v1",
       "status": "BLOCKED",
       "evidenceUri": null,
       "evidenceSha256": null,

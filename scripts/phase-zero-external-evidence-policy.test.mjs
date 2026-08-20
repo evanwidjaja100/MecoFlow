@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
+import {
+  GITHUB_REMOTE_CONTROL_PROJECTION_SCHEMA,
+  githubRemoteControlDigest,
+} from "./github-remote-control-evidence.mjs";
 import { validatePhaseZeroExternalEvidence } from "./phase-zero-external-evidence-policy.mjs";
 
 const sourceSha = "a".repeat(40);
@@ -16,7 +20,7 @@ const hash = (value) => createHash("sha256").update(value).digest("hex");
 
 function fixture() {
   const closure = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: "COMPLETE",
     candidate: { branch: "main", sourceSha },
     remoteControls: {},
@@ -103,9 +107,44 @@ function fixture() {
         identity: "github:independent",
       },
     ],
+    implementationOperatorIdentity: "github:owner",
     expectedPublicApiBaseUrl: publicApiBaseUrl,
     now: new Date("2026-08-13T00:00:00Z"),
   };
+}
+
+function addRemoteControl(
+  evidence,
+  name,
+  evidenceUri,
+  json,
+  projectionInputs = {},
+) {
+  const independentReviewers = new Map(
+    evidence.independentReviewerRoster.map((reviewer) => [
+      reviewer.roleId,
+      reviewer.identity.replace(/^github:/u, ""),
+    ]),
+  );
+  evidence.closure.remoteControls[name] = {
+    projectionSchema: GITHUB_REMOTE_CONTROL_PROJECTION_SCHEMA,
+    candidateSha: evidence.closure.candidate.sourceSha,
+    evidenceUri,
+    evidenceSha256: githubRemoteControlDigest({
+      name,
+      primary: json,
+      projectionInputs,
+      repository: evidence.repository,
+      candidate: evidence.closure.candidate,
+      independentReviewers,
+      implementationOperator: "owner",
+    }),
+  };
+  evidence.resources.set(evidenceUri, {
+    bytes: Buffer.from(JSON.stringify(json)),
+    json,
+    projectionInputs,
+  });
 }
 
 function evidenceClaim(runId, actor, event, artifactBase) {
@@ -230,19 +269,15 @@ function evidenceFiles({ claim, jobName, actor, event }) {
       ? {
           scanSummary: Buffer.from(
             `${JSON.stringify({
-              result: "recorded",
-              results: [
-                {
-                  image: "mecoflow/api:candidate",
-                  resolvedIdentity: `sha256:${"a".repeat(64)}`,
-                  repoDigests: [],
-                },
-                {
-                  image: "redis:immutable",
-                  resolvedIdentity: `sha256:${"b".repeat(64)}`,
-                  repoDigests: [`redis@sha256:${"c".repeat(64)}`],
-                },
-              ],
+              result: "failed",
+              results: Array.from({ length: 14 }, (_, index) => ({
+                image: `fixture/image-${index + 1}:immutable`,
+                resolvedIdentity: `sha256:${(index + 1)
+                  .toString(16)
+                  .padStart(64, "0")}`,
+                repoDigests: [],
+                status: index === 0 ? "blocked" : "passed",
+              })),
             })}\n`,
           ),
         }
@@ -250,7 +285,7 @@ function evidenceFiles({ claim, jobName, actor, event }) {
   };
 }
 
-test("accepts live source-bound runs, jobs, artifact digests, and downloaded evidence", () => {
+test("accepts successful jobs with complete blocked scan evidence from both runs", () => {
   const evidence = fixture();
   assert.deepEqual(validatePhaseZeroExternalEvidence(evidence), []);
 });
@@ -284,8 +319,18 @@ test("rejects image identity drift between independent candidate runs", () => {
 test("requires two distinct roster-bound independent GitHub identities", () => {
   const evidence = fixture();
   evidence.independentReviewerRoster[0].identity = "github:independent";
-  const errors = validatePhaseZeroExternalEvidence(evidence);
+  let errors = validatePhaseZeroExternalEvidence(evidence);
   assert.ok(errors.some((error) => error.includes("two distinct GitHub")));
+
+  const operatorConflict = fixture();
+  operatorConflict.implementationOperatorIdentity =
+    operatorConflict.independentReviewerRoster[0].identity;
+  errors = validatePhaseZeroExternalEvidence(operatorConflict);
+  assert.ok(
+    errors.some((error) =>
+      error.includes("implementation operator identity distinct"),
+    ),
+  );
 });
 
 test("rejects approval records whose GitHub resource does not authenticate the signer", () => {
@@ -321,6 +366,10 @@ test("rejects controls that are not bound to the exact independent roster identi
   const environment = {
     name: "production",
     can_admins_bypass: true,
+    deployment_branch_policy: {
+      protected_branches: true,
+      custom_branch_policies: false,
+    },
     protection_rules: [
       {
         type: "required_reviewers",
@@ -331,15 +380,18 @@ test("rejects controls that are not bound to the exact independent roster identi
       },
     ],
   };
-  const environmentBytes = Buffer.from(JSON.stringify(environment));
-  evidence.closure.remoteControls.protectedEnvironment = {
-    evidenceUri: environmentUri,
-    evidenceSha256: hash(environmentBytes),
-  };
-  evidence.resources.set(environmentUri, {
-    bytes: environmentBytes,
-    json: environment,
-  });
+  addRemoteControl(
+    evidence,
+    "protectedEnvironment",
+    environmentUri,
+    environment,
+    {
+      environmentSecrets: {
+        total_count: 1,
+        secrets: [{ name: "PHASE_ZERO_READ_TOKEN" }],
+      },
+    },
+  );
 
   const collaboratorsUri =
     "https://api.github.com/repos/owner/repository/collaborators?affiliation=all&per_page=100";
@@ -347,15 +399,12 @@ test("rejects controls that are not bound to the exact independent roster identi
     { login: "unrelated-one", permissions: { pull: true, admin: false } },
     { login: "unrelated-two", permissions: { pull: true, admin: false } },
   ];
-  const collaboratorsBytes = Buffer.from(JSON.stringify(collaborators));
-  evidence.closure.remoteControls.independentReviewerAccess = {
-    evidenceUri: collaboratorsUri,
-    evidenceSha256: hash(collaboratorsBytes),
-  };
-  evidence.resources.set(collaboratorsUri, {
-    bytes: collaboratorsBytes,
-    json: collaborators,
-  });
+  addRemoteControl(
+    evidence,
+    "independentReviewerAccess",
+    collaboratorsUri,
+    collaborators,
+  );
 
   const errors = validatePhaseZeroExternalEvidence(evidence);
   assert.ok(errors.some((error) => error.includes("protectedEnvironment")));
@@ -371,39 +420,158 @@ test("accepts a non-bypassable environment and repository access bound to the ro
   const environment = {
     name: "production",
     can_admins_bypass: false,
+    deployment_branch_policy: {
+      protected_branches: true,
+      custom_branch_policies: false,
+    },
     protection_rules: [
       {
         type: "required_reviewers",
         prevent_self_review: true,
-        reviewers: [{ type: "User", reviewer: { login: "independent" } }],
+        reviewers: [
+          { type: "User", reviewer: { login: "independent" } },
+          {
+            type: "User",
+            reviewer: { login: "security-reviewer" },
+          },
+        ],
       },
     ],
   };
-  const environmentBytes = Buffer.from(JSON.stringify(environment));
-  evidence.closure.remoteControls.protectedEnvironment = {
-    evidenceUri: environmentUri,
-    evidenceSha256: hash(environmentBytes),
-  };
-  evidence.resources.set(environmentUri, {
-    bytes: environmentBytes,
-    json: environment,
-  });
+  addRemoteControl(
+    evidence,
+    "protectedEnvironment",
+    environmentUri,
+    environment,
+    {
+      environmentSecrets: {
+        total_count: 1,
+        secrets: [{ name: "PHASE_ZERO_READ_TOKEN" }],
+      },
+    },
+  );
 
   const collaboratorsUri =
     "https://api.github.com/repos/owner/repository/collaborators?affiliation=all&per_page=100";
   const collaborators = [
-    { login: "security-reviewer", permissions: { pull: true, admin: false } },
-    { login: "independent", permissions: { pull: true, admin: false } },
+    {
+      login: "security-reviewer",
+      permissions: { pull: true, push: true, admin: false },
+    },
+    {
+      login: "independent",
+      permissions: { pull: true, push: true, admin: false },
+    },
   ];
-  const collaboratorsBytes = Buffer.from(JSON.stringify(collaborators));
-  evidence.closure.remoteControls.independentReviewerAccess = {
-    evidenceUri: collaboratorsUri,
-    evidenceSha256: hash(collaboratorsBytes),
-  };
-  evidence.resources.set(collaboratorsUri, {
-    bytes: collaboratorsBytes,
-    json: collaborators,
-  });
+  addRemoteControl(
+    evidence,
+    "independentReviewerAccess",
+    collaboratorsUri,
+    collaborators,
+  );
 
   assert.deepEqual(validatePhaseZeroExternalEvidence(evidence), []);
+});
+
+test("hashes approval resources as exact raw bytes", () => {
+  const evidence = fixture();
+  const record = {
+    id: "APR-CANDIDATE",
+    subject: "phase-zero:candidate",
+    scope: "Phase 0 candidate baseline",
+    reviewedSourceSha: sourceSha,
+    decision: "APPROVED",
+    approver: { identity: "github:owner", roleId: "REPO-ADMIN" },
+    independentReviewer: {
+      identity: "github:independent",
+      roleId: "INDEPENDENT-DATA-RELEASE",
+    },
+    roleApprovals: [],
+    evidenceUri:
+      "https://api.github.com/repos/owner/repository/issues/123/comments",
+  };
+  const terms = [
+    record.id,
+    record.subject,
+    record.scope,
+    record.reviewedSourceSha,
+    record.decision,
+  ].join(" ");
+  const json = {
+    comments: [
+      { user: { login: "owner" }, body: terms },
+      { user: { login: "independent" }, body: terms },
+    ],
+  };
+  const bytes = Buffer.from(JSON.stringify(json));
+  record.evidenceSha256 = hash(bytes);
+  evidence.approvals.records.push(record);
+  evidence.resources.set(record.evidenceUri, { bytes, json });
+  assert.deepEqual(validatePhaseZeroExternalEvidence(evidence), []);
+
+  evidence.resources.set(record.evidenceUri, {
+    bytes: Buffer.concat([bytes, Buffer.from("\n")]),
+    json,
+  });
+  assert.ok(
+    validatePhaseZeroExternalEvidence(evidence).some((error) =>
+      error.includes("wrong digest"),
+    ),
+  );
+});
+
+test("rejects raw-response hashes and candidate drift for remote controls", () => {
+  const evidence = fixture();
+  const uri = "https://api.github.com/repos/owner/repository";
+  const repositoryReadback = {
+    id: repository.id,
+    full_name: repository.full_name,
+    visibility: "private",
+    archived: false,
+    disabled: false,
+    updated_at: "volatile",
+  };
+  addRemoteControl(evidence, "repositoryVisibility", uri, repositoryReadback);
+  const resource = evidence.resources.get(uri);
+  evidence.closure.remoteControls.repositoryVisibility.evidenceSha256 = hash(
+    resource.bytes,
+  );
+  let errors = validatePhaseZeroExternalEvidence(evidence);
+  assert.ok(errors.some((error) => error.includes("canonical live")));
+
+  addRemoteControl(evidence, "repositoryVisibility", uri, repositoryReadback);
+  evidence.closure.remoteControls.repositoryVisibility.candidateSha =
+    "b".repeat(40);
+  errors = validatePhaseZeroExternalEvidence(evidence);
+  assert.ok(errors.some((error) => error.includes("candidate SHA")));
+});
+
+test("rejects an unversioned control projection and missing auxiliary readback", () => {
+  const evidence = fixture();
+  const uri =
+    "https://api.github.com/repos/owner/repository/actions/permissions";
+  const actions = {
+    enabled: true,
+    allowed_actions: "selected",
+    sha_pinning_required: true,
+  };
+  addRemoteControl(evidence, "restrictedActions", uri, actions, {
+    selectedActions: {
+      github_owned_allowed: true,
+      verified_allowed: false,
+      patterns_allowed: [],
+    },
+    workflowPermissions: {
+      default_workflow_permissions: "read",
+      can_approve_pull_request_reviews: false,
+    },
+  });
+  evidence.closure.remoteControls.restrictedActions.projectionSchema =
+    "mecoflow/github-control/v0";
+  let errors = validatePhaseZeroExternalEvidence(evidence);
+  assert.ok(errors.some((error) => error.includes("projection schema")));
+
+  addRemoteControl(evidence, "restrictedActions", uri, actions);
+  errors = validatePhaseZeroExternalEvidence(evidence);
+  assert.ok(errors.some((error) => error.includes("not release-safe")));
 });

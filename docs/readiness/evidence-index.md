@@ -5,7 +5,10 @@
 - Entry branch: `main`
 - Entry HEAD: `434a89cf1c88d3c84bf22211eba863ef19768122`
 - Candidate branch: `codex/phase-zero-candidate`
-- Latest fully evaluated Phase 0 candidate SHA: `6d91208a6d5912508178f981f575ff4345e34430`
+- Historical source-affecting Phase 0 candidate SHA: `6d91208a6d5912508178f981f575ff4345e34430`
+- Pre-repair candidate-branch head: `c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12`
+- Current source-affecting contract-repair SHA: pending commit
+- Final protected-`main` Phase 0 candidate SHA: pending
 - Candidate pull request: `https://github.com/evanwidjaja100/MecoFlow/pull/1`
 - Remote: `origin https://github.com/evanwidjaja100/MecoFlow.git`
 - Entry worktree: dirty; see `worktree-reconciliation.md`
@@ -17,9 +20,11 @@
   `5.2.0`, Git `2.55.0.windows.2`, GitHub CLI `2.97.0`, ripgrep `15.1.0`;
   `psql` unavailable and Docker daemon unavailable at entry.
 
-The entry SHA identifies the pre-Phase-0 `main` source. The Phase 0 candidate is
-committed, but is not owner-approved or merged and has no successful
-authoritative or independent reproduction run.
+The entry SHA identifies the pre-Phase-0 `main` source. The historical
+source-affecting candidate and later evidence-only updates are committed; the
+current source-affecting contract repair is not yet committed. None is the
+final protected-`main` candidate. No revision is owner-approved or merged and
+no successful authoritative or independent reproduction run exists.
 
 ## Diagnostic run log
 
@@ -62,7 +67,7 @@ evidence.
 | 2026-08-11 | `TURBO_FORCE=true pnpm test:authorization`  | `434a89c` + dirty Phase 0 tree    | `APP_ENV=ci`; isolated DB `phase0_final`                             | 0            | 14 files/53 tests passed; 0 cached and no skipped/todo                                                                                                                                                                                                         | Current task tool output; dirty-worktree diagnostic                                               |
 | 2026-08-11 | `pnpm test:e2e` (`phase0_final`)            | `434a89c` + dirty Phase 0 tree    | API 3101/web 3100/OIDC 4310; isolated DB                             | 0            | Web rebuilt for test endpoint; 15/15 Chromium scenarios passed with one worker                                                                                                                                                                                 | Current task tool output; dirty-worktree diagnostic                                               |
 | 2026-08-13 | GitHub control-plane pre-mutation read      | public remote `main` at `434a89c` | Authenticated `gh`; read-only                                        | blocked      | Branch protection 404/unprotected; empty rulesets/environments; one administrator; unrestricted Actions; nine default labels                                                                                                                                   | Historical diagnostic; superseded by the post-mutation read below                                 |
-| 2026-08-13 | Governance inventory revalidation           | `434a89c` + dirty 96-path tree    | Row-specific classification and secret/inventory checks              | 0            | Every executable path has its own allowed classification; focused governance, repository, and formatting checks passed                                                                                                                                         | Current task tool output; must rerun from committed SHA                                           |
+| 2026-08-20 | Governance inventory revalidation           | `434a89c` + current 99-path tree  | Row-specific classification and secret/inventory checks              | 0            | Every path has an explicit classification, including the topology ADR and canonical GitHub projection module/tests; focused and full governance checks must be rerun after integration                                                                         | Current task tool output; must rerun from committed SHA                                           |
 | 2026-08-13 | GitHub Actions run `31707913394`            | candidate `d6587a8`               | GitHub-hosted pull-request runner                                    | 1            | All three required checks failed; dependency graph unavailable and verify/container evidence validation incomplete                                                                                                                                             | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31707913394`; diagnostic only            |
 | 2026-08-13 | GitHub Actions run `31712296742`            | candidate `22d0abe`               | GitHub-hosted pull-request runner                                    | 1            | Dependency review passed; E2E server startup, endpoint/application-image, and container evidence failed; container verifier threw an undefined-variable exception                                                                                              | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31712296742`; diagnostic only            |
 | 2026-08-13 | GitHub Actions run `31713053533`            | candidate `cc2b56c`               | GitHub-hosted pull-request runner                                    | 1            | Dependency review passed; retained E2E server diagnostics confirmed startup failure; endpoint/application-image and container evidence failed                                                                                                                  | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31713053533`; diagnostic only            |
@@ -72,7 +77,11 @@ evidence.
 | 2026-08-13 | Post-run scan-parser regression checks      | committed candidate follow-up     | Local Node/pnpm; three existing inventory paths modified             | 0            | Governance 82/82 and container policy 14/14 passed; identity errors remain incomplete diagnostics instead of false Trivy reports                                                                                                                               | Current task tool output; committed but not accepted remote evidence                              |
 | 2026-08-13 | GitHub Actions run `31718073882`            | candidate `e443e5b`               | GitHub-hosted pull-request runner                                    | 1            | Dependency review and every executable verify gate passed, including E2E 15/15; endpoint/images and 14 scans failed; zero false Trivy-format errors                                                                                                            | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31718073882`; diagnostic only            |
 | 2026-08-14 | GitHub control-plane mutation verification  | public remote; candidate PR #1    | Authenticated `gh`; approved mutations                               | blocked      | `main` protected with three strict checks; dependency graph/alerts enabled with 633-package SBOM readback; labels exist; `production` is branch-limited with admin bypass disabled but lacks required reviewers and a least-privilege secret; Actions deferred | `ci-governance.md`; authenticated candidate-bound approval/evidence still required                |
+| 2026-08-20 | GitHub Actions restriction readback         | public remote; pre-freeze branch  | Authenticated `gh`; mechanical repository hardening                  | blocked      | Actions selected-only; exact four patterns; SHA pinning required; broad GitHub-owned/verified toggles false; workflow defaults read-only and cannot approve PRs                                                                                                | Canonical candidate-bound digest and named approval still required                                |
 | 2026-08-14 | GitHub Actions run `31759036677`            | candidate `6d91208`               | GitHub-hosted pull-request runner                                    | 1            | Dependency review and all executable verify gates passed: governance 82, unit 236, integration 151, authorization 53, E2E 15; endpoint/images and 14 identities failed closed; zero skips/todos                                                                | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31759036677`; diagnostic only            |
+| 2026-08-14 | GitHub Actions run `31759673383`            | evidence-only head `1f83021`      | GitHub-hosted pull-request runner                                    | 1            | Dependency review and executable verify baseline passed; endpoint/application images and 14 identities failed closed                                                                                                                                           | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31759673383`; diagnostic only            |
+| 2026-08-14 | GitHub Actions run `31760236777`            | evidence-only head `96f3120`      | GitHub-hosted pull-request runner                                    | 1            | Dependency review and executable verify baseline passed; endpoint/application images and 14 identities failed closed                                                                                                                                           | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31760236777`; diagnostic only            |
+| 2026-08-14 | GitHub Actions run `31760932202`            | current PR head `c919ab1`         | GitHub-hosted pull-request runner                                    | 1            | Dependency review and executable verify baseline passed; endpoint/application images and 14 identities failed closed                                                                                                                                           | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31760932202`; diagnostic only            |
 
 Run `31707913394` retained diagnostic artifacts
 `phase-zero-verify-31707913394-1` (artifact ID `9184116059`, SHA-256
@@ -134,6 +143,21 @@ container steps
 `8f62955ec5c9a1fcf46cad6eaa51f29b77a0691f110701fe3751fceb64f6e615`,
 and scan summary
 `b178bfc1837a2acc912eb6a4763f0be07dc82a19440f523a8654557949ed6388`.
+The later evidence-only diagnostic runs retained these artifact pairs:
+
+- run `31759673383`: verify ID `9204200366`, SHA-256
+  `7376bb542d79e512f58fd559be039a8bf01ac24c454905f51ca0062ac8371794`;
+  container ID `9204101654`, SHA-256
+  `ca34686d4d59cd5b6cac27160a2e6ca9535f9ff0af793db7d66a57bde8c6fdf2`;
+- run `31760236777`: verify ID `9204401617`, SHA-256
+  `d5f81d8ee70a97296ef3ecc0e13c1fd962972de7605fdc109f0f58377ec7692e`;
+  container ID `9204308809`, SHA-256
+  `bdbc81a69a0175106232ae6ccd8b3b9675d5ab636fb88125f7f13cc347f27256`;
+- run `31760932202`: verify ID `9204654001`, SHA-256
+  `3475e2fdaf6239ee4c63b5fa1eff001c8a655b632b4e4411c3ffeadd916efab0`;
+  container ID `9204550945`, SHA-256
+  `6d7b794781b5409bb7f06db847e79b3a75b9a8bf3494770ad2298313e8f80320`.
+
 Cancelled, incomplete, or failing artifacts are never authoritative evidence.
 
 ## Authoritative Phase 0 run log

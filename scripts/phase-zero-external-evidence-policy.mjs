@@ -1,4 +1,10 @@
 import { createHash } from "node:crypto";
+import {
+  GITHUB_REMOTE_CONTROL_PROJECTION_SCHEMA,
+  canonicalSha256,
+  projectGitHubRemoteControlEvidence,
+  validateGitHubRemoteControlProjection,
+} from "./github-remote-control-evidence.mjs";
 
 const SHA_1 = /^[0-9a-f]{40}$/u;
 const SHA_256 = /^(?:sha256:)?[0-9a-f]{64}$/u;
@@ -56,13 +62,15 @@ function json(value, label, errors) {
 function githubApiEvidenceUri(value, repository) {
   try {
     const parsed = new URL(value);
+    const repositoryPath = `/repos/${repository}`;
     return (
       parsed.protocol === "https:" &&
       parsed.hostname === "api.github.com" &&
       !parsed.username &&
       !parsed.password &&
       !parsed.hash &&
-      parsed.pathname.startsWith(`/repos/${repository}/`)
+      (parsed.pathname === repositoryPath ||
+        parsed.pathname.startsWith(`${repositoryPath}/`))
     );
   } catch {
     return false;
@@ -117,101 +125,31 @@ function authenticatesApproval(resource, record) {
   });
 }
 
-function validatesControl(
-  name,
-  control,
-  resource,
-  repository,
-  candidate,
-  independentReviewers,
-) {
+function validatesControlPath(name, control, repository, candidate) {
   const path = apiPath(control.evidenceUri);
-  const body = resource.json;
   if (name === "branchProtection") {
-    const checks = new Set([
-      ...(body.required_status_checks?.contexts ?? []),
-      ...(body.required_status_checks?.checks ?? []).map(
-        (check) => check.context,
-      ),
-    ]);
     return (
       path ===
-        `/repos/${repository.full_name}/branches/${encodeURIComponent(candidate.branch)}/protection` &&
-      body.required_pull_request_reviews?.required_approving_review_count >=
-        1 &&
-      body.required_pull_request_reviews?.dismiss_stale_reviews === true &&
-      body.enforce_admins?.enabled === true &&
-      ["dependency-review", "verify", "container-security"].every((check) =>
-        checks.has(check),
-      ) &&
-      body.allow_force_pushes?.enabled === false &&
-      body.allow_deletions?.enabled === false
+      `/repos/${repository.full_name}/branches/${encodeURIComponent(candidate.branch)}/protection`
     );
   }
   if (name === "protectedEnvironment") {
-    const reviewerRules = (body.protection_rules ?? []).filter(
-      (rule) => rule.type === "required_reviewers",
-    );
-    const reviewerLogins = new Set(
-      reviewerRules
-        .flatMap((rule) => rule.reviewers ?? [])
-        .filter((reviewer) => reviewer.type === "User")
-        .map((reviewer) => login(reviewer.reviewer?.login)),
-    );
-    return (
-      path === `/repos/${repository.full_name}/environments/production` &&
-      body.name === "production" &&
-      body.can_admins_bypass === false &&
-      reviewerRules.some((rule) => rule.prevent_self_review === true) &&
-      [...independentReviewers.values()].some((reviewerLogin) =>
-        reviewerLogins.has(reviewerLogin),
-      )
-    );
+    return path === `/repos/${repository.full_name}/environments/production`;
   }
   if (name === "restrictedActions") {
-    return (
-      path === `/repos/${repository.full_name}/actions/permissions` &&
-      body.enabled === true &&
-      body.allowed_actions !== "all" &&
-      body.sha_pinning_required === true
-    );
+    return path === `/repos/${repository.full_name}/actions/permissions`;
   }
   if (name === "independentReviewerAccess") {
-    const collaborators = new Map(
-      (body ?? []).map((entry) => [login(entry.login), entry]),
-    );
     return (
       path ===
-        `/repos/${repository.full_name}/collaborators?affiliation=all&per_page=100` &&
-      [...independentReviewers.values()].every((reviewerLogin) => {
-        const collaborator = collaborators.get(reviewerLogin);
-        return (
-          collaborator?.permissions?.pull === true &&
-          collaborator.permissions.admin !== true
-        );
-      })
+      `/repos/${repository.full_name}/collaborators?affiliation=all&per_page=100`
     );
   }
   if (name === "releaseLabels") {
-    const labels = new Set((body ?? []).map((entry) => entry.name));
-    return (
-      path === `/repos/${repository.full_name}/labels?per_page=100` &&
-      [
-        "BLOCKER",
-        "CRITICAL",
-        "HIGH",
-        "LATER-PHASE",
-        "IMPLEMENTED-UNCOMMITTED",
-      ].every((label) => labels.has(label))
-    );
+    return path === `/repos/${repository.full_name}/labels?per_page=100`;
   }
   if (name === "repositoryVisibility") {
-    return (
-      path === `/repos/${repository.full_name}` &&
-      body.id === repository.id &&
-      body.full_name === repository.full_name &&
-      ["public", "private", "internal"].includes(body.visibility)
-    );
+    return path === `/repos/${repository.full_name}`;
   }
   return false;
 }
@@ -417,6 +355,7 @@ function validateApprovalResources({
   resources,
   repository,
   independentReviewers,
+  implementationOperator,
   errors,
 }) {
   for (const record of approvals.records ?? []) {
@@ -446,19 +385,51 @@ function validateApprovalResources({
     if (
       !githubApiEvidenceUri(control.evidenceUri, repository.full_name) ||
       !resource ||
-      digest(resource.bytes) !== normalizedDigest(control.evidenceSha256) ||
-      !validatesControl(
-        name,
-        control,
-        resource,
-        repository,
-        closure.candidate,
-        independentReviewers,
-      )
+      !validatesControlPath(name, control, repository, closure.candidate)
     ) {
       errors.push(
-        `remoteControls.${name}: authenticated GitHub control evidence is missing or has the wrong digest`,
+        `remoteControls.${name}: authenticated GitHub control readback is missing or uses the wrong API resource`,
       );
+      continue;
+    }
+    if (
+      control.projectionSchema !== GITHUB_REMOTE_CONTROL_PROJECTION_SCHEMA ||
+      control.candidateSha !== closure.candidate.sourceSha
+    ) {
+      errors.push(
+        `remoteControls.${name}: the canonical projection schema and candidate SHA are required`,
+      );
+      continue;
+    }
+    let projection;
+    try {
+      projection = projectGitHubRemoteControlEvidence({
+        name,
+        primary: resource.json,
+        projectionInputs: resource.projectionInputs,
+        repository,
+        candidate: closure.candidate,
+        independentReviewers,
+        implementationOperator,
+      });
+    } catch {
+      errors.push(
+        `remoteControls.${name}: the live GitHub response cannot be projected canonically`,
+      );
+      continue;
+    }
+    if (
+      canonicalSha256(projection) !== normalizedDigest(control.evidenceSha256)
+    ) {
+      errors.push(
+        `remoteControls.${name}: the canonical live GitHub control digest does not match`,
+      );
+    }
+    for (const projectionError of validateGitHubRemoteControlProjection(
+      name,
+      projection,
+    )) {
+      errors.push(`remoteControls.${name}: ${projectionError}`);
     }
   }
 }
@@ -497,6 +468,7 @@ export function validatePhaseZeroExternalEvidence({
   resources = new Map(),
   inputDigests = {},
   independentReviewerRoster = [],
+  implementationOperatorIdentity,
   expectedPublicApiBaseUrl,
   now = new Date(),
 }) {
@@ -510,8 +482,9 @@ export function validatePhaseZeroExternalEvidence({
       identityLogin(reviewer?.identity),
     ]),
   );
+  const implementationOperator = identityLogin(implementationOperatorIdentity);
   if (
-    closure?.schemaVersion !== 1 ||
+    closure?.schemaVersion !== 2 ||
     closure?.status !== "COMPLETE" ||
     approvals?.schemaVersion !== 1 ||
     !Array.isArray(approvals?.records) ||
@@ -540,6 +513,14 @@ export function validatePhaseZeroExternalEvidence({
   ) {
     errors.push(
       "external evidence requires two distinct GitHub identities for the independent security and data/release roster roles",
+    );
+  }
+  if (
+    !implementationOperator ||
+    [...independentReviewers.values()].includes(implementationOperator)
+  ) {
+    errors.push(
+      "external evidence requires an implementation operator identity distinct from both independent reviewers",
     );
   }
 
@@ -612,6 +593,7 @@ export function validatePhaseZeroExternalEvidence({
     resources,
     repository,
     independentReviewers,
+    implementationOperator,
     errors,
   });
   const authoritativeScan = scanIdentityMap(

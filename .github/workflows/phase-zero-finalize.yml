@@ -22,11 +22,14 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.PHASE_ZERO_READ_TOKEN }}
       PHASE_ZERO_DISPATCH_CANDIDATE_SHA: ${{ inputs.closure_sha }}
+      PHASE_ZERO_SOURCE_REF: main
+      PHASE_ZERO_SOURCE_SHA: ${{ inputs.closure_sha }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ inputs.closure_sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.18.0

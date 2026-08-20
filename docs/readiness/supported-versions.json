@@ -16,21 +16,21 @@
     "redisImage": "redis:8.2-alpine@sha256:a7859ed111db3c1f5404a973a4747505d559fb5ca32d37e447afc0ef845a2103"
   },
   "browsers": {
-    "chromeMajor": null,
-    "edgeMajor": null,
-    "firefoxMajor": null,
-    "safariVersion": null
+    "chromeMajor": "151",
+    "edgeMajor": "151",
+    "firefoxMajor": "154",
+    "safariVersion": "26.6"
   },
   "operatingSystems": {
-    "windows": null,
-    "macos": null,
-    "ios": null,
-    "ipados": null,
-    "android": null
+    "windows": "Windows 11 25H2; Windows 11 26H1 only on supported OEM hardware",
+    "macos": "macOS Tahoe 26.6.1",
+    "ios": "iOS 26.6",
+    "ipados": "iPadOS 26.6",
+    "android": "Android 16"
   },
   "deployment": {
-    "platform": null,
-    "tool": null,
-    "version": null
+    "platform": "AWS ECS Fargate in ap-southeast-3 across private subnets in multiple Availability Zones",
+    "tool": "AWS CloudFormation",
+    "version": "2010-09-09"
   }
 }

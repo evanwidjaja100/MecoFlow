@@ -34,6 +34,29 @@ agent may prepare code/evidence but cannot self-approve it.
 | Accessibility reviewer            | `A11Y-REVIEWER`            | Unassigned  | Unassigned      | `BLOCKED`      |
 | Implementation/test operator      | `IMPLEMENTATION-OPERATOR`  | Unassigned  | Unassigned      | `BLOCKED`      |
 
+The approved Phase 0 assignment model uses ten distinct people. The business
+sponsor must replace every `Unassigned` value above with a real name and stable
+identity before any roster approval is valid:
+
+| Person slot              | Canonical role IDs                                                                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| Executive/product        | `BUSINESS-SPONSOR`, `PRODUCT-OWNER`, `MANAGEMENT-OWNER`                                            |
+| Engineering owner        | `SE-OWNER`, `PROJECT-MGMT-OWNER`, `ENGINEERING-DOMAIN-OWNER`                                       |
+| Security/identity        | `SEC-OWNER`, `IDENTITY-OWNER`                                                                      |
+| Platform/admin           | `PLATFORM-OWNER`, `SRE-OWNER`, `REPO-ADMIN`                                                        |
+| Data/privacy             | `DATA-OWNER`, `PRIVACY-OWNER`, `FINANCE-READONLY-OWNER`                                            |
+| Quality/accessibility    | `QA-OWNER`, `QAQC-BUSINESS-OWNER`, `A11Y-REVIEWER`                                                 |
+| Operations/operator      | `PURCHASING-OWNER`, `WAREHOUSE-OWNER`, `PPIC-OWNER`, `PRODUCTION-OWNER`, `IMPLEMENTATION-OPERATOR` |
+| Release/procurement      | `REL-MANAGER`, `PROCUREMENT-OWNER`                                                                 |
+| Independent security     | `INDEPENDENT-SECURITY` only                                                                        |
+| Independent data/release | `INDEPENDENT-DATA-RELEASE` only                                                                    |
+
+Both independent slots must be non-administrator GitHub collaborators with
+sufficient access to submit a counted pull-request approval and dispatch the
+independent reproduction. They must be distinct from each other, the
+implementation operator, the merge actor, and the primary approver of every
+record they independently review.
+
 One person may hold multiple accountable roles, but nobody may approve their
 own security-, data-, or release-critical work. Approval records include name,
 role, date, reviewed source SHA, scope, findings, and decision.
@@ -53,17 +76,19 @@ placeholder or an unbound chat statement.
    required role in the roster, including independent security and
    data/release review. Confirm that critical-work reviewers are distinct from
    implementers and primary approvers.
-2. Accountable owners supply the missing D-01–D-07 scope, policy, retention,
-   capacity, supported browser/OS/deployment, and signoff values listed in
-   `decision-log.md` and `supported-versions.md`.
-3. Identity, platform, security, procurement, and support owners select the
-   D-08 Keycloak distribution/hosting/support contracts and the D-09 supported
-   S3-compatible production provider/contracts. Record procurement evidence,
-   evidence digests, exit strategies, and named operational owners.
-4. Platform, identity, security, application, and release owners populate every
-   exact production boundary in `endpoint-matrix.json`, including DNS zones,
-   HTTPS origins, OIDC callbacks, proxy hops, service names, and the build-time
-   API value. Validate the provisioned topology before approval.
+2. Accountable owners review the exact D-01–D-07 scope, policy, retention,
+   capacity, browser/OS/deployment, and accessibility proposals in
+   `decision-log.md` and `supported-versions.md`; either approve them unchanged
+   or revise the typed records and restart the candidate loop.
+3. Identity, platform, security, procurement, and support owners review the
+   proposed D-08 RHBK and D-09 AWS S3 contracts. Record subscription/account
+   and procurement evidence, evidence digests, exit strategies, and named
+   operational owners before approval.
+4. Platform, identity, security, application, and release owners reserve and
+   validate every exact production boundary already populated in
+   `endpoint-matrix.json`, including DNS zones, HTTPS origins, OIDC callbacks,
+   proxy hops, service names, and the build-time API value. Record the DNS and
+   change-control references before approval.
 5. The repository administrator supplies authenticated candidate-bound
    evidence for branch protection, labels, visibility, and Actions restriction.
    The release manager adds independent required reviewers, self-review

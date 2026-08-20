@@ -48,11 +48,13 @@ Phase 0 edits. All rows are intentional Phase 0 governance/readiness work and
 remain attributable to this Phase 0 candidate even after they are committed.
 Each row below carries its own exact classification from the five Phase 0
 categories; no classification is inherited from prose or inferred from purpose.
-The reconciled current inventory contains 96 paths in the candidate delta
-through source-affecting candidate `6d91208a6d5912508178f981f575ff4345e34430`.
-Evidence-only documentation checkpoints `1f83021` and `96f3120`, plus this
-reconciliation commit, do not change that inventory or promote a different
-source-affecting candidate.
+The reconciled current inventory contains 99 paths relative to the entry
+baseline. The historical source-affecting candidate was
+`6d91208a6d5912508178f981f575ff4345e34430`; the current Phase 0 contract repair
+adds the three explicitly classified paths below and therefore requires a new
+candidate freeze. Evidence-only documentation checkpoints `1f83021`,
+`96f3120`, and `c919ab1` remain diagnostic history and are not the final
+protected-`main` candidate.
 Commits `db503f3`/`e7db0eb` and the three scan-policy/verifier paths
 are already classified below; they add no inventory row. An executable
 read-only comparison found zero candidate-delta or untracked paths missing from
@@ -78,6 +80,7 @@ outstanding.
 | `compose.staging.yaml`                                 | `intentional product work` | Immutable external references and fail-closed candidate image identities       | Current Phase 0 provenance edit                                                         |
 | `compose.yaml`                                         | `intentional product work` | Immutable development service references                                       | Current Phase 0 provenance edit                                                         |
 | `docs/CONTAINER_SECURITY.md`                           | `intentional product work` | Full-scan versus diagnostic-subset contract                                    | Current Phase 0 evidence-policy edit                                                    |
+| `docs/adr/ADR-0015-production-topology.md`             | `intentional product work` | Proposed AWS Jakarta, Red Hat identity, and cross-region storage topology      | Current Phase 0 proposal; acceptance and procurement evidence remain outstanding        |
 | `docs/PILOT_PLAN.md`                                   | `intentional product work` | Documentation-path reconciliation                                              | Current Phase 0 edit                                                                    |
 | `docs/SECURITY_MODEL.md`                               | `intentional product work` | Historical/current Keycloak implementation wording reconciliation              | Current Phase 0 edit                                                                    |
 | `docs/TEST_STRATEGY.md`                                | `intentional product work` | Isolated E2E port and fixed seeded-issuer prerequisite contract                | Current Phase 0 edit                                                                    |
@@ -122,6 +125,8 @@ outstanding.
 | `scripts/ci-step-evidence-integration.test.mjs`        | `intentional product work` | End-to-end retained-command aggregation and missing-file regression test       | Current Phase 0 governance test                                                         |
 | `scripts/ci-trigger-policy.mjs`                        | `intentional product work` | Candidate-bound and attributed GitHub trigger policy                           | Current Phase 0 governance file                                                         |
 | `scripts/ci-trigger-policy.test.mjs`                   | `intentional product work` | Trigger-context and dispatch-binding regression tests                          | Current Phase 0 governance test                                                         |
+| `scripts/github-remote-control-evidence.mjs`           | `intentional product work` | Stable canonical GitHub control projections and digests                        | Current Phase 0 governance file                                                         |
+| `scripts/github-remote-control-evidence.test.mjs`      | `intentional product work` | Canonicalization and remote-control projection regression tests                | Current Phase 0 governance test                                                         |
 | `scripts/dependency-audit-policy.mjs`                  | `intentional product work` | Exact recorded dependency-advisory baseline policy                             | Current Phase 0 governance file                                                         |
 | `scripts/dependency-audit-policy.test.mjs`             | `intentional product work` | Advisory drift and malformed-output regression tests                           | Current Phase 0 governance test                                                         |
 | `scripts/container-scan-policy.mjs`                    | `intentional product work` | Complete Phase 0 scan-evidence and Phase 2 blocker separation policy           | Current Phase 0 evidence-policy edit                                                    |
@@ -188,7 +193,9 @@ work occurred. Phase 0 cannot claim an immutable clean baseline until the user
 approves disposition of the complete diff, authorizes a commit, and an
 independent reviewer reproduces the gate from that committed SHA.
 
-Original draft disposition: `PENDING`
+Original draft disposition selected by the Phase 0 implementation instruction:
+`SUPERSEDED`. Formal closure remains `BLOCKED` until the selection is bound to a
+complete candidate-specific `APR-*` record from the required named roles.
 
 The approved disposition must reference `approvalReferences.originalDraftDisposition`
 in `phase-zero-closure.json` and a complete `APR-*` record in `approvals.json`.

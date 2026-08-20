@@ -78,7 +78,13 @@ function approval(id, subject, scope, roleCoverage) {
 function completeFixture() {
   const decisionRoles = {
     "D-01": ["PRODUCT-OWNER", "SRE-OWNER", "BUSINESS-SPONSOR"],
-    "D-02": ["DATA-OWNER", "PRODUCT-OWNER", "SRE-OWNER", "BUSINESS-SPONSOR"],
+    "D-02": [
+      "DATA-OWNER",
+      "PRODUCT-OWNER",
+      "SRE-OWNER",
+      "PRIVACY-OWNER",
+      "BUSINESS-SPONSOR",
+    ],
     "D-03": ["DATA-OWNER", "PRODUCT-OWNER", "SRE-OWNER", "PRIVACY-OWNER"],
     "D-04": ["PRODUCT-OWNER", "SRE-OWNER", "BUSINESS-SPONSOR"],
     "D-05": ["PRODUCT-OWNER", "BUSINESS-SPONSOR"],
@@ -90,7 +96,13 @@ function completeFixture() {
       "PLATFORM-OWNER",
       "PROCUREMENT-OWNER",
     ],
-    "D-09": ["SEC-OWNER", "DATA-OWNER", "PLATFORM-OWNER", "PROCUREMENT-OWNER"],
+    "D-09": [
+      "SEC-OWNER",
+      "DATA-OWNER",
+      "PLATFORM-OWNER",
+      "PRIVACY-OWNER",
+      "PROCUREMENT-OWNER",
+    ],
     "D-10": [
       "SE-OWNER",
       "SEC-OWNER",
@@ -202,6 +214,12 @@ function completeFixture() {
       "SEC-OWNER",
       "REL-MANAGER",
     ]),
+    approval("APR-RISK-R12", "phase-zero:risk:R-12", "Phase 0 risk R-12", [
+      "SRE-OWNER",
+      "BUSINESS-SPONSOR",
+      "SEC-OWNER",
+      "REL-MANAGER",
+    ]),
   ];
   const remoteSpecs = {
     branchProtection: [
@@ -247,6 +265,7 @@ function completeFixture() {
       return [
         name,
         {
+          projectionSchema: "mecoflow/github-control/v1",
           status: "PASS",
           evidenceUri: `https://example.com/controls/${name}`,
           evidenceSha256: "8".repeat(64),
@@ -258,7 +277,7 @@ function completeFixture() {
     }),
   );
   const closure = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: "COMPLETE",
     candidate: {
       branch: "phase-zero",
@@ -380,12 +399,14 @@ function completeFixture() {
       peakConcurrentSessions: 100,
       projects: 500,
       itemsAndBomLines: 100000,
-      documentsAndBytes: "100000 documents / 1 TB",
+      documentCount: 100000,
+      documentStorageGb: 1000,
       reportConcurrency: 20,
-      queueRateAndDepth: "100 jobs/minute and 1000 queued",
+      jobsPerMinute: 100,
+      maximumQueuedJobs: 1000,
       annualGrowthPercent: 20,
       planningHorizonMonths: 24,
-      seasonality: "2x quarter-end peak",
+      peakSeasonalityMultiplier: 2,
     },
     "D-05": {
       locales: ["en", "id"],
@@ -502,7 +523,7 @@ function completeFixture() {
       approvalRecordId: "APR-ENDPOINT",
       public: {
         webUrl: "https://app.mecoflow.company",
-        apiBaseUrl: "https://api.mecoflow.company/api/v1",
+        apiBaseUrl: "https://api.mecoflow.company",
         dnsNames: [
           "app.mecoflow.company",
           "api.mecoflow.company",
@@ -526,7 +547,7 @@ function completeFixture() {
         workerAndDependencies: ["worker", "postgres", "redis"],
       },
       build: {
-        nextPublicApiBaseUrl: "https://api.mecoflow.company/api/v1",
+        nextPublicApiBaseUrl: "https://api.mecoflow.company",
       },
     }),
     "docs/readiness/evidence-index.md": `https://example.com/runs/1 artifact-1 ${digest}`,
@@ -565,7 +586,7 @@ function completeFixture() {
       approvalRecordId: "APR-DRAFT",
     }),
     "docs/readiness/risk-register.md":
-      "| R-01 | Later | 2 | SE-OWNER | Control | Phase 2 | `PENDING` | `MISSING` | `OPEN-BLOCKER` |\n| R-02 | Phase zero | 0 | SE-OWNER | Control | Date | `APPROVED` | `APR-RISK-R02` | `ACCEPTED` |",
+      "| R-01 | Later | 2 | SE-OWNER | Control | Phase 2 | `PENDING` | `MISSING` | `OPEN-BLOCKER` |\n| R-02 | Phase zero | 0 | SE-OWNER | Control | Date | `APPROVED` | `APR-RISK-R02` | `ACCEPTED` |\n| R-12 | AWS Basic Support mismatch | 0 | SRE-OWNER | Internal on-call and procurement trigger | Before go-live | `APPROVED` | `APR-RISK-R12` | `ACCEPTED` |",
     "docs/readiness/supported-versions.md":
       "Exact browser versions approved APR-VERSIONS",
     "docs/readiness/supported-versions.json": JSON.stringify({
@@ -599,9 +620,10 @@ function completeFixture() {
         android: "Android 16",
       },
       deployment: {
-        platform: "Managed Kubernetes",
-        tool: "Helm",
-        version: "3.18.4",
+        platform:
+          "AWS ECS Fargate in ap-southeast-3 across private subnets in multiple Availability Zones",
+        tool: "AWS CloudFormation",
+        version: "2010-09-09",
       },
     }),
     "docs/readiness/traceability.md": `${Array.from(
@@ -764,7 +786,7 @@ test("rejects placeholder or internally inconsistent endpoint matrices", () => {
   const matrix = JSON.parse(documents["docs/readiness/endpoint-matrix.json"]);
   matrix.public.webUrl = "https://app.example.com";
   matrix.proxy.trustedHopCount = 99;
-  matrix.build.nextPublicApiBaseUrl = "https://other.mecoflow.company/api/v1";
+  matrix.build.nextPublicApiBaseUrl = "https://other.mecoflow.company";
   matrix.identity.callbackUrls = [
     "https://api.mecoflow.company/unrelated/api/v1/auth/callback?x=1",
   ];
@@ -779,6 +801,48 @@ test("rejects placeholder or internally inconsistent endpoint matrices", () => {
   assert.ok(errors.some((error) => error.includes("trustedHopCount")));
   assert.ok(errors.some((error) => error.includes("build-time API")));
   assert.ok(errors.some((error) => error.includes("exact public API origin")));
+});
+
+test("requires exact API origins, Keycloak issuer semantics, and globally unique topology names", () => {
+  const { documents } = completeFixture();
+  const matrix = JSON.parse(documents["docs/readiness/endpoint-matrix.json"]);
+  matrix.public.apiBaseUrl = "https://api.mecoflow.company/api/v1";
+  matrix.build.nextPublicApiBaseUrl =
+    "https://api.mecoflow.company/api/v1?environment=production";
+  matrix.identity.issuerUrl =
+    "https://id.mecoflow.company/realms/mecoflow?tenant=production";
+  matrix.internal.workerAndDependencies = ["worker", "api"];
+  documents["docs/readiness/endpoint-matrix.json"] = JSON.stringify(matrix);
+
+  const errors = validatePhaseZeroClosure({
+    documents,
+    gitStatus: "",
+    currentHead,
+    candidateIsAncestor: true,
+  });
+  assert.ok(errors.some((error) => error.includes("public.apiBaseUrl")));
+  assert.ok(
+    errors.some((error) => error.includes("build.nextPublicApiBaseUrl")),
+  );
+  assert.ok(errors.some((error) => error.includes("exact Keycloak")));
+  assert.ok(errors.some((error) => error.includes("globally unique")));
+
+  const fragmentDocuments = completeFixture().documents;
+  const fragmentMatrix = JSON.parse(
+    fragmentDocuments["docs/readiness/endpoint-matrix.json"],
+  );
+  fragmentMatrix.identity.issuerUrl =
+    "https://id.mecoflow.company/realms/mecoflow#untrusted";
+  fragmentDocuments["docs/readiness/endpoint-matrix.json"] =
+    JSON.stringify(fragmentMatrix);
+  assert.ok(
+    validatePhaseZeroClosure({
+      documents: fragmentDocuments,
+      gitStatus: "",
+      currentHead,
+      candidateIsAncestor: true,
+    }).some((error) => error.includes("identity.issuerUrl")),
+  );
 });
 
 test("rejects incomplete support matrices or lockfile drift", () => {
@@ -813,6 +877,46 @@ test("rejects incomplete support matrices or lockfile drift", () => {
   });
   assert.ok(
     sourceErrors.some((error) => error.includes("candidate package manifests")),
+  );
+
+  const forbiddenTopology = completeFixture().documents;
+  const forbiddenVersions = JSON.parse(
+    forbiddenTopology["docs/readiness/supported-versions.json"],
+  );
+  forbiddenVersions.deployment.platform = "Managed Kubernetes";
+  forbiddenVersions.deployment.tool = "Helm";
+  forbiddenTopology["docs/readiness/supported-versions.json"] =
+    JSON.stringify(forbiddenVersions);
+  assert.ok(
+    validatePhaseZeroClosure({
+      documents: forbiddenTopology,
+      gitStatus: "",
+      currentHead,
+      candidateIsAncestor: true,
+    }).some((error) => error.includes("non-Kubernetes")),
+  );
+});
+
+test("requires privacy approval for recovery and storage decisions", () => {
+  const { documents } = completeFixture();
+  const registry = JSON.parse(documents["docs/readiness/approvals.json"]);
+  for (const id of ["APR-D02", "APR-D09"]) {
+    const record = registry.records.find((candidate) => candidate.id === id);
+    record.roleApprovals = record.roleApprovals.filter(
+      (entry) => entry.roleId !== "PRIVACY-OWNER",
+    );
+  }
+  documents["docs/readiness/approvals.json"] = JSON.stringify(registry);
+
+  const errors = validatePhaseZeroClosure({
+    documents,
+    gitStatus: "",
+    currentHead,
+    candidateIsAncestor: true,
+  });
+  assert.equal(
+    errors.filter((error) => error.includes("missing PRIVACY-OWNER")).length,
+    2,
   );
 });
 
@@ -858,6 +962,29 @@ test("rejects recovery and accessibility values outside recorded proposal bounds
   });
   assert.ok(errors.some((error) => error.includes("RPO must be <=4")));
   assert.ok(errors.some((error) => error.includes("48-52px")));
+});
+
+test("rejects zero or internally inconsistent capacity decisions", () => {
+  const { documents } = completeFixture();
+  const record = JSON.parse(documents["docs/readiness/decisions.json"]);
+  record.decisions["D-04"].peakNamedUsers = 0;
+  record.decisions["D-04"].peakConcurrentSessions = 101;
+  record.decisions["D-04"].projects = 0;
+  record.decisions["D-04"].documentCount = 0;
+  record.decisions["D-04"].documentStorageGb = 0;
+  record.decisions["D-04"].jobsPerMinute = 0;
+  record.decisions["D-04"].maximumQueuedJobs = 0;
+  record.decisions["D-04"].annualGrowthPercent = 0;
+  record.decisions["D-04"].peakSeasonalityMultiplier = 0;
+  documents["docs/readiness/decisions.json"] = JSON.stringify(record);
+
+  const errors = validatePhaseZeroClosure({
+    documents,
+    gitStatus: "",
+    currentHead,
+    candidateIsAncestor: true,
+  });
+  assert.ok(errors.some((error) => error.includes("positive capacity")));
 });
 
 test("requires successful distinct verify and container artifacts bound to the candidate", () => {
@@ -910,6 +1037,14 @@ test("requires risk approvals to resolve through the registry and Phase 0 defect
     "| L-02 | P0-01 | HIGH | 0 | SE-OWNER |",
     "| L-02 | P0-01 | HIGH | 0 | `OPEN-OWNER` |",
   );
+  const registry = JSON.parse(documents["docs/readiness/approvals.json"]);
+  const supportRisk = registry.records.find(
+    (record) => record.id === "APR-RISK-R12",
+  );
+  supportRisk.roleApprovals = supportRisk.roleApprovals.filter(
+    (entry) => entry.roleId !== "BUSINESS-SPONSOR",
+  );
+  documents["docs/readiness/approvals.json"] = JSON.stringify(registry);
 
   const errors = validatePhaseZeroClosure({
     documents,
@@ -920,6 +1055,7 @@ test("requires risk approvals to resolve through the registry and Phase 0 defect
   assert.ok(
     errors.some((error) => error.includes("APR-UNKNOWN does not exist")),
   );
+  assert.ok(errors.some((error) => error.includes("missing BUSINESS-SPONSOR")));
   assert.ok(
     errors.some((error) => error.includes("every defect must resolve")),
   );

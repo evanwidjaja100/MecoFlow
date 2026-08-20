@@ -3,27 +3,39 @@
   "status": "BLOCKED",
   "approvalRecordId": null,
   "public": {
-    "webUrl": null,
-    "apiBaseUrl": null,
-    "dnsNames": [],
-    "dnsZones": [],
-    "corsOrigins": []
+    "webUrl": "https://flow.meco.co.id",
+    "apiBaseUrl": "https://api.flow.meco.co.id",
+    "dnsNames": [
+      "flow.meco.co.id",
+      "api.flow.meco.co.id",
+      "id.flow.meco.co.id"
+    ],
+    "dnsZones": ["flow.meco.co.id"],
+    "corsOrigins": ["https://flow.meco.co.id"]
   },
   "identity": {
-    "issuerUrl": null,
-    "callbackUrls": [],
-    "hostname": null
+    "issuerUrl": "https://id.flow.meco.co.id/realms/mecoflow",
+    "callbackUrls": ["https://api.flow.meco.co.id/api/v1/auth/callback"],
+    "hostname": "id.flow.meco.co.id"
   },
   "proxy": {
-    "chain": [],
-    "trustedHopCount": null
+    "chain": ["aws-application-load-balancer"],
+    "trustedHopCount": 1
   },
   "internal": {
-    "apiService": null,
-    "webService": null,
-    "workerAndDependencies": []
+    "apiService": "api.svc.flow.meco.internal",
+    "webService": "web.svc.flow.meco.internal",
+    "workerAndDependencies": [
+      "worker.svc.flow.meco.internal",
+      "postgres.svc.flow.meco.internal",
+      "redis.svc.flow.meco.internal",
+      "object-storage.svc.flow.meco.internal",
+      "clamav.svc.flow.meco.internal",
+      "keycloak.svc.flow.meco.internal",
+      "keycloak-postgres.svc.flow.meco.internal"
+    ]
   },
   "build": {
-    "nextPublicApiBaseUrl": null
+    "nextPublicApiBaseUrl": "https://api.flow.meco.co.id"
   }
 }
