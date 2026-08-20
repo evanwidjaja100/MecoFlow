@@ -345,7 +345,7 @@ that maps every audit finding to exactly one phase.
     build-time public values.
 14. Confirm that test scripts fail when prerequisites or required test files are
     missing; no silent success is permitted.
-15. Record the current four High dependency advisories, all 14 release images,
+15. Record the current five High dependency advisories, all 14 release images,
     the failing Keycloak scan, archived object-storage concern, and external
     production-control gaps as explicit blockers.
 

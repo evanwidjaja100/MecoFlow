@@ -3,6 +3,7 @@ const EXPECTED_ADVISORIES = Object.freeze([
   ["GHSA-rgw5-rvv9-x895", "brace-expansion", "5.0.8"],
   ["GHSA-5p4m-2wfm-xmqj", "js-yaml", "4.3.0"],
   ["GHSA-2v37-7h3g-55p8", "nanoid", "3.3.16"],
+  ["GHSA-ggr8-5vv4-36mx", "deepmerge-ts", "7.1.5"],
 ]);
 
 export function validateDependencyAudit(report) {
@@ -26,12 +27,14 @@ export function validateDependencyAudit(report) {
   }
   const vulnerabilities = report?.metadata?.vulnerabilities ?? {};
   if (
-    vulnerabilities.high !== 4 ||
+    vulnerabilities.high !== EXPECTED_ADVISORIES.length ||
     ["critical", "moderate", "low", "info"].some(
       (severity) => vulnerabilities[severity] !== 0,
     )
   ) {
-    errors.push("dependency audit severity totals must be exactly four High");
+    errors.push(
+      `dependency audit severity totals must be exactly ${EXPECTED_ADVISORIES.length} High`,
+    );
   }
   for (const advisory of advisories) {
     if (

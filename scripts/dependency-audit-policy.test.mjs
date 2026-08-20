@@ -7,6 +7,7 @@ const expected = [
   ["GHSA-rgw5-rvv9-x895", "brace-expansion", "5.0.8"],
   ["GHSA-5p4m-2wfm-xmqj", "js-yaml", "4.3.0"],
   ["GHSA-2v37-7h3g-55p8", "nanoid", "3.3.16"],
+  ["GHSA-ggr8-5vv4-36mx", "deepmerge-ts", "7.1.5"],
 ];
 function fixture() {
   return {
@@ -22,7 +23,7 @@ function fixture() {
       ]),
     ),
     metadata: {
-      vulnerabilities: { info: 0, low: 0, moderate: 0, high: 4, critical: 0 },
+      vulnerabilities: { info: 0, low: 0, moderate: 0, high: 5, critical: 0 },
     },
   };
 }

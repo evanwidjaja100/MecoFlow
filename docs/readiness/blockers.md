@@ -6,7 +6,7 @@ acceptance test has not been satisfied by authoritative evidence.
 
 | ID   | Blocker                                                                                                                                                                        | Severity | Primary phase | Downstream             | Accountable owner         | Status                | Acceptance test                                                                                                                                       |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------- | ---------------------- | ------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B-01 | Four High npm advisories: fast-uri, brace-expansion, js-yaml, nanoid                                                                                                           | HIGH     | 2             | 13, 14, 17             | `SEC-OWNER`               | `OPEN`                | `pnpm security:audit` exits 0 from a clean deterministic install                                                                                      |
+| B-01 | Five High npm advisories: fast-uri, brace-expansion, js-yaml, nanoid, deepmerge-ts                                                                                             | HIGH     | 2             | 13, 14, 17             | `SEC-OWNER`               | `OPEN`                | `pnpm security:audit` exits 0 from a clean deterministic install                                                                                      |
 | B-02 | Current pinned Keycloak 26.7.0 diagnostic reports 17 unresolved Critical/High occurrences                                                                                      | HIGH     | 2             | 14, 17                 | `IDENTITY-OWNER`          | `OPEN`                | Supported digest-pinned Keycloak has zero unresolved Critical/High and authentication/browser smoke passes                                            |
 | B-03 | Current scan resolved 5/14 images: Redis passed, four external images have 123 blockers, and nine project images were absent                                                   | HIGH     | 2             | 14, 17                 | `SEC-OWNER`               | `OPEN`                | `pnpm security:image-scan` freshly scans every policy image by resolved identity and exits 0                                                          |
 | B-04 | MinIO is archived and production object migration is not designed or rehearsed                                                                                                 | HIGH     | 14            | 15–17                  | `PLATFORM-OWNER`          | `OPEN`                | Selected supported store passes provider contract and every object/checksum is reconciled                                                             |
@@ -34,16 +34,20 @@ candidate is not owner-approved and no retained CI run has been accepted.
 The 2026-08-11 Phase 0 diagnostic ran
 `pnpm audit --audit-level moderate --json` against lockfile SHA-256
 `99CA92F59DC8DC6F441CBD300A549AE7990F9DB081B775B4A7610B43A840B1BB`.
-It reported exactly four High advisories, no Critical/Moderate/Low advisories,
-and 585 total dependency nodes. This is inventory evidence only: Phase 0 does
-not authorize dependency changes or accept any advisory risk.
+On 2026-08-20 the unchanged lockfile was audited again after CI detected
+registry drift. It reports exactly five High advisories, no
+Critical/Moderate/Low advisories, and 585 total dependency nodes. The new
+`deepmerge-ts` advisory and the registry's corrected `nanoid` vulnerable range
+are recorded below. This is inventory evidence only: Phase 0 does not authorize
+dependency changes or accept any advisory risk.
 
 | Advisory                                                                 | Package           | Installed | Vulnerable range | Patched range | Dependency reach in the audited graph                    | Primary phase / status |
 | ------------------------------------------------------------------------ | ----------------- | --------- | ---------------- | ------------- | -------------------------------------------------------- | ---------------------- |
 | [GHSA-7p8r-x3mc-p8w7](https://github.com/advisories/GHSA-7p8r-x3mc-p8w7) | `fast-uri`        | `3.1.4`   | `>=3.0.0 <3.1.5` | `>=3.1.5`     | 2 transitive Prisma development-tool paths through `ajv` | Phase 2 / `OPEN`       |
 | [GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895) | `brace-expansion` | `5.0.8`   | `>=4.0.0 <5.0.9` | `>=5.0.9`     | 64 transitive lint/tooling paths through `minimatch`     | Phase 2 / `OPEN`       |
 | [GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj) | `js-yaml`         | `4.3.0`   | `>=4.0.0 <4.3.1` | `>=4.3.1`     | 1 API build/tooling path through `@nestjs/swagger`       | Phase 2 / `OPEN`       |
-| [GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8) | `nanoid`          | `3.3.16`  | `<3.3.17`        | `>=3.3.17`    | 5 web/test-tool paths through `postcss`                  | Phase 2 / `OPEN`       |
+| [GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8) | `nanoid`          | `3.3.16`  | `<3.3.18`        | `>=3.3.18`    | 5 web/test-tool paths through `postcss`                  | Phase 2 / `OPEN`       |
+| [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx) | `deepmerge-ts`    | `7.1.5`   | `<8.0.0`         | `>=8.0.0`     | 2 transitive Prisma configuration paths                  | Phase 2 / `OPEN`       |
 
 The exact dependency paths remain available in the raw audit output for the
 candidate-bound CI run. Any lockfile change invalidates this baseline and
