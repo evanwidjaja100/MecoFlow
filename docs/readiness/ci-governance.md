@@ -6,10 +6,10 @@ The historical source-affecting Phase 0 candidate is
 `6d91208a6d5912508178f981f575ff4345e34430`. The pre-repair pull-request head is
 `c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12` after evidence-only commits
 `1f83021`, `96f3120`, and `c919ab1`; pull request #1 is not yet owner-approved
-or merged. The current worktree adds source-affecting closure-contract,
-canonical-control-evidence, typed-topology, and regression changes whose
-candidate SHA is pending commit. The final Phase 0 candidate must be the
-protected merge result on `main`. The Phase 0 implementation provides:
+or merged. Source-affecting closure-contract, canonical-control-evidence,
+typed-topology, and regression changes are committed at
+`aa87b4e269bed660a761d6c36a1093a666addbd9`. The final Phase 0 candidate must be
+the protected merge result on `main`. The Phase 0 implementation provides:
 
 - full-commit-SHA references for all third-party GitHub Actions;
 - workflow-level `contents: read`, while GitHub reports default workflow

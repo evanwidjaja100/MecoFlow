@@ -24,11 +24,11 @@ on `codex/phase-zero-candidate` adds or corrects repository controls. The
 pre-repair pull-request head is
 `c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12`; intervening commits
 `1f83021`, `96f3120`, and `c919ab1` change only closure-policy-permitted
-readiness/evidence documentation paths. The current worktree now contains
-source-affecting Phase 0 contract repairs, typed production proposals, and
-regression coverage; its candidate SHA remains pending until the integrated
-change is committed. None is the final Phase 0 candidate, which must be the
-protected merge result on `main`. The source-affecting work
+readiness/evidence documentation paths. Source-affecting Phase 0 contract
+repairs, typed production proposals, and regression coverage are committed at
+`aa87b4e269bed660a761d6c36a1093a666addbd9`. This is the current implementation
+checkpoint, not the final Phase 0 candidate, which must be the protected merge
+result on `main`. The source-affecting work
 includes full-SHA
 Actions, digest-pinned external Dockerfile/Compose/scan
 references, exact Node/pnpm versions, Prisma generation and isolated MinIO in

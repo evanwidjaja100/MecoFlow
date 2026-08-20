@@ -7,7 +7,7 @@
 - Candidate branch: `codex/phase-zero-candidate`
 - Historical source-affecting Phase 0 candidate SHA: `6d91208a6d5912508178f981f575ff4345e34430`
 - Pre-repair candidate-branch head: `c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12`
-- Current source-affecting contract-repair SHA: pending commit
+- Current source-affecting contract-repair SHA: `aa87b4e269bed660a761d6c36a1093a666addbd9`
 - Final protected-`main` Phase 0 candidate SHA: pending
 - Candidate pull request: `https://github.com/evanwidjaja100/MecoFlow/pull/1`
 - Remote: `origin https://github.com/evanwidjaja100/MecoFlow.git`
@@ -21,10 +21,10 @@
   `psql` unavailable and Docker daemon unavailable at entry.
 
 The entry SHA identifies the pre-Phase-0 `main` source. The historical
-source-affecting candidate and later evidence-only updates are committed; the
-current source-affecting contract repair is not yet committed. None is the
-final protected-`main` candidate. No revision is owner-approved or merged and
-no successful authoritative or independent reproduction run exists.
+source-affecting candidate, later evidence-only updates, and the current
+contract-repair checkpoint are committed. None is the final protected-`main`
+candidate. No revision is owner-approved or merged and no successful
+authoritative or independent reproduction run exists.
 
 ## Diagnostic run log
 

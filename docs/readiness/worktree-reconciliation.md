@@ -50,9 +50,10 @@ Each row below carries its own exact classification from the five Phase 0
 categories; no classification is inherited from prose or inferred from purpose.
 The reconciled current inventory contains 99 paths relative to the entry
 baseline. The historical source-affecting candidate was
-`6d91208a6d5912508178f981f575ff4345e34430`; the current Phase 0 contract repair
-adds the three explicitly classified paths below and therefore requires a new
-candidate freeze. Evidence-only documentation checkpoints `1f83021`,
+`6d91208a6d5912508178f981f575ff4345e34430`; the Phase 0 contract repair at
+`aa87b4e269bed660a761d6c36a1093a666addbd9` adds the three explicitly
+classified paths below and is the current source-affecting checkpoint.
+Evidence-only documentation checkpoints `1f83021`,
 `96f3120`, and `c919ab1` remain diagnostic history and are not the final
 protected-`main` candidate.
 Commits `db503f3`/`e7db0eb` and the three scan-policy/verifier paths
