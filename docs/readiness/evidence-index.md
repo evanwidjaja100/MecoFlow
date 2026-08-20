@@ -81,7 +81,9 @@ evidence.
 | 2026-08-14 | GitHub Actions run `31759036677`            | candidate `6d91208`               | GitHub-hosted pull-request runner                                    | 1            | Dependency review and all executable verify gates passed: governance 82, unit 236, integration 151, authorization 53, E2E 15; endpoint/images and 14 identities failed closed; zero skips/todos                                                                | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31759036677`; diagnostic only            |
 | 2026-08-14 | GitHub Actions run `31759673383`            | evidence-only head `1f83021`      | GitHub-hosted pull-request runner                                    | 1            | Dependency review and executable verify baseline passed; endpoint/application images and 14 identities failed closed                                                                                                                                           | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31759673383`; diagnostic only            |
 | 2026-08-14 | GitHub Actions run `31760236777`            | evidence-only head `96f3120`      | GitHub-hosted pull-request runner                                    | 1            | Dependency review and executable verify baseline passed; endpoint/application images and 14 identities failed closed                                                                                                                                           | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31760236777`; diagnostic only            |
-| 2026-08-14 | GitHub Actions run `31760932202`            | current PR head `c919ab1`         | GitHub-hosted pull-request runner                                    | 1            | Dependency review and executable verify baseline passed; endpoint/application images and 14 identities failed closed                                                                                                                                           | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31760932202`; diagnostic only            |
+| 2026-08-14 | GitHub Actions run `31760932202`            | evidence-only head `c919ab1`      | GitHub-hosted pull-request runner                                    | 1            | Dependency review and executable verify baseline passed; endpoint/application images and 14 identities failed closed                                                                                                                                           | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/31760932202`; diagnostic only            |
+| 2026-08-20 | GitHub Actions run `32382576019`            | evidence-only head `8e93fed`      | GitHub-hosted pull-request runner under restricted Actions           | 1            | Dependency review and all application/governance suites passed; the strict audit baseline detected a fifth registry advisory; endpoint/application images and 14 identities also failed closed                                                                 | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/32382576019`; diagnostic only            |
+| 2026-08-20 | GitHub Actions run `32383852323`            | source checkpoint `d345afd`       | GitHub-hosted pull-request runner under restricted Actions           | 1            | Refreshed five-advisory baseline, dependency review, governance 113, unit 236, integration 151, authorization 53, E2E 15, build, policies, Compose, and cleanliness passed; only endpoint/application images and dependent 14 identities failed closed         | `https://github.com/evanwidjaja100/MecoFlow/actions/runs/32383852323`; diagnostic only            |
 
 Run `31707913394` retained diagnostic artifacts
 `phase-zero-verify-31707913394-1` (artifact ID `9184116059`, SHA-256
@@ -157,6 +159,28 @@ The later evidence-only diagnostic runs retained these artifact pairs:
   `3475e2fdaf6239ee4c63b5fa1eff001c8a655b632b4e4411c3ffeadd916efab0`;
   container ID `9204550945`, SHA-256
   `6d7b794781b5409bb7f06db847e79b3a75b9a8bf3494770ad2298313e8f80320`.
+
+The restricted-Actions contract and dependency-baseline repair runs retained:
+
+- run `32382576019`: verify ID `9411791914`, SHA-256
+  `b0a4404d7e8c8f02920daef24a75755d1a83322290788b94155d2ad607b5cb1d`;
+  container ID `9411609584`, SHA-256
+  `bffbb89938640da3a631745c05d39b457cbb229e7d7fc8b0e7de2b09d02bac26`;
+- run `32383852323`: verify ID `9412281311`, SHA-256
+  `7add7c60c0db9fb43517a643014b7ca49a8b1fa433468644c19c54cc214e7921`;
+  container ID `9412095959`, SHA-256
+  `25e40257b7b6dcd4f49a6418f49d064c8daedc9c7ce21fba35bf98092873a47b`.
+
+Downloaded run `32383852323` contents hash to verify manifest
+`03c6b489b8579b18c83f864b3b008e45c7add2a47ef774f813aa4cec439eb834`,
+verify steps
+`fbb3b1666f1a07465b739d22f26b1047d9342eae51e1c0cf91c140371c1d6399`,
+container manifest
+`c0a56d329b3530d156e5ae0ff701f639dbbcc59791ba1d665529e01faae13270`,
+container steps
+`1f5a282194bc71043d0cd4fb12a24059dc0a629b90d6935ed2e5cef1f8a4601e`,
+and scan summary
+`6732244f9c657df7e195f2d2fc8dac9416da531b723e4ed6757966e1b08004f9`.
 
 Cancelled, incomplete, or failing artifacts are never authoritative evidence.
 

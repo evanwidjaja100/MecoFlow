@@ -92,13 +92,24 @@ artifacts remain diagnostic only.
 Runs `31759673383`, `31760236777`, and `31760932202` evaluated the three later
 evidence-only heads. Each passed dependency review and the executable verify
 baseline, then failed the same unapproved endpoint/application-image and
-incomplete 14-image identity chain. The current-head run `31760932202` retained
+incomplete 14-image identity chain. The then-current run `31760932202` retained
 verify artifact `9204654001` with digest
 `3475e2fdaf6239ee4c63b5fa1eff001c8a655b632b4e4411c3ffeadd916efab0` and
 container artifact `9204550945` with digest
 `6d7b794781b5409bb7f06db847e79b3a75b9a8bf3494770ad2298313e8f80320`.
 All three are failed pull-request diagnostics, not candidate-bound closure
 evidence.
+
+Run `32382576019` then proved that the selected-Actions allowlist and full-SHA
+policy permit the pinned workflow. Its strict dependency baseline correctly
+failed on newly published `GHSA-ggr8-5vv4-36mx` instead of silently accepting
+registry drift. Source checkpoint `d345afd` records that fifth High advisory
+without remediating locked Phase 2. Follow-up run `32383852323` passed the exact
+five-advisory verifier, dependency review, governance 113/113, unit 236/236,
+integration 151/151, authorization 53/53, and E2E 15/15. Verify then failed
+only `endpoint_environment` and `application_images`; container evidence
+failed the same endpoint/release-image prerequisites and all 14 dependent
+identity scans. Both runs are unapproved pull-request diagnostics.
 
 ## Live GitHub control-plane evidence — refreshed 2026-08-20
 
@@ -155,8 +166,9 @@ Authenticated `gh` inspection of `evanwidjaja100/MecoFlow`, refreshed on
   completed Trivy report. Governance 82/82 and container-policy 14/14 pass
   locally. Run `31718073882` verified the behavior remotely, but remains failing
   diagnostic evidence because the endpoint/image gates did not pass; and
-- the current pull-request head `c919ab1` was evaluated by run `31760932202`.
-  Dependency review passed, while verify/container failed only the unchanged
+- source checkpoint `d345afd` was evaluated by run `32383852323` under the
+  restricted Actions policy. Dependency review and all non-approval-dependent
+  gates passed, while verify/container failed only the unchanged
   endpoint/application-image and incomplete-scan prerequisites. The two
   retained artifacts are diagnostic and unapproved.
 

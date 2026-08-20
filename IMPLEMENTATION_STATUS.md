@@ -26,9 +26,11 @@ pre-repair pull-request head is
 `1f83021`, `96f3120`, and `c919ab1` change only closure-policy-permitted
 readiness/evidence documentation paths. Source-affecting Phase 0 contract
 repairs, typed production proposals, and regression coverage are committed at
-`aa87b4e269bed660a761d6c36a1093a666addbd9`. This is the current implementation
-checkpoint, not the final Phase 0 candidate, which must be the protected merge
-result on `main`. The source-affecting work
+`aa87b4e269bed660a761d6c36a1093a666addbd9`; source checkpoint
+`d345afd3068870ce0e7a9aa496c15f82b1909f84` additionally refreshes the
+fail-closed dependency inventory after registry drift. This is the current
+implementation checkpoint, not the final Phase 0 candidate, which must be the
+protected merge result on `main`. The source-affecting work
 includes full-SHA
 Actions, digest-pinned external Dockerfile/Compose/scan
 references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
@@ -120,13 +122,20 @@ diagnostic rather than closure evidence. Evidence-only commits `1f83021`,
 `31760932202`. Each passed dependency review and the same executable verify
 baseline, then failed only the unapproved endpoint, dependent application-image
 build, and incomplete image-identity chain. Each retained separate verify and
-container artifacts. These runs establish current-head diagnostic coverage but
+container artifacts. These runs establish historical diagnostic coverage but
 remain failed, unapproved, pull-request-event evidence and are not the required
 protected-`main` authoritative or independent reproduction runs. The fix does
-not alter that
-endpoint/provider approval blocker. The fail-closed closure check
+not alter that endpoint/provider approval blocker. Under the now-restricted
+Actions policy, run `32382576019` at `8e93fed` passed the application and
+governance suites but correctly detected a newly published fifth High
+dependency advisory. Source checkpoint `d345afd` records that advisory without Phase 2
+remediation. Follow-up run `32383852323` passed the refreshed dependency
+baseline, dependency review, governance 113/113, unit 236/236, integration
+151/151, authorization 53/53, E2E 15/15, build, policy, Compose, and workspace
+checks; only the unapproved endpoint, dependent application-image build, and
+14 incomplete image identities failed closed. The fail-closed closure check
 correctly rejects the current incomplete record. The security audit still
-reports the four exact High advisories recorded in `blockers.md`, all assigned
+reports the five exact High advisories recorded in `blockers.md`, all assigned
 to locked Phase 2. A current diagnostic resolved 5/14 immutable image
 identities: Redis passed, while Keycloak/Prometheus/Alertmanager/Blackbox
 Exporter reported 17/28/48/30 blockers; all nine unbuilt project image
