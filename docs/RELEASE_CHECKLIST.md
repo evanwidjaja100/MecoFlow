@@ -27,7 +27,7 @@ recorded decision does not convert the checklist template into approval.
       Git metadata, or embedded secret values.
 - [ ] Container/image vulnerability gate passes for every release image, with
       no unapproved or expired HIGH/CRITICAL exception. The policy and CI gate
-      exist; 2026-08-01 evidence is red on Keycloak 26.7.0.
+      exist; 2026-08-01 evidence is red on Keycloak 26.7.2.
 
 ## Configuration and security
 

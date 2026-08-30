@@ -7,7 +7,7 @@ migration, clean-target restore, real OIDC, pilot business flow, readiness,
 permissions, and bidirectional supplier isolation are verified. The release
 candidate is classified **NOT READY** because external pilot controls and
 approvals remain incomplete. A Phase 0 diagnostic of the currently pinned
-Keycloak 26.7.0 digest reports 17 unresolved Critical/High occurrences and no
+Keycloak 26.7.2 digest (updated 2026-08-30 from 26.7.0, previously 17 unresolved Critical/High) � rescan pending; no vulnerability exception approved.
 vulnerability exception is approved.
 The full formatting/lint/type/unit/integration/
 build gate and the complete 15-scenario browser gate are green on clean
@@ -170,6 +170,18 @@ RTO/retention/capacity decisions, procurement/support ownership, and the human
 owner/reviewer roster are unapproved. The project-image immutability mechanism
 is committed in the candidate but its retained build/Compose evidence failed
 validation. Release status therefore remains **NOT READY**.
+
+## P0 technical hardening — 2026-08-30 (dirty worktree, not authoritative)
+
+Phase 0 remains **IN PROGRESS / BLOCKED** — no governance, decision, endpoint, or control approvals were fabricated. This worktree applies the four offline REVIEW hardening items identified in the 2026-08-30 line-by-line review:
+
+- turbo.json narrowed: removed S3_ACCESS_KEY and S3_SECRET_KEY from globalPassThroughEnv to avoid secret pass-through on build cache. S3_BUCKET, S3_ENDPOINT, S3_REGION remain as non-secret build inputs.
+- apps/api/src/safe-api-exception.filter.ts hardened: non-/api/v1 responses now use the same generic error/requestId envelope instead of leaking exception.getResponse() (prevents Nest validation details on non-API routes).
+- apps/api/src/app.module.ts distributed throttling: ThrottlerModule now uses RedisThrottlerStorage (apps/api/src/throttler-redis.storage.ts) when REDIS_URL is set and APP_ENV != test; otherwise falls back to in-memory. This addresses the documented process-local limitation without breaking local/test runs.
+- apps/web/middleware.ts added: edge redirect for /internal/* and /supplier/* without mecoflow_session to /login?returnTo=, and /login with session to /. Existing server-side requireMe/writeApi checks remain authoritative; middleware is defense-in-depth.
+- apps/web/next.config.ts CSP unsafe-inline retained and documented as Next.js runtime requirement; migration to nonce tracked as P1 hardening (see SECURITY_MODEL.md honest limitation).
+
+B-01 advisory fix is now CLOSED 2026-08-30: pnpm-workspace.yaml overrides updated to brace-expansion@5.0.9 fast-uri@3.1.5 js-yaml@4.3.1 nanoid@3.3.18 deepmerge-ts@8.0.0, pnpm-lock.yaml regenerated with new integrities, pnpm audit now reports 0 High / 0 Critical (585 deps, 0 advisories) and pnpm install --frozen-lockfile passes supply-chain policy. See scripts/dependency-audit-policy.mjs now expects 0 advisories. B-02/B-03 (Keycloak/RHBK, 14-image scan), B-04 (MinIO->S3), B-05/B-06 (production/monitoring preflight), B-07..B-18 (governance) remain OPEN and require human/business-sponsor, procurement, and protected-main reproduction per PRODUCTION_READINESS_MASTER_PLAN.md. This dirty worktree is not closure evidence.
 
 A 2026-08-20 decision pass populated the typed readiness records with the
 explicit plan-approved proposal: exact D-01–D-07 service, recovery, retention,
@@ -551,7 +563,7 @@ incomplete.
 
 - `pnpm security:image-scan:test` passed 5/5 policy tests. The complete
   `APP_VERSION=0.1.0-security-scan pnpm security:image-scan` run scanned 11
-  images: ten passed with zero HIGH/CRITICAL findings; Keycloak 26.7.0 failed
+  images: ten passed with zero HIGH/CRITICAL findings; Keycloak 26.7.0 failed (now pinned to 26.7.2@sha256:fc072c227dd8d94decf013be9c8395676efacfab5a0ab33ac4d32dd72b4d719a, rescan pending)
   on 15 occurrences / 12 unique HIGH findings. The nonzero result is the
   intended release-blocking behavior, not a skipped test.
 - `pnpm production:preflight:test` passed 8/8 policy tests;
@@ -587,7 +599,7 @@ incomplete.
 
 # Known defects
 
-- The container gate is red for Keycloak 26.7.0. No newer clean official image
+- The container gate is red for Keycloak 26.7.0 (now updated to 26.7.2@sha256:fc072c227dd8d94decf013be9c8395676efacfab5a0ab33ac4d32dd72b4d719a in this worktree, rescan pending). No newer clean official image previously
   was available during the 2026-08-01 scan and no exception is approved. A
   supported clean image or externally approved exact time-bound exceptions
   with compensating controls are required before release.

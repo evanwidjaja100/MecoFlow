@@ -70,7 +70,7 @@ services:
     restart: "no"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.4.7@sha256:9409c59bdfb65dbffa20b11e6f18b8abb9281d480c7ca402f51ed3d5977e6007
+    image: quay.io/keycloak/keycloak:26.7.2@sha256:fc072c227dd8d94decf013be9c8395676efacfab5a0ab33ac4d32dd72b4d719a
     command: ["start-dev", "--import-realm"]
     environment:
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}

@@ -63,17 +63,6 @@ export class SafeApiExceptionFilter implements ExceptionFilter {
     const http = host.switchToHttp();
     const request = http.getRequest<Request>();
     const response = http.getResponse<Response>();
-    if (!request.path.startsWith("/api/v1")) {
-      const status = statusFor(exception);
-      response
-        .status(status)
-        .json(
-          exception instanceof HttpException
-            ? exception.getResponse()
-            : { message: "Internal server error" },
-        );
-      return;
-    }
     const status = statusFor(exception);
     const safe = errors[status] ?? {
       code: "INTERNAL_ERROR",
@@ -83,6 +72,10 @@ export class SafeApiExceptionFilter implements ExceptionFilter {
       typeof response.locals.requestId === "string"
         ? response.locals.requestId
         : "unknown";
+    if (!request.path.startsWith("/api/v1")) {
+      response.status(status).json({ error: safe, requestId });
+      return;
+    }
     response.status(status).json({ error: safe, requestId });
   }
 }

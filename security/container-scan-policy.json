@@ -13,7 +13,7 @@
     "mecoflow/postgres:${APP_VERSION}",
     "mecoflow/proxy:${APP_VERSION}",
     "redis:8.2-alpine@sha256:a7859ed111db3c1f5404a973a4747505d559fb5ca32d37e447afc0ef845a2103",
-    "quay.io/keycloak/keycloak:26.7.0@sha256:0f198be292568439d700cdbfb893e69a6009bb43a94a06a945b1d3d506c76b13",
+    "quay.io/keycloak/keycloak:26.7.2@sha256:fc072c227dd8d94decf013be9c8395676efacfab5a0ab33ac4d32dd72b4d719a",
     "prom/prometheus:v3.12.0-busybox@sha256:69f5241418838263316593f7274a304b095c40bcf22e57272865da91bd60a8ac",
     "prom/alertmanager:v0.32.1@sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286",
     "prom/blackbox-exporter:v0.28.0@sha256:e753ff9f3fc458d02cca5eddab5a77e1c175eee484a8925ac7d524f04366c2fc"

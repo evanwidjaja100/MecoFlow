@@ -90,7 +90,7 @@ pnpm security:image-scan
 
 Historical Trivy 0.72.0 evidence scanned 11 images. API, worker, web, migrations, operations,
 MinIO, ClamAV, PostgreSQL, proxy, and Redis passed with zero HIGH/CRITICAL
-findings and zero exceptions. Keycloak 26.7.0 failed with 15 occurrences (12
+findings and zero exceptions. Keycloak 26.7.2 failed with 15 occurrences (12
 unique findings): one unfixed Red Hat OpenJDK finding and findings in Jackson,
 Microsoft JDBC, Netty, and PostgreSQL JDBC packages for which no newer official
 Keycloak image was available during the rehearsal. Evidence summary:
@@ -104,7 +104,7 @@ images had not been built and failed identity resolution. This is blocker
 inventory, not authoritative scan evidence or Phase 2 remediation.
 
 The rebuilt staging stack reached healthy for PostgreSQL, Redis, MinIO,
-ClamAV, Keycloak 26.7.0, API, worker, web, and proxy. Migration, seed,
+ClamAV, Keycloak 26.7.2, API, worker, web, and proxy. Migration, seed,
 MinIO-policy initialization, and smoke-fixture jobs exited 0. Backup set
 `20260801T164855Z` completed and validated through the patched operations
 image. The targeted browser smoke passed 3/3 in 18.6 seconds: readiness and

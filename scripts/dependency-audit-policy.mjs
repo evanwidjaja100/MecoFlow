@@ -1,10 +1,4 @@
-const EXPECTED_ADVISORIES = Object.freeze([
-  ["GHSA-7p8r-x3mc-p8w7", "fast-uri", "3.1.4"],
-  ["GHSA-rgw5-rvv9-x895", "brace-expansion", "5.0.8"],
-  ["GHSA-5p4m-2wfm-xmqj", "js-yaml", "4.3.0"],
-  ["GHSA-2v37-7h3g-55p8", "nanoid", "3.3.16"],
-  ["GHSA-ggr8-5vv4-36mx", "deepmerge-ts", "7.1.5"],
-]);
+const EXPECTED_ADVISORIES = Object.freeze([]);
 
 export function validateDependencyAudit(report) {
   const errors = [];
