@@ -7,12 +7,14 @@
 - Candidate branch: `codex/phase-zero-candidate`
 - Historical source-affecting Phase 0 candidate SHA: `6d91208a6d5912508178f981f575ff4345e34430`
 - Pre-repair candidate-branch head: `c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12`
-- Current source-affecting contract-repair SHA: `aa87b4e269bed660a761d6c36a1093a666addbd9`
+- Current source-affecting contract-repair SHA: `78f1ea454c113387a580d95fcaed426ea3594500`
 - Final protected-`main` Phase 0 candidate SHA: pending
 - Candidate pull request: `https://github.com/evanwidjaja100/MecoFlow/pull/1`
 - Remote: `origin https://github.com/evanwidjaja100/MecoFlow.git`
 - Entry worktree: dirty; see `worktree-reconciliation.md`
 - Lockfile SHA-256: `99CA92F59DC8DC6F441CBD300A549AE7990F9DB081B775B4A7610B43A840B1BB`
+- Current candidate lockfile SHA-256: `29DB96073723127C2BCD75D5FA4D7FD72CD96D6280F6A11C7FD86A72770AECCA` (B-01 fix 2026-08-30, 0 High)
+- Current candidate container policy SHA-256: `B77783DCE84A639610833BA07DB5BDB6D7FFB51FC962F2E695E705AABCD99C06` (Keycloak 26.7.2)
 - Container policy SHA-256: `46CB9E3E22256C60FF4047C0C1F0D6B0AD4355C1796D3E705EC0A2844B296EDC`
 - Migration head: `20260728030000_phase_9b_readiness_query_index`
 - Migration provider: PostgreSQL

@@ -7,7 +7,7 @@ migration, clean-target restore, real OIDC, pilot business flow, readiness,
 permissions, and bidirectional supplier isolation are verified. The release
 candidate is classified **NOT READY** because external pilot controls and
 approvals remain incomplete. A Phase 0 diagnostic of the currently pinned
-Keycloak 26.7.2 digest (updated 2026-08-30 from 26.7.0, previously 17 unresolved Critical/High) � rescan pending; no vulnerability exception approved.
+Keycloak 26.7.2 digest (updated 2026-08-30 from 26.7.0, previously 17 unresolved Critical/High)  rescan pending; no vulnerability exception approved.
 vulnerability exception is approved.
 The full formatting/lint/type/unit/integration/
 build gate and the complete 15-scenario browser gate are green on clean
@@ -181,7 +181,7 @@ Phase 0 remains **IN PROGRESS / BLOCKED** — no governance, decision, endpoint,
 - apps/web/middleware.ts added: edge redirect for /internal/* and /supplier/* without mecoflow_session to /login?returnTo=, and /login with session to /. Existing server-side requireMe/writeApi checks remain authoritative; middleware is defense-in-depth.
 - apps/web/next.config.ts CSP unsafe-inline retained and documented as Next.js runtime requirement; migration to nonce tracked as P1 hardening (see SECURITY_MODEL.md honest limitation).
 
-B-01 advisory fix is now CLOSED 2026-08-30: pnpm-workspace.yaml overrides updated to brace-expansion@5.0.9 fast-uri@3.1.5 js-yaml@4.3.1 nanoid@3.3.18 deepmerge-ts@8.0.0, pnpm-lock.yaml regenerated with new integrities, pnpm audit now reports 0 High / 0 Critical (585 deps, 0 advisories) and pnpm install --frozen-lockfile passes supply-chain policy. See scripts/dependency-audit-policy.mjs now expects 0 advisories. B-02/B-03 (Keycloak/RHBK, 14-image scan), B-04 (MinIO->S3), B-05/B-06 (production/monitoring preflight), B-07..B-18 (governance) remain OPEN and require human/business-sponsor, procurement, and protected-main reproduction per PRODUCTION_READINESS_MASTER_PLAN.md. This dirty worktree is not closure evidence.
+B-01 advisory fix is now CLOSED 2026-08-30: pnpm-workspace.yaml overrides updated to brace-expansion@5.0.9 fast-uri@3.1.5 js-yaml@4.3.1 nanoid@3.3.18 deepmerge-ts@8.0.0, pnpm-lock.yaml regenerated with new integrities, pnpm audit now reports 0 High / 0 Critical (585 deps, 0 advisories) and pnpm install --frozen-lockfile passes supply-chain policy. See scripts/dependency-audit-policy.mjs now expects 0 advisories. Committed at `78f1ea4` (worktree clean, `pnpm governance:check` and `repository-governance` 19/19 pass, 112-path inventory). B-02/B-03 (Keycloak/RHBK, 14-image scan), B-04 (MinIO->S3), B-05/B-06 (production/monitoring preflight), B-07..B-18 (governance) remain OPEN and require human/business-sponsor, procurement, and protected-main reproduction per PRODUCTION_READINESS_MASTER_PLAN.md. No closure is claimed until `main` merge + independent reproduction.
 
 A 2026-08-20 decision pass populated the typed readiness records with the
 explicit plan-approved proposal: exact D-01–D-07 service, recovery, retention,
