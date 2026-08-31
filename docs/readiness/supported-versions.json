@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "status": "BLOCKED",
   "approvalRecordId": null,
-  "lockfileSha256": "99ca92f59dc8dc6f441cbd300a549ae7990f9db081b775b4a7610b43a840b1bb",
+  "lockfileSha256": "29db96073723127c2bcd75d5fa4d7fd72cd96d6280f6a11c7fd86a72770aecca",
   "application": {
     "node": "24.18.0",
     "pnpm": "11.13.0",

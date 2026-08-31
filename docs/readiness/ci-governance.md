@@ -52,7 +52,7 @@ the protected merge result on `main`. The Phase 0 implementation provides:
   fields; approval comments continue to use exact raw-response byte digests.
 
 The Keycloak 26.7.2 immutable reference is
-`sha256:0f198be292568439d700cdbfb893e69a6009bb43a94a06a945b1d3d506c76b13`.
+`sha256:fc072c227dd8d94decf013be9c8395676efacfab5a0ab33ac4d32dd72b4d719a`.
 It is an identity pin, not proof that the image passes Phase 2 vulnerability
 policy.
 
