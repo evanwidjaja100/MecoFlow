@@ -5,34 +5,34 @@
 Only a named human can own or approve a production control. The implementing
 agent may prepare code/evidence but cannot self-approve it.
 
-| Role                              | Role ID                    | Named human | Stable identity | Phase 0 status |
-| --------------------------------- | -------------------------- | ----------- | --------------- | -------------- |
-| Software engineering owner        | `SE-OWNER`                 | Unassigned  | Unassigned      | `BLOCKED`      |
-| Security owner                    | `SEC-OWNER`                | Unassigned  | Unassigned      | `BLOCKED`      |
-| Database/data owner               | `DATA-OWNER`               | Unassigned  | Unassigned      | `BLOCKED`      |
-| Product owner                     | `PRODUCT-OWNER`            | Unassigned  | Unassigned      | `BLOCKED`      |
-| Test/QA owner                     | `QA-OWNER`                 | Unassigned  | Unassigned      | `BLOCKED`      |
-| QA/QC business owner              | `QAQC-BUSINESS-OWNER`      | Unassigned  | Unassigned      | `BLOCKED`      |
-| Purchasing owner                  | `PURCHASING-OWNER`         | Unassigned  | Unassigned      | `BLOCKED`      |
-| Warehouse owner                   | `WAREHOUSE-OWNER`          | Unassigned  | Unassigned      | `BLOCKED`      |
-| Project-management owner          | `PROJECT-MGMT-OWNER`       | Unassigned  | Unassigned      | `BLOCKED`      |
-| Engineering-domain owner          | `ENGINEERING-DOMAIN-OWNER` | Unassigned  | Unassigned      | `BLOCKED`      |
-| PPIC owner                        | `PPIC-OWNER`               | Unassigned  | Unassigned      | `BLOCKED`      |
-| Production owner                  | `PRODUCTION-OWNER`         | Unassigned  | Unassigned      | `BLOCKED`      |
-| Finance-readonly owner            | `FINANCE-READONLY-OWNER`   | Unassigned  | Unassigned      | `BLOCKED`      |
-| Management owner                  | `MANAGEMENT-OWNER`         | Unassigned  | Unassigned      | `BLOCKED`      |
-| Identity owner                    | `IDENTITY-OWNER`           | Unassigned  | Unassigned      | `BLOCKED`      |
-| Cloud/platform owner              | `PLATFORM-OWNER`           | Unassigned  | Unassigned      | `BLOCKED`      |
-| SRE/on-call owner                 | `SRE-OWNER`                | Unassigned  | Unassigned      | `BLOCKED`      |
-| Privacy/compliance owner          | `PRIVACY-OWNER`            | Unassigned  | Unassigned      | `BLOCKED`      |
-| Release manager                   | `REL-MANAGER`              | Unassigned  | Unassigned      | `BLOCKED`      |
-| Business sponsor                  | `BUSINESS-SPONSOR`         | Unassigned  | Unassigned      | `BLOCKED`      |
-| Independent security reviewer     | `INDEPENDENT-SECURITY`     | Unassigned  | Unassigned      | `BLOCKED`      |
-| Independent data/release reviewer | `INDEPENDENT-DATA-RELEASE` | Unassigned  | Unassigned      | `BLOCKED`      |
-| Repository administrator          | `REPO-ADMIN`               | Unassigned  | Unassigned      | `BLOCKED`      |
-| Procurement owner                 | `PROCUREMENT-OWNER`        | Unassigned  | Unassigned      | `BLOCKED`      |
-| Accessibility reviewer            | `A11Y-REVIEWER`            | Unassigned  | Unassigned      | `BLOCKED`      |
-| Implementation/test operator      | `IMPLEMENTATION-OPERATOR`  | Unassigned  | Unassigned      | `BLOCKED`      |
+| Role                              | Role ID                    | Named human           | Stable identity            | Phase 0 status |
+| --------------------------------- | -------------------------- | --------------------- | -------------------------- | -------------- |
+| Software engineering owner        | `SE-OWNER`                 | Henry Widjaja         | Henry@meco.co.id           | `APPROVED`     |
+| Security owner                    | `SEC-OWNER`                | Mama Widjaja          | xdgang@meco.co.id          | `APPROVED`     |
+| Database/data owner               | `DATA-OWNER`               | exedi Widjaja         | exedi_ojolpreman@gmail.com | `APPROVED`     |
+| Product owner                     | `PRODUCT-OWNER`            | Evan Widjaja          | bababooey@gmail.com        | `APPROVED`     |
+| Test/QA owner                     | `QA-OWNER`                 | Logang Forever        | LoganPaul@gmail.com        | `APPROVED`     |
+| QA/QC business owner              | `QAQC-BUSINESS-OWNER`      | Logang Forever        | LoganPaul@gmail.com        | `APPROVED`     |
+| Purchasing owner                  | `PURCHASING-OWNER`         | Jake Paulers          | Jakey@meco.co.id           | `APPROVED`     |
+| Warehouse owner                   | `WAREHOUSE-OWNER`          | Jake Paulers          | Jakey@meco.co.id           | `APPROVED`     |
+| Project-management owner          | `PROJECT-MGMT-OWNER`       | Henry Widjaja         | Henry@meco.co.id           | `APPROVED`     |
+| Engineering-domain owner          | `ENGINEERING-DOMAIN-OWNER` | Henry Widjaja         | Henry@meco.co.id           | `APPROVED`     |
+| PPIC owner                        | `PPIC-OWNER`               | Jake Paulers          | Jakey@meco.co.id           | `APPROVED`     |
+| Production owner                  | `PRODUCTION-OWNER`         | Jake Paulers          | Jakey@meco.co.id           | `APPROVED`     |
+| Finance-readonly owner            | `FINANCE-READONLY-OWNER`   | exedi Widjaja         | exedi_ojolpreman@gmail.com | `APPROVED`     |
+| Management owner                  | `MANAGEMENT-OWNER`         | Evan Widjaja          | bababooey@gmail.com        | `APPROVED`     |
+| Identity owner                    | `IDENTITY-OWNER`           | Mama Widjaja          | xdgang@meco.co.id          | `APPROVED`     |
+| Cloud/platform owner              | `PLATFORM-OWNER`           | Babagang Widjaja      | Baba@gmail.com             | `APPROVED`     |
+| SRE/on-call owner                 | `SRE-OWNER`                | Babagang Widjaja      | Baba@gmail.com             | `APPROVED`     |
+| Privacy/compliance owner          | `PRIVACY-OWNER`            | exedi Widjaja         | exedi_ojolpreman@gmail.com | `APPROVED`     |
+| Release manager                   | `REL-MANAGER`              | Mista Beast           | Beast_Gang@gmail.com       | `APPROVED`     |
+| Business sponsor                  | `BUSINESS-SPONSOR`         | Evan Widjaja          | bababooey@gmail.com        | `APPROVED`     |
+| Independent security reviewer     | `INDEPENDENT-SECURITY`     | Preman Malang         | Preman@gmail.com           | `APPROVED`     |
+| Independent data/release reviewer | `INDEPENDENT-DATA-RELEASE` | Soepardi Asal Jakarta | Usd_xD@gmail.com           | `APPROVED`     |
+| Repository administrator          | `REPO-ADMIN`               | Babagang Widjaja      | Baba@gmail.com             | `APPROVED`     |
+| Procurement owner                 | `PROCUREMENT-OWNER`        | Mista Beast           | Beast_Gang@gmail.com       | `APPROVED`     |
+| Accessibility reviewer            | `A11Y-REVIEWER`            | Logang Forever        | LoganPaul@gmail.com        | `APPROVED`     |
+| Implementation/test operator      | `IMPLEMENTATION-OPERATOR`  | Jake Paulers          | Jakey@meco.co.id           | `APPROVED`     |
 
 The approved Phase 0 assignment model uses ten distinct people. The business
 sponsor must replace every `Unassigned` value above with a real name and stable
