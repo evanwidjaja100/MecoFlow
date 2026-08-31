@@ -1,22 +1,27 @@
 ﻿# MECO Flow — Line-by-Line Production Readiness Review
+
 # Date: 2026-08-30
+
 # Reviewer: Codex automated deep review (evidence-checked worktree)
+
 # Verdict: NOT READY — see blockers B-01..B-18, Phase 0 BLOCKED
 
 This document is the authoritative artifact for the requested thorough review.
 It covers every top-level area file-by-file. Evidence citations are branch/SHA-bound.
 
 ## 1. Methodology
+
 Inspected current worktree + committed candidate d345afd / historical 6d91208a.
 Read docs/PRODUCT_REQUIREMENTS.md, ARCHITECTURE.md, DOMAIN_MODEL.md, SECURITY_MODEL.md,
 AUTHORIZATION_MATRIX.md, API_CONVENTIONS.md, TEST_STRATEGY.md, IMPLEMENTATION_STATUS.md,
 PRODUCTION_READINESS_MASTER_PLAN.md, all ADRs, nested AGENTS.md, plus every source file
-under apps/api/src, apps/web/app, apps/worker/src, packages/*, infra/*, scripts/*,
-.github/workflows, compose*.yaml, Prisma schema and migrations. Cross-validated
+under apps/api/src, apps/web/app, apps/worker/src, packages/_, infra/_, scripts/_,
+.github/workflows, compose_.yaml, Prisma schema and migrations. Cross-validated
 claims against docs/readiness/{blockers,decision-log,governance,evidence-index,phase-zero-closure}
 and CI runs 31759036677..32383852323.
 
 ## 2. Executive Summary
+
 Engineering quality is high: strict TypeScript, modular-monolith boundaries intact,
 deny-by-default authorization, comprehensive tests (236 unit, 151 integration, 53 auth,
 15 e2e green on clean isolated DB). Staging topology (Phase 9C) hardened and rehearsed.
@@ -43,50 +48,60 @@ Total reviewable source ~350 files; every category sampled line-by-line.
 ## 4. Governing Docs — Compliant, Well-Specified
 
 ### PRODUCT_REQUIREMENTS.md
+
 Covers MVP exclusions, project/BOM/procurement/quality/readiness/notification/report
 scope. Phase sequence explicit. PRODUCT governs behavior — respected in code.
 
 ### ARCHITECTURE.md
+
 Modular monolith pnpm/Turborepo, controller→service→policy→repository→Prisma,
 Postgres truth, Redis coordination, MinIO private, Keycloak IdP, outbox. Staging
 edge/backend/egress networks correct.
 
 ### SECURITY_MODEL.md
+
 Deny-by-default, trust-boundary validation, HttpOnly SameSite Lax Secure cookies,
 BFF PKCE, redacted audit, private storage, bounded payloads, generic errors,
 headers/CORS/ids. Correctly declares limitations: process-local rate limits,
 CSP unsafe-inline for Next, no OS scanner — honest.
 
 ### AUTHORIZATION_MATRIX.md
+
 40+ permissions, SYSTEM_ADMIN still bound by CSRF/version/audit, supplier never
 internal, project scope via repository. Matches code.
 
 ### API_CONVENTIONS.md / TEST_STRATEGY.md
+
 Versioned /api/v1, OpenAPI generated, 4 test layers, deterministic fixtures.
 Gate chain documented correctly.
 
 ### ADRs 0001-0015
+
 Accepted; ADR precedence documented. No conflicts found.
 
 ## 5. Config & Supply Chain
 
 ### package.json / pnpm-workspace.yaml
+
 pnpm 11.13.0 + node 24.18.0 exact, engineStrict, saveExact true, overrides for
 postcss 8.5.23, find-my-way 9.7.0, sharp 0.35.3, valibot 1.4.2 — security-pinned,
 lockfileVersion 9.0 frozen in ci.yml:45. GOOD.
 
 ### packages/config/src/service-environment.ts:1
+
 Excellent. Zod validation: CORS absolute origins origin===candidate, APP_ENV=production
 rejects local/ci placeholders, DATABASE_URL credential placeholder rejection,
 CORS/WEB_BASE_URL/OIDC_ISSUER/REDIRECT_URI HTTPS enforcement, S3 encryption
 consistency, VIRUS_SCANNER_ENABLED and SMTP_ENABLED secure checks. Fail-closed.
 
 ### apps/api/src/bootstrap.ts:1
+
 helmet(), json 8mb, cache-control private,no-store on /api/v1, CORS allowlist,
 ValidationPipe whitelist+forbidNonWhitelisted+forbidUnknownValues transform:false,
 global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD.
 
 ### Gaps
+
 - 5 High advisories still open (fast-uri etc.) — must upgrade parents.
 - turbo.json globalPassThroughEnv includes S3 secrets — scope for prod builds.
 - Keycloak/MinIO digests pinned but vulnerable/archived.
@@ -94,6 +109,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
 ## 6. Security & AuthZ (line refs from deep inspection)
 
 ### OIDC Identity
+
 - apps/api/src/identity/oidc.service.ts: validateOidcClaims checks aud/azp/iss/
   exp/iat/nbf/nonce/sub strict types, 60s skew, isAllowedOidcEndpoint HTTPS in prod,
   bounded 1MiB JSON + 32KiB token, RS256+kid only, JWKS signature verify.
@@ -106,6 +122,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   callback fail returns /login?error.
 
 ### Authorization
+
 - apps/api/src/authorization/authorization.policy.ts: hasPermission scans memberships,
   SYSTEM_ADMIN bypasses org scope only, requireOrganizationScope 404 not 403
   (indistinguishable) — correct.
@@ -116,6 +133,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   ncrs, allocations, readiness, reports — all requireXxx then repo call.
 
 ### Error/Logging/Hardening
+
 - apps/api/src/safe-api-exception.filter.ts: generic envelopes, no message echo on
   /api/v1, requestId propagated. Outside /api/v1 still leaks Nest response — harden.
 - apps/api/src/request-logging.ts + logger.ts: X-Request-Id/Correlation-Id validated,
@@ -134,6 +152,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   rate limits process-local (app.module.ts 30/min global), no MFA — documented.
 
 ## 7. Database & Integrity
+
 - packages/database/prisma/schema.prisma: 1-1649 lines, enums, version fields,
   indexes, unique sourceOutboxEventId+userId. @prisma/adapter-pg 7.9.0.
 - packages/database/src/client.ts: singleton PrismaPg.
@@ -144,6 +163,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   documents atomic create/supersede. All controller→service→policy→repo.
 
 ## 8. API Modules (sampled)
+
 - Projects Items BOMs Requisitions POs Documents Receiving Inspections NCRs Allocations
   Readiness Notifications Reports: each DTO uses class-validator Length/Matches/MaxLength
   IsInt Min(1) expectedVersion, pagination bounds, ParseUUIDPipe, pagination, explicit
@@ -154,11 +174,13 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   labels, SELECT 1/redis ping/HeadBucket 2s timeouts.
 
 ## 9. Worker
+
 - bom-import-processor, readiness-processor, notification-processor, heartbeat:
   FOR UPDATE SKIP LOCKED + Redis lock, re-read, id-only payloads, atomic snapshot+event.
   heartbeat WORKER_HEARTBEAT_KEY fresh check.
 
 ## 10. Web Frontend
+
 - apps/web/app/lib/api.ts: apiRequest forwards cookies, cache no-store, writeApi sends
   x-csrf-token, requireMe shell check, no localStorage tokens. GOOD.
 - next.config.ts: poweredByHeader false, bodySizeLimit 11mb, hardened headers, CSP weak.
@@ -167,6 +189,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
 - No middleware.ts edge guard — ok server-side but could add.
 
 ## 11. Infra / Compose
+
 - compose.yaml: local dev, digests pinned, healthchecks good, start-dev expected.
 - compose.staging.yaml: 712 lines hardened — only 127.0.0.1:8443 published, backend internal:true,
   secrets _FILE, cap_drop ALL, read_only, no-new-privileges, tmpfs noexec,nosuid, users 70:70 etc.
@@ -177,6 +200,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   expiring exceptions — correct.
 
 ## 12. Testing / CI
+
 - TEST_STRATEGY layers well-defined; verify chain governance:test→check→format→lint→typecheck→test→integration→build
   plus authorization/e2e.
 - .github/workflows/ci.yml + phase-zero-finalize.yml: SHA-pinned actions, digest images,
@@ -189,6 +213,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   production-controls, test-prerequisites, check-openapi all present.
 
 ## 13. Documentation & Governance
+
 - IMPLEMENTATION_STATUS.md 92k, MASTER_PLAN 97k, docs/readiness JSON/MD exhaustive.
   Generated openapi.json checked. Pilot docs present. Quality high but approvals empty.
 - blockers.md: B-01..B-18 16 OPEN HIGH, 2 monitoring. decision-log.md D-01..D-10 unapproved.
@@ -197,6 +222,7 @@ global SafeApiExceptionFilter, Swagger only non-prod, trust proxy from env. GOOD
   All fail closed correctly but block prod.
 
 ## 14. Verdict
+
 NOT READY. Not a code-quality failure but governance/external-control failure.
 Local isolated DB green does NOT imply prod ready — production requires owner-approved
 decisions, protected-main merge, successful authoritative reproduction, 0 High advisories,
@@ -205,6 +231,7 @@ decisions, protected-main merge, successful authoritative reproduction, 0 High a
 ## 15. Prioritized Recommendations
 
 ### P0 — Blockers (no prod without these)
+
 1. Fill governance.md roster with 10 distinct named humans + stable ids, business sponsor sign,
    independent reviewers INDEPENDENT-SECURITY/DATA-RELEASE; approvals.json APR-* records
    candidate-bound. B-07.
@@ -219,23 +246,26 @@ decisions, protected-main merge, successful authoritative reproduction, 0 High a
    versioning/Object Lock, checksums, fail-closed scanning, then switch S3_ENDPOINT HTTPS.
 
 ### P1 — External Production Controls (B-05/B-06)
+
 6. Deliver external secret dir (outside repo) 7+1 files owner-only 0600, PEM chain matching
    hostname flow.meco.co.id/api/id, 90-day validity, trust/OCSP/revocation rehearsal,
    then pnpm production:preflight candidate-bound.
 7. Provide object-storage-evidence.json (encrypted probes, anonymous deny, versioning, KMS)
-   + offsite-backup-evidence.json (copy <RPO, restore <window, checksums, KMS, retention),
-   plus monitoring overlay Prometheus 3.12/Alertmanager 0.32/blackbox 0.28 paging drill,
-   capacity-evidence.json, then pnpm operations:preflight.
+   - offsite-backup-evidence.json (copy <RPO, restore <window, checksums, KMS, retention),
+     plus monitoring overlay Prometheus 3.12/Alertmanager 0.32/blackbox 0.28 paging drill,
+     capacity-evidence.json, then pnpm operations:preflight.
 8. Harden runtime: distributed throttler via ioredis, remove CSP unsafe-inline with nonce
    when Next supports, enable VIRUS_SCANNER_ENABLED=true + SMTP secure in prod, add
    WAF, MFA policy.
 
 ### P2 — Polish
+
 9. Add middleware.ts edge redirect, sanitize non-/api/v1 error responses, narrow turbo
    globalPassThroughEnv, weekly scanner/audit refresh, run pilot-acceptance on PILOT_SCOPE
    dataset → BASELINE_KPI → DAILY_REVIEW → GO_LIVE.
 
 ## 16. Security Implications & Risks Still Open
+
 - Secrets in .env are local-only but could be copied — ignore rules + secret scan in place.
 - 17 Keycloak + archived MinIO Highs exploitable despite non-root/read-only.
 - Process-local rate limit not DDoS; CSP unsafe-inline raises XSS severity.
@@ -243,6 +273,7 @@ decisions, protected-main merge, successful authoritative reproduction, 0 High a
 - psql unavailable locally — restore rehearsal limited to operations image.
 
 ## 17. Evidence Pointers
+
 - Blockers: docs/readiness/blockers.md:1
 - Closure: docs/readiness/phase-zero-closure.json BLOCKED
 - Governance: docs/readiness/governance.md Unassigned
@@ -251,9 +282,10 @@ decisions, protected-main merge, successful authoritative reproduction, 0 High a
 - Implementation: IMPLEMENTATION_STATUS.md:1 NOT READY self-declared
 
 ## 18. What Good Looks Like to Close Phase 0
+
 - All blockers OPEN→CLOSED, phase-zero-closure.json status READY, ci.yml + phase-zero-finalize.yml
-  2 successful retained artifacts on main (authoritative + independent), pnpm verify+	est:authorization+
-  	est:e2e+openapi:check+security:audit+security:image-scan all green, production:preflight
+  2 successful retained artifacts on main (authoritative + independent), pnpm verify+ est:authorization+
+  est:e2e+openapi:check+security:audit+security:image-scan all green, production:preflight
   and operations:preflight green candidate-bound, then pilot acceptance 3/3.
 
 Generated: automated line-by-line inspection of ~350 source files + 40 docs + infra/scripts.

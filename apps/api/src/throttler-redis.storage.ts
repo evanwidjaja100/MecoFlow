@@ -1,6 +1,12 @@
-import { ThrottlerStorageRecord } from "@nestjs/throttler";
 import type { ThrottlerStorage } from "@nestjs/throttler";
-import Redis from "ioredis";
+import { Redis } from "ioredis";
+
+type ThrottlerStorageRecord = {
+  totalHits: number;
+  timeToExpire: number;
+  isBlocked: boolean;
+  timeToBlockExpire: number;
+};
 
 export class RedisThrottlerStorage implements ThrottlerStorage {
   private readonly redis: Redis;
@@ -37,8 +43,7 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
     multi.incr(redisKey);
     multi.pttl(redisKey);
     const results = (await multi.exec()) as
-      | [[Error | null, number], [Error | null, number]]
-      | null;
+      [[Error | null, number], [Error | null, number]] | null;
     const totalHits = results?.[0]?.[1] ?? 1;
     let timeToExpire = results?.[1]?.[1] ?? -1;
     if (timeToExpire < 0) {

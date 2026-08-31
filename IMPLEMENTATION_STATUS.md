@@ -7,7 +7,7 @@ migration, clean-target restore, real OIDC, pilot business flow, readiness,
 permissions, and bidirectional supplier isolation are verified. The release
 candidate is classified **NOT READY** because external pilot controls and
 approvals remain incomplete. A Phase 0 diagnostic of the currently pinned
-Keycloak 26.7.2 digest (updated 2026-08-30 from 26.7.0, previously 17 unresolved Critical/High)  rescan pending; no vulnerability exception approved.
+Keycloak 26.7.2 digest (updated 2026-08-30 from 26.7.0, previously 17 unresolved Critical/High) rescan pending; no vulnerability exception approved.
 vulnerability exception is approved.
 The full formatting/lint/type/unit/integration/
 build gate and the complete 15-scenario browser gate are green on clean
