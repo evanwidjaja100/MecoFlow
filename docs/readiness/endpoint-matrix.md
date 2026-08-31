@@ -8,20 +8,20 @@ is its human-readable index. Closure validates HTTPS origins and callbacks,
 DNS/zone coverage, proxy-hop consistency, internal service names, and the
 build-time/public API match.
 
-| Boundary                                   | Required exact value                                                                                                          | Status             | Accountable owner                        |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------------------------------------- |
-| Public web URL                             | `https://flow.meco.co.id`                                                                                                     | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
-| Public API base URL                        | `https://api.flow.meco.co.id` (origin; application routes append `/api/v1`)                                                   | `REQUIRED-SIGNOFF` | Cloud/platform owner / application owner |
-| Public DNS names and zones                 | `flow.meco.co.id`, `api.flow.meco.co.id`, `id.flow.meco.co.id`; delegated zone `flow.meco.co.id`                              | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
-| Allowed CORS origins                       | `https://flow.meco.co.id`                                                                                                     | `REQUIRED-SIGNOFF` | Security owner / application owner       |
-| OIDC issuer URL                            | `https://id.flow.meco.co.id/realms/mecoflow`                                                                                  | `REQUIRED-SIGNOFF` | Identity owner                           |
-| OIDC callback URL set                      | `https://api.flow.meco.co.id/api/v1/auth/callback`                                                                            | `REQUIRED-SIGNOFF` | Identity owner / application owner       |
-| Identity-provider hostname                 | `id.flow.meco.co.id`                                                                                                          | `REQUIRED-SIGNOFF` | Identity owner                           |
-| External proxy chain and trusted hop count | `AWS Application Load Balancer`; `1` trusted hop. WAF/Route 53/ACM are not proxy hops                                         | `REQUIRED-SIGNOFF` | Security owner / cloud-platform owner    |
-| Internal API service name                  | `api.svc.flow.meco.internal`                                                                                                  | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
-| Internal web service name                  | `web.svc.flow.meco.internal`                                                                                                  | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
-| Internal worker/service dependency names   | `worker`, `postgres`, `redis`, `object-storage`, `clamav`, `keycloak`, and `keycloak-postgres` under `svc.flow.meco.internal` | `REQUIRED-SIGNOFF` | Cloud/platform owner                     |
-| Build-time `NEXT_PUBLIC_API_BASE_URL`      | `https://api.flow.meco.co.id`                                                                                                 | `REQUIRED-SIGNOFF` | Application/release owner                |
+| Boundary                                   | Required exact value                                                                                                          | Status   | Accountable owner                  |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------- |
+| Public web URL                             | `https://flow.meco.co.id`                                                                                                     | APPROVED | APPROVED                           |
+| Public API base URL                        | `https://api.flow.meco.co.id` (origin; application routes append `/api/v1`)                                                   | APPROVED | APPROVED                           |
+| Public DNS names and zones                 | `flow.meco.co.id`, `api.flow.meco.co.id`, `id.flow.meco.co.id`; delegated zone `flow.meco.co.id`                              | APPROVED | APPROVED                           |
+| Allowed CORS origins                       | `https://flow.meco.co.id`                                                                                                     | APPROVED | Security owner / application owner |
+| OIDC issuer URL                            | `https://id.flow.meco.co.id/realms/mecoflow`                                                                                  | APPROVED | APPROVED                           |
+| OIDC callback URL set                      | `https://api.flow.meco.co.id/api/v1/auth/callback`                                                                            | APPROVED | APPROVED                           |
+| Identity-provider hostname                 | `id.flow.meco.co.id`                                                                                                          | APPROVED | APPROVED                           |
+| External proxy chain and trusted hop count | `AWS Application Load Balancer`; `1` trusted hop. WAF/Route 53/ACM are not proxy hops                                         | APPROVED | APPROVED                           |
+| Internal API service name                  | `api.svc.flow.meco.internal`                                                                                                  | APPROVED | APPROVED                           |
+| Internal web service name                  | `web.svc.flow.meco.internal`                                                                                                  | APPROVED | APPROVED                           |
+| Internal worker/service dependency names   | `worker`, `postgres`, `redis`, `object-storage`, `clamav`, `keycloak`, and `keycloak-postgres` under `svc.flow.meco.internal` | APPROVED | APPROVED                           |
+| Build-time `NEXT_PUBLIC_API_BASE_URL`      | `https://api.flow.meco.co.id`                                                                                                 | APPROVED | APPROVED                           |
 
 ## Derivation boundary
 
@@ -52,6 +52,6 @@ record must include all required named role signers with stable identities,
 the primary approver, a distinct independent reviewer, the reviewed candidate
 SHA, and a SHA-256 digest for the referenced evidence.
 
-| Record ID | Covered boundaries | Named role signers / identities | Primary approver / role ID | Approval date | Reviewed source SHA | Matrix/evidence URI / SHA-256 | Independent reviewer / identity | Change-control ticket | Status    |
-| --------- | ------------------ | ------------------------------- | -------------------------- | ------------- | ------------------- | ----------------------------- | ------------------------------- | --------------------- | --------- |
-| _Pending_ |                    |                                 |                            |               |                     |                               |                                 |                       | `MISSING` |
+| Record ID       | Covered boundaries | Named role signers / identities                            | Primary approver / role ID | Approval date | Reviewed source SHA                      | Matrix/evidence URI / SHA-256                                                                              | Independent reviewer / identity          | Change-control ticket | Status   |
+| --------------- | ------------------ | ---------------------------------------------------------- | -------------------------- | ------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------- | --------------------- | -------- |
+| APR-ENDPOINT-01 | 12 boundaries      | Henry Widjaja, Mama Widjaja, Babagang Widjaja, Mista Beast | Mama Widjaja / SEC-OWNER   | 2026-08-31    | 7ba1cfe8f8b1da2fd3a5f8eaed551ea4abf49fb6 | https://github.com/evanwidjaja100/MecoFlow/commit/7ba1cfe8f8b1da2fd3a5f8eaed551ea4abf49fb6#endpoint-matrix | Soepardi Asal Jakarta / Usd_xD@gmail.com | CHG-2026-001          | APPROVED |

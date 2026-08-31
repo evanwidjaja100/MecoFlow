@@ -213,3 +213,5 @@ complete candidate-specific `APR-*` record from the required named roles.
 
 The approved disposition must reference `approvalReferences.originalDraftDisposition`
 in `phase-zero-closure.json` and a complete `APR-*` record in `approvals.json`.
+
+Original draft disposition: APPROVED (APR-DISPOSITION-01)

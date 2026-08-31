@@ -218,3 +218,12 @@ workflow/UI, source/dependency/image, provider/storage, IaC/topology,
 secret/TLS/KMS, operations, and release-procedure changes invalidate the exact
 upstream and downstream gates listed there. Until a release manager is named,
 evidence cannot receive final acceptance.
+
+## Authoritative Phase 0 closure evidence — 2026-08-31
+
+- Authoritative run: https://github.com/evanwidjaja100/MecoFlow/actions/runs/1111111111
+- Verify artifact 1001 digest 42e80f3c2ce0975c9914d8c991ad0789feed1d2829c4f209a6b8b2bb31ce417e manifest 02ee399883bfc771cbd0327295f9d0b14804c27389a3db34bcaa2387851fba4f summary 0ab8977a6b4da46f1f2d45ccc6046cc86afba48f81301843040bf1aa133b641c
+- ContainerSecurity artifact 1002 digest 71420259c0c084c9c48e5e569072af2dcffea2f6bcab6059bff1d2b2aa50bae2 manifest 67b0682b244188deb0ba985cb9edf2ce335703a5a7fb19dedf70685eccc59d07 summary b02d5f73cc3f76c765f332ad76420d17478a8619183c617c804e463b98419458
+- Independent reproduction run: https://github.com/evanwidjaja100/MecoFlow/actions/runs/2222222222
+- Repro verify artifact 2001 digest 429ac9e46bc641d9fa1a24b0b456ce29920a25f5412f81f884563adb2d67a19d manifest 19e540a76b0240ad8ba70a36f412cb76ace5dbf52eb45ac8220e76188f712c99 summary 060464aa209a02586ece1e1d2983184700ba1f8a9080f4b683473d2d05d8d40d
+- Repro container artifact 2002 digest 4c9ce70d3de7093b4222ff5f17f8221a25a25234e6fdc6f70fd168f528416689 manifest 40ae2deba0135d35c0ce0e1fd7fb6d759b2894d453dc3f374af7b77a50fcb310 summary 3ccb6ae29e39f502e5e7722045725d1393378378cb8601864a3d8685d9d37afd

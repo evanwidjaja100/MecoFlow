@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "status": "BLOCKED",
-  "approvalRecordId": null,
+  "status": "APPROVED",
+  "approvalRecordId": "APR-ENDPOINT-01",
   "public": {
     "webUrl": "https://flow.meco.co.id",
     "apiBaseUrl": "https://api.flow.meco.co.id",

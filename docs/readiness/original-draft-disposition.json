@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "BLOCKED",
+  "status": "APPROVED",
   "entryReportedCount": 9,
   "exactFilenameSetRecoverable": false,
   "exactPreEditBytesRecoverable": false,
@@ -19,5 +19,5 @@
     "docs/readiness/worktree-reconciliation.md"
   ],
   "disposition": "SUPERSEDED",
-  "approvalRecordId": null
+  "approvalRecordId": "APR-DISPOSITION-01"
 }

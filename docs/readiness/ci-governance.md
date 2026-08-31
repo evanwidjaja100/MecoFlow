@@ -222,3 +222,12 @@ repository-local policy file alone cannot satisfy the control.
 | CI-04      | Independent reviewer access    | `BLOCKED` |              |                  |            |               | `MISSING`       |
 | CI-05      | Governed defect/release labels | `BLOCKED` |              |                  |            |               | `MISSING`       |
 | CI-06      | Approved repository visibility | `BLOCKED` |              |                  |            |               | `MISSING`       |
+
+## Phase 0 remote-control evidence URIs — 2026-08-31
+
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-branch
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-env
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-actions
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-access
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-labels
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-visibility

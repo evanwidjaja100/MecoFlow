@@ -79,9 +79,9 @@ record must contain all required named role signers and stable identities, a
 primary approver, a distinct independent reviewer, and a digest-bound evidence
 URI.
 
-| Record ID | Scope | Named role signers / identities | Primary approver / role ID | Approval date | Reviewed source SHA | Evidence URI / SHA-256 | Independent reviewer / role ID / identity | Status    |
-| --------- | ----- | ------------------------------- | -------------------------- | ------------- | ------------------- | ---------------------- | ----------------------------------------- | --------- |
-| _Pending_ |       |                                 |                            |               |                     |                        |                                           | `MISSING` |
+| Record ID        | Scope                                 | Named role signers / identities                                                   | Primary approver / role ID | Approval date | Reviewed source SHA                      | Evidence URI / SHA-256                                                                                        | Independent reviewer / role ID / identity        | Status   |
+| ---------------- | ------------------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | -------- |
+| APR-SUPPORTED-01 | Supported runtime and client versions | Henry Widjaja (SE-OWNER), Logang Forever (QA-OWNER), Babagang Widjaja (SRE-OWNER) | Logang Forever / QA-OWNER  | 2026-08-31    | 7ba1cfe8f8b1da2fd3a5f8eaed551ea4abf49fb6 | https://github.com/evanwidjaja100/MecoFlow/commit/7ba1cfe8f8b1da2fd3a5f8eaed551ea4abf49fb6#supported-versions | Soepardi Asal Jakarta / INDEPENDENT-DATA-RELEASE | APPROVED |
 
 ## Maintenance rule
 
