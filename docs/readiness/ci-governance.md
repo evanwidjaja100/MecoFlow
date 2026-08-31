@@ -225,9 +225,9 @@ repository-local policy file alone cannot satisfy the control.
 
 ## Phase 0 remote-control evidence URIs — 2026-08-31
 
-- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-branch
-- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-env
-- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-actions
-- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-access
-- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-labels
-- https://github.com/evanwidjaja100/MecoFlow/actions/runs/7ba1cfe8-visibility
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-branch
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-env
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-actions
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-access
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-labels
+- https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-visibility
