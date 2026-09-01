@@ -6,9 +6,48 @@ import {
 } from "node:crypto";
 import { createServer } from "node:http";
 
-const issuer = "http://127.0.0.1:4310";
+const oidcPort = 4310;
+const apiPort = Number(process.env.E2E_API_PORT ?? "3001");
+if (
+  !Number.isInteger(oidcPort) ||
+  oidcPort < 1 ||
+  oidcPort > 65_535 ||
+  !Number.isInteger(apiPort) ||
+  apiPort < 1 ||
+  apiPort > 65_535 ||
+  oidcPort === apiPort
+) {
+  throw new Error(
+    "The E2E API port must be valid and distinct from OIDC port 4310",
+  );
+}
+const issuer = `http://127.0.0.1:${oidcPort}`;
 const clientId = "mecoflow-web";
-const redirectUri = "http://localhost:3001/api/v1/auth/callback";
+const apiOrigin = process.env.E2E_API_ORIGIN ?? `http://127.0.0.1:${apiPort}`;
+let parsedApiOrigin;
+try {
+  parsedApiOrigin = new URL(apiOrigin);
+} catch {
+  throw new Error("E2E_API_ORIGIN must be a valid URL");
+}
+if (
+  parsedApiOrigin.protocol !== "http:" ||
+  parsedApiOrigin.hostname !== "127.0.0.1" ||
+  parsedApiOrigin.username ||
+  parsedApiOrigin.password ||
+  Number(parsedApiOrigin.port || "80") !== apiPort ||
+  parsedApiOrigin.pathname !== "/" ||
+  parsedApiOrigin.search ||
+  parsedApiOrigin.hash
+) {
+  throw new Error(
+    "E2E_API_ORIGIN must be the canonical 127.0.0.1 origin for E2E_API_PORT",
+  );
+}
+const redirectUri = new URL(
+  "/api/v1/auth/callback",
+  parsedApiOrigin,
+).toString();
 const { privateKey, publicKey } = generateKeyPairSync("rsa", {
   modulusLength: 2048,
 });
@@ -147,4 +186,4 @@ const server = createServer(async (request, response) => {
   response.writeHead(404).end("Not found");
 });
 
-server.listen(4310, "127.0.0.1");
+server.listen(oidcPort, "127.0.0.1");

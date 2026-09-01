@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "status": "APPROVED",
+  "approvalRecordIds": {
+    "D-01": "APR-D01-01",
+    "D-02": "APR-D02-01",
+    "D-03": "APR-D03-01",
+    "D-04": "APR-D04-01",
+    "D-05": "APR-D05-01",
+    "D-06": "APR-D06-01",
+    "D-07": "APR-D07-01",
+    "D-08": "APR-D08-01",
+    "D-09": "APR-D09-01",
+    "D-10": "APR-D10-01"
+  },
+  "decisions": {
+    "D-01": {
+      "availabilityPercent": 99.9,
+      "latencyP95Ms": 750,
+      "latencyP99Ms": 1500,
+      "maxErrorPercent": 0.5,
+      "measurementWindow": "Rolling 30 calendar days",
+      "scope": "Production web, API, identity login, and worker-backed core business journeys",
+      "exclusions": [
+        "User-caused HTTP 4xx responses",
+        "Client-network failures before the AWS edge"
+      ],
+      "errorBudgetPolicy": "At 50% consumption stop discretionary releases; at 100% freeze all non-remediation releases pending incident review; scheduled maintenance and AWS regional failures consume the budget"
+    },
+    "D-02": {
+      "rpoHours": 4,
+      "rtoHours": 8,
+      "recoveryScope": "Coordinated recovery of application PostgreSQL, Keycloak PostgreSQL and realm, and object storage",
+      "completeSetDefinition": "A checksummed application PostgreSQL, Keycloak PostgreSQL and realm, and object-storage set copied to an approved target in a separate failure domain, encrypted with an independently approved backup KMS key, remotely checksum-verified, and held under the approved immutable/versioned retention policy",
+      "verificationOwnerRoleId": "DATA-OWNER"
+    },
+    "D-03": {
+      "auditEvidenceDays": 2555,
+      "monitoringDays": 30,
+      "documentDays": 2555,
+      "notificationDays": 180,
+      "backupDays": 365,
+      "privacyErasureDays": 30,
+      "legalHoldPolicy": "Retain indefinitely without deletion or overwrite until written release jointly authorized by PRIVACY-OWNER and DATA-OWNER; statutory retention or active hold overrides privacy erasure"
+    },
+    "D-04": {
+      "minimumHeadroomPercent": 30,
+      "maximumQueueRecoverySeconds": 300,
+      "peakNamedUsers": 100,
+      "peakConcurrentSessions": 30,
+      "projects": 25,
+      "itemsAndBomLines": 50000,
+      "documentCount": 25000,
+      "documentStorageGb": 250,
+      "reportConcurrency": 5,
+      "jobsPerMinute": 20,
+      "maximumQueuedJobs": 200,
+      "annualGrowthPercent": 25,
+      "planningHorizonMonths": 12,
+      "peakSeasonalityMultiplier": 2
+    },
+    "D-05": {
+      "locales": ["en", "id"],
+      "timezone": "Asia/Jakarta",
+      "currency": "IDR",
+      "units": "metric",
+      "supportOwnerRoleId": "PRODUCT-OWNER"
+    },
+    "D-06": {
+      "supportedVersionsRef": "docs/readiness/supported-versions.json",
+      "phoneViewport": "390x844",
+      "tabletViewport": "768x1024",
+      "desktopMinimumWidth": 1280,
+      "inputModes": ["keyboard", "touch"],
+      "zoomPercent": [200, 400],
+      "forcedColors": true,
+      "reducedMotion": true
+    },
+    "D-07": {
+      "wcag": "2.2 AA",
+      "generalTargetPx": 44,
+      "warehouseQaTargetMinPx": 48,
+      "warehouseQaTargetMaxPx": 52
+    },
+    "D-08": {
+      "product": "Keycloak",
+      "distribution": "Red Hat build of Keycloak",
+      "version": "26.6.5",
+      "hostingModel": "Self-managed on at least two RHEL 9 x86_64 Amazon EC2 nodes with OpenJDK 21 and a separate Amazon RDS for PostgreSQL 18 Multi-AZ database",
+      "regionsAndHa": "AWS ap-southeast-3 Jakarta; identity nodes in private subnets across separate Availability Zones; Amazon RDS for PostgreSQL 18 Multi-AZ",
+      "supportTierAndSla": "Red Hat Premium production support; 24x7 Severity 1/2; initial response 1 hour Sev1 and 2 hours Sev2, subject to executed subscription",
+      "patchCadence": "Review vendor advisories daily; apply Critical/Important security fixes within 72 hours of supported release; apply other supported patches monthly after backup, smoke, and rollback validation",
+      "supportOwnerRoleId": "IDENTITY-OWNER",
+      "procurementReference": "RHBK-2026-001",
+      "procurementStatus": "COMPLETED",
+      "procurementStartedAt": "2026-08-15",
+      "procurementEvidenceUri": "https://procurement.meco.co.id/evidence/RHBK-2026-001.pdf",
+      "procurementEvidenceSha256": "973e17a2cb107ca6ab44061351ddf7f2bd8f67b9ffcb8a297cfb21789ff89214",
+      "exitStrategy": "Retain versioned realm exports, RDS backups, and the client/claim mapping; replacing Keycloak requires a superseding accepted ADR plus a tested OIDC cutover and rollback rehearsal",
+      "realmClientClaimContract": "Keycloak OIDC Authorization Code with S256 PKCE; one-time database-backed authorization transactions; browser-bound state and nonce; RS256 ID-token verification through discovery/JWKS; profile synchronization; opaque server-side sessions; no access or refresh tokens persisted or exposed to the web application",
+      "mfaRecoveryBreakGlassContract": "MFA required for privileged users; two individually named vaulted break-glass accounts; dual authorization; quarterly recovery test; rotate credentials after every use",
+      "keyRotationRevocationBackupContract": "Rotate realm signing keys every 180 days with 30-day verification overlap, client secrets every 90 days, revoke immediately on compromise; encrypted daily realm export plus RDS backups included in coordinated recovery set"
+    },
+    "D-09": {
+      "provider": "Amazon Web Services",
+      "productAndTier": "Amazon S3 Standard in ap-southeast-3 with cross-account cross-region replication to ap-southeast-1",
+      "s3Compatible": true,
+      "minioDevelopmentOnly": true,
+      "accountRegionEndpoint": "Primary production AWS account in ap-southeast-3 using https://s3.ap-southeast-3.amazonaws.com; cross-account replication target in ap-southeast-1",
+      "supportTierAndSla": "AWS Basic Support; no production response-time SLA or MECO Flow application/identity operations ownership; subject to accepted R-12 and the paid-support procurement trigger",
+      "supportOwnerRoleId": "PLATFORM-OWNER",
+      "procurementReference": "AWS-S3-2026-001",
+      "procurementStatus": "COMPLETED",
+      "procurementStartedAt": "2026-08-16",
+      "procurementEvidenceUri": "https://procurement.meco.co.id/evidence/AWS-S3-2026-001.pdf",
+      "procurementEvidenceSha256": "bf2fef5eb555f846c116e4fd0816b0230b17f947b9e141c737ebcd26824e94f9",
+      "exitStrategy": "Inventory and checksum every current object and version, export through the S3-compatible API, re-encrypt in the replacement store, reconcile metadata/object counts and checksums, and rehearse cutover and rollback",
+      "kmsAndPrivatePolicyContract": "Private HTTPS S3-compatible storage with explicit aws:kms encryption and key ID, or AES256 only with evidence that SSE-S3 is backed by the approved external KMS; provider evidence must prove encrypted write/read, denial of unencrypted writes, anonymous-access denial, and versioning",
+      "retentionVersioningLegalHoldContract": "Enable S3 Versioning and Object Lock with retention periods governed by D-03; legal holds suspend expiry; deny anonymous/public access, unencrypted writes, retention bypass, and unauthorized version deletion",
+      "malwareScanningContract": "Objects remain quarantined until completion verifies metadata, size, SHA-256, detected type, and ClamAV result; disabled, unavailable, error, timeout, or malware detection remains SCAN_FAILED; only CLEAN review or approved versions may receive authorized short-lived downloads",
+      "replicationAndRecoveryContract": "Copy the coordinated checksummed application PostgreSQL, Keycloak PostgreSQL and realm, and object-storage set to an approved target in a separate failure domain; encrypt with the independently approved backup KMS key, verify the remote checksum, apply approved immutable/versioned retention, and retain evidence of a clean restore rehearsal"
+    },
+    "D-10": {
+      "endpointMatrixRef": "docs/readiness/endpoint-matrix.json"
+    }
+  }
+}

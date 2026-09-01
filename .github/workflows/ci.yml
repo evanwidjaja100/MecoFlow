@@ -4,6 +4,12 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Full candidate SHA to reproduce from the selected main ref
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -11,23 +17,29 @@ permissions:
 jobs:
   dependency-review:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
         with:
           config-file: ./.github/dependency-review-config.yml
 
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       APP_ENV: ci
-      APP_VERSION: 0.1.0
+      APP_VERSION: ${{ github.event.pull_request.head.sha || github.sha }}
       CORS_ORIGINS: http://127.0.0.1:3000
       DATABASE_URL: postgresql://mecoflow:mecoflow@localhost:5432/mecoflow?schema=public
       NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:3001
+      PHASE_ZERO_TEST_API_BASE_URL: http://127.0.0.1:3001
+      PHASE_ZERO_SOURCE_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      PHASE_ZERO_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       OIDC_ISSUER: http://127.0.0.1:8180/realms/mecoflow-local
       OIDC_REDIRECT_URI: http://127.0.0.1:3001/api/v1/auth/callback
       REDIS_URL: redis://localhost:6379
@@ -37,10 +49,11 @@ jobs:
       S3_REGION: us-east-1
       S3_SECRET_KEY: mecoflow-local-ci
       SESSION_SECRET: ci-only-session-secret-with-at-least-32-characters
+      TURBO_FORCE: "true"
       WEB_BASE_URL: http://127.0.0.1:3000
     services:
       postgres:
-        image: postgres:18-alpine
+        image: postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15
         env:
           POSTGRES_DB: mecoflow
           POSTGRES_PASSWORD: mecoflow
@@ -52,7 +65,7 @@ jobs:
           --health-timeout 5s
           --health-retries 20
       redis:
-        image: redis:8.2-alpine
+        image: redis:8.2-alpine@sha256:a7859ed111db3c1f5404a973a4747505d559fb5ca32d37e447afc0ef845a2103
         ports: ["6379:6379"]
         options: >-
           --health-cmd "redis-cli ping"
@@ -60,62 +73,281 @@ jobs:
           --health-timeout 3s
           --health-retries 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          node-version: 24
-      - run: corepack enable
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db:migrate
-      - run: pnpm db:seed
-      - run: pnpm verify
-      - run: pnpm test:authorization
-      - run: pnpm openapi:check
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
-      - run: pnpm security:audit
-      - run: pnpm production:preflight:test
-      - run: pnpm operations:preflight:test
-      - run: pnpm capacity:test
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.PHASE_ZERO_SOURCE_SHA }}
+      - name: Validate candidate trigger context
+        env:
+          PHASE_ZERO_DISPATCH_CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: node scripts/verify-ci-trigger-context.mjs
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pinned package manager
+        id: corepack
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs corepack -- corepack enable
+      - name: Install frozen dependencies
+        id: install
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs install -- pnpm install --frozen-lockfile
+      - name: Verify clean checkout
+        id: workspace
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs workspace -- git diff --check
+      - name: Generate database client
+        id: db_generate
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs db_generate -- pnpm db:generate
+      - name: Start isolated MinIO test storage
+        id: storage
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs storage -- node scripts/start-ci-storage.mjs
+      - name: Apply migrations
+        id: db_migrate
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs db_migrate -- pnpm db:migrate
+      - name: Apply authoritative seed
+        id: db_seed
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs db_seed -- pnpm db:seed
+      - name: Test governance policies
+        id: governance_tests
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs governance_tests -- pnpm governance:test
+      - name: Check repository governance
+        id: governance_check
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs governance_check -- pnpm governance:check
+      - name: Check formatting
+        id: format
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs format -- pnpm format:check
+      - name: Lint
+        id: lint
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs lint -- pnpm lint
+      - name: Typecheck
+        id: typecheck
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs typecheck -- pnpm typecheck
+      - name: Run unit tests
+        id: unit
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs unit -- pnpm test
+      - name: Run integration tests
+        id: integration
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs integration -- pnpm test:integration
+      - name: Run authorization tests
+        id: authorization
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs authorization -- pnpm test:authorization
+      - name: Check OpenAPI
+        id: openapi
+        if: always()
+        continue-on-error: true
+        env:
+          APP_VERSION: 0.1.0
+        run: node scripts/run-ci-evidence-command.mjs openapi -- pnpm openapi:check
+      - name: Install Playwright browser
+        id: browser_install
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs browser_install -- pnpm exec playwright install --with-deps chromium
+      - name: Run browser tests
+        id: e2e
+        if: always()
+        continue-on-error: true
+        env:
+          DEBUG: pw:webserver
+        run: node scripts/run-ci-evidence-command.mjs e2e -- pnpm test:e2e
+      - name: Load approved production build endpoint
+        id: endpoint_environment
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs endpoint_environment -- node scripts/export-phase-zero-endpoint-environment.mjs
+      - name: Build workspace with approved public endpoint
+        id: build
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs build -- pnpm build
+      - name: Audit dependencies (recorded Phase 2 diagnostic)
+        id: dependency_audit
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs dependency_audit -- node scripts/run-dependency-audit-baseline.mjs
+      - name: Test production-control policy
+        id: production_policy
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs production_policy -- pnpm production:preflight:test
+      - name: Test operations policy
+        id: operations_policy
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs operations_policy -- pnpm operations:preflight:test
+      - name: Test capacity policy
+        id: capacity_policy
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs capacity_policy -- pnpm capacity:test
       - name: Validate Compose
-        run: cp .env.example .env && docker compose config --quiet
-      - name: Build application containers
+        id: compose
+        if: always()
+        continue-on-error: true
         run: |
-          docker build -f apps/api/Dockerfile -t mecoflow-api:ci .
-          docker build -f apps/worker/Dockerfile -t mecoflow-worker:ci .
-          docker build -f apps/web/Dockerfile -t mecoflow-web:ci .
+          cp .env.example .env
+          node scripts/run-ci-evidence-command.mjs compose -- docker compose config --quiet
+      - name: Build application containers
+        id: application_images
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs application_images -- node scripts/build-ci-application-images.mjs
+      - name: Verify workspace remained source-clean
+        id: workspace_final
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs workspace_final -- node scripts/verify-ci-workspace-clean.mjs
+      - name: Enforce complete Phase 0 command outcomes
+        if: always()
+        env:
+          PHASE_ZERO_STEP_APPLICATION_IMAGES: ${{ steps.application_images.outcome }}
+          PHASE_ZERO_STEP_AUTHORIZATION: ${{ steps.authorization.outcome }}
+          PHASE_ZERO_STEP_BROWSER_INSTALL: ${{ steps.browser_install.outcome }}
+          PHASE_ZERO_STEP_BUILD: ${{ steps.build.outcome }}
+          PHASE_ZERO_STEP_CAPACITY_POLICY: ${{ steps.capacity_policy.outcome }}
+          PHASE_ZERO_STEP_COMPOSE: ${{ steps.compose.outcome }}
+          PHASE_ZERO_STEP_COREPACK: ${{ steps.corepack.outcome }}
+          PHASE_ZERO_STEP_DB_GENERATE: ${{ steps.db_generate.outcome }}
+          PHASE_ZERO_STEP_DB_MIGRATE: ${{ steps.db_migrate.outcome }}
+          PHASE_ZERO_STEP_DB_SEED: ${{ steps.db_seed.outcome }}
+          PHASE_ZERO_STEP_DEPENDENCY_AUDIT: ${{ steps.dependency_audit.outcome }}
+          PHASE_ZERO_STEP_E2E: ${{ steps.e2e.outcome }}
+          PHASE_ZERO_STEP_ENDPOINT_ENVIRONMENT: ${{ steps.endpoint_environment.outcome }}
+          PHASE_ZERO_STEP_FORMAT: ${{ steps.format.outcome }}
+          PHASE_ZERO_STEP_GOVERNANCE_CHECK: ${{ steps.governance_check.outcome }}
+          PHASE_ZERO_STEP_GOVERNANCE_TESTS: ${{ steps.governance_tests.outcome }}
+          PHASE_ZERO_STEP_INTEGRATION: ${{ steps.integration.outcome }}
+          PHASE_ZERO_STEP_INSTALL: ${{ steps.install.outcome }}
+          PHASE_ZERO_STEP_LINT: ${{ steps.lint.outcome }}
+          PHASE_ZERO_STEP_OPENAPI: ${{ steps.openapi.outcome }}
+          PHASE_ZERO_STEP_OPERATIONS_POLICY: ${{ steps.operations_policy.outcome }}
+          PHASE_ZERO_STEP_PRODUCTION_POLICY: ${{ steps.production_policy.outcome }}
+          PHASE_ZERO_STEP_STORAGE: ${{ steps.storage.outcome }}
+          PHASE_ZERO_STEP_TYPECHECK: ${{ steps.typecheck.outcome }}
+          PHASE_ZERO_STEP_UNIT: ${{ steps.unit.outcome }}
+          PHASE_ZERO_STEP_WORKSPACE: ${{ steps.workspace.outcome }}
+          PHASE_ZERO_STEP_WORKSPACE_FINAL: ${{ steps.workspace_final.outcome }}
+        run: node scripts/verify-ci-step-outcomes.mjs
+      - name: Record Phase 0 verify evidence manifest
+        if: always()
+        env:
+          PHASE_ZERO_JOB: verify
+          PHASE_ZERO_JOB_STATUS: ${{ job.status }}
+        run: node scripts/write-ci-evidence.mjs
+      - name: Retain Phase 0 verify evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: phase-zero-verify-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .runtime/evidence/verify/**
+            playwright-report/**
+            test-results/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
 
   container-security:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
-      APP_VERSION: ci
+      APP_ENV: ci
+      APP_VERSION: ${{ github.event.pull_request.head.sha || github.sha }}
+      NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:3001
+      PHASE_ZERO_EVIDENCE_JOB: container-security
+      PHASE_ZERO_SOURCE_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      PHASE_ZERO_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PHASE_ZERO_TEST_API_BASE_URL: http://127.0.0.1:3001
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          node-version: 24
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.PHASE_ZERO_SOURCE_SHA }}
+      - name: Validate candidate trigger context
+        env:
+          PHASE_ZERO_DISPATCH_CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: node scripts/verify-ci-trigger-context.mjs
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.18.0
+      - name: Load approved production build endpoint
+        id: endpoint_environment
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs endpoint_environment -- node scripts/export-phase-zero-endpoint-environment.mjs
       - name: Test container scan policy
-        run: node --test scripts/container-scan-policy.test.mjs
+        id: container_policy
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs container_policy -- node --test scripts/container-scan-policy.test.mjs
       - name: Build every project-owned release image
-        run: |
-          BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          BUILD_ARGS=(--build-arg APP_VERSION="$APP_VERSION" --build-arg BUILD_DATE="$BUILD_DATE" --build-arg VCS_REF="$GITHUB_SHA")
-          docker build "${BUILD_ARGS[@]}" -f apps/api/Dockerfile -t "mecoflow/api:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" -f apps/worker/Dockerfile -t "mecoflow/worker:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" --build-arg NEXT_PUBLIC_API_BASE_URL=https://mecoflow.invalid -f apps/web/Dockerfile -t "mecoflow/web:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" -f infra/docker/migrations.Dockerfile -t "mecoflow/migrations:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" -f infra/docker/operations.Dockerfile -t "mecoflow/operations:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" -f infra/docker/minio.Dockerfile -t "mecoflow/minio:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" -f infra/docker/clamav.Dockerfile -t "mecoflow/clamav:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" -f infra/docker/postgres.Dockerfile -t "mecoflow/postgres:$APP_VERSION" .
-          docker build "${BUILD_ARGS[@]}" -f infra/docker/proxy.Dockerfile -t "mecoflow/proxy:$APP_VERSION" .
-          docker pull redis:8.2-alpine
-          docker pull quay.io/keycloak/keycloak:26.7.0
-          docker pull prom/prometheus:v3.12.0-busybox
-          docker pull prom/alertmanager:v0.32.1
-          docker pull prom/blackbox-exporter:v0.28.0
+        id: release_images
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs release_images -- node scripts/build-phase-zero-release-images.mjs
       - name: Validate monitoring configuration
-        run: node scripts/validate-monitoring-config.mjs
+        id: monitoring_validation
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs monitoring_validation -- node scripts/validate-monitoring-config.mjs
       - name: Scan every release image
-        run: node scripts/scan-container-images.mjs
+        id: image_scan
+        if: always()
+        continue-on-error: true
+        run: node scripts/run-ci-evidence-command.mjs image_scan -- node scripts/scan-container-images.mjs
+      - name: Verify complete Phase 0 container baseline evidence
+        if: always()
+        env:
+          PHASE_ZERO_CONTAINER_ENDPOINT_OUTCOME: ${{ steps.endpoint_environment.outcome }}
+          PHASE_ZERO_CONTAINER_POLICY_OUTCOME: ${{ steps.container_policy.outcome }}
+          PHASE_ZERO_CONTAINER_RELEASE_IMAGES_OUTCOME: ${{ steps.release_images.outcome }}
+          PHASE_ZERO_CONTAINER_MONITORING_OUTCOME: ${{ steps.monitoring_validation.outcome }}
+          PHASE_ZERO_CONTAINER_SCAN_OUTCOME: ${{ steps.image_scan.outcome }}
+        run: node scripts/verify-phase-zero-container-scan.mjs
+      - name: Record Phase 0 container evidence manifest
+        if: always()
+        env:
+          PHASE_ZERO_JOB: container-security
+          PHASE_ZERO_JOB_STATUS: ${{ job.status }}
+        run: node scripts/write-ci-evidence.mjs
+      - name: Retain Phase 0 container evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: phase-zero-container-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .runtime/evidence/container-security/**
+            .runtime/security-scans/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90

@@ -22,7 +22,7 @@
     "db:seed": "prisma db seed",
     "lint": "eslint src prisma prisma.config.ts --max-warnings=0",
     "test": "vitest run -c vitest.config.ts --passWithNoTests",
-    "test:integration": "vitest run -c vitest.integration.config.ts",
+    "test:integration": "node ../../scripts/verify-test-prerequisites.mjs integration && vitest run -c vitest.integration.config.ts",
     "typecheck": "pnpm db:generate && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

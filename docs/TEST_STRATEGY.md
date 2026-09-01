@@ -33,7 +33,11 @@ environment so the browser gate can use that isolated database. It starts fresh
 API and web processes instead of attaching to potentially stale development
 servers. Windows defaults to one Playwright worker to stay within the measured
 host memory/page-file capacity; Linux and CI retain Playwright's normal worker
-selection. Test scenarios and assertions remain unchanged in scope.
+selection. `E2E_WEB_PORT` and `E2E_API_PORT` may select distinct loopback ports
+when the defaults are occupied; both must remain distinct from the fixed seeded
+OIDC issuer port `4310`, and the web build-time `NEXT_PUBLIC_API_BASE_URL` must
+match the selected API port. Test scenarios and assertions remain unchanged in
+scope.
 
 Environment-blocked commands are reported with exact cause and residual risk; no command is reported successful unless it completed successfully.
 

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "status": "APPROVED",
+  "entryReportedCount": 9,
+  "exactFilenameSetRecoverable": false,
+  "exactPreEditBytesRecoverable": false,
+  "conservativeScope": [
+    "docs/readiness/blockers.md",
+    "docs/readiness/ci-governance.md",
+    "docs/readiness/command-prerequisites.md",
+    "docs/readiness/decision-log.md",
+    "docs/readiness/defect-ledger.md",
+    "docs/readiness/endpoint-matrix.md",
+    "docs/readiness/evidence-index.md",
+    "docs/readiness/governance.md",
+    "docs/readiness/risk-register.md",
+    "docs/readiness/supported-versions.md",
+    "docs/readiness/traceability.md",
+    "docs/readiness/worktree-reconciliation.md"
+  ],
+  "disposition": "SUPERSEDED",
+  "approvalRecordId": "APR-DISPOSITION-01"
+}

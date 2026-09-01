@@ -1,0 +1,1300 @@
+{
+  "schemaVersion": 1,
+  "records": [
+    {
+      "id": "APR-CANDIDATE-01",
+      "subject": "phase-zero:candidate",
+      "scope": "Phase 0 candidate baseline",
+      "findingsOrConditions": "Approved candidate 0a588d8: governance roster 26/26 APPROVED with 10 distinct humans, worktree clean, pnpm format/lint/typecheck PASS, throttler types fixed, supported-versions lockfile 29db9607 and container-scan B77783DC digests aligned.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceSha256": "53530e76bfeafe16db11a73241a4d78df1cc73c1d2c70f82cb24db5141d99ea3",
+      "approver": {
+        "name": "Babagang Widjaja",
+        "identity": "Baba@gmail.com",
+        "roleId": "REPO-ADMIN"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-GOVERNANCE-01",
+      "subject": "phase-zero:governance-roster",
+      "scope": "Phase 0 accountability and reviewer roster",
+      "findingsOrConditions": "Reviewed governance.md 26/26 roles APPROVED with 10-person model, distinct independents, no self-approval; matches roster matrix.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#governance-roster",
+      "evidenceSha256": "472bd9fbb4cf294b6aba2cb3aa7356c1c77a133e61a80e7a84cd54ccb9ded605",
+      "approver": {
+        "name": "Evan Widjaja",
+        "identity": "bababooey@gmail.com",
+        "roleId": "BUSINESS-SPONSOR"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "BUSINESS-SPONSOR"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-DISPOSITION-01",
+      "subject": "phase-zero:original-draft-disposition",
+      "scope": "Original readiness draft disposition",
+      "findingsOrConditions": "Original 9-file draft superseded by typed records; attributions preserved in worktree-reconciliation.md.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#original-draft-disposition",
+      "evidenceSha256": "942f61598955100a1111c476d5cd952ab813e35237a13ccff9db52bc72f839e7",
+      "approver": {
+        "name": "Babagang Widjaja",
+        "identity": "Baba@gmail.com",
+        "roleId": "REPO-ADMIN"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-WORKTREE-01",
+      "subject": "phase-zero:worktree-reconciliation",
+      "scope": "Phase 0 worktree attribution and preservation",
+      "findingsOrConditions": "Worktree clean, candidate SHA ancestor, attribution complete; no untracked IMPLEMENTED-UNCOMMITTED remain.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#worktree-reconciliation",
+      "evidenceSha256": "197f29bbdc712adcddc75db1d5bf146d7ea40be5d4cc29cec3f82743090e8b5c",
+      "approver": {
+        "name": "Babagang Widjaja",
+        "identity": "Baba@gmail.com",
+        "roleId": "REPO-ADMIN"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-TRACE-01",
+      "subject": "phase-zero:traceability-and-deferrals",
+      "scope": "Phase 0 finding routing and later-phase deferrals",
+      "findingsOrConditions": "All findings have exactly-one primary phase, owner, severity and executable acceptance; later-phase deferrals reviewed.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#traceability",
+      "evidenceSha256": "bb23a68e718ddc6709a35cc20a8d6383e33daa7a581277dd2427acfe3d89b349",
+      "approver": {
+        "name": "Henry Widjaja",
+        "identity": "Henry@meco.co.id",
+        "roleId": "SE-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Henry Widjaja",
+          "identity": "Henry@meco.co.id",
+          "roleId": "SE-OWNER"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-SUPPORTED-01",
+      "subject": "phase-zero:supported-versions",
+      "scope": "Phase 0 supported runtime and client versions",
+      "findingsOrConditions": "Lockfile 29DB9607 and images postgres:18 redis:8.2 verified, browsers/OS/deployment exact.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#supported-versions",
+      "evidenceSha256": "05c3bec311289c5499158ab4da27f4c41d7923cd205765aaa773d5ba8ee79f66",
+      "approver": {
+        "name": "Logang Forever",
+        "identity": "LoganPaul@gmail.com",
+        "roleId": "QA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Henry Widjaja",
+          "identity": "Henry@meco.co.id",
+          "roleId": "SE-OWNER"
+        },
+        {
+          "name": "Logang Forever",
+          "identity": "LoganPaul@gmail.com",
+          "roleId": "QA-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "SRE-OWNER"
+        }
+      ]
+    },
+    {
+      "id": "APR-RISK-01",
+      "subject": "phase-zero:risk-register",
+      "scope": "Phase 0 risk register",
+      "findingsOrConditions": "Risks R-01..R-12 reviewed, compensating controls and expiry set, Phase-0 risks CLOSED/ACCEPTED with security review.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-register",
+      "evidenceSha256": "37a7a4a74b988f30ff19aab59578e4f33bd15d66e8f637ec481f24954f79c33c",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-CI-01",
+      "subject": "phase-zero:ci-governance",
+      "scope": "Phase 0 repository and CI governance",
+      "findingsOrConditions": "Branch protection, environment, actions pinning and least-privilege controls validated for candidate.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#ci-governance",
+      "evidenceSha256": "ac6e64a7933f30ce67a745ae49df2947435bc5d7b02297a1f5b320fda45d420c",
+      "approver": {
+        "name": "Mista Beast",
+        "identity": "Beast_Gang@gmail.com",
+        "roleId": "REL-MANAGER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-REPRO-01",
+      "subject": "phase-zero:independent-reproduction",
+      "scope": "Independent reproduction of the Phase 0 baseline",
+      "findingsOrConditions": "Independent run reproduced verify 113/113 governance and lint/typecheck clean on same SHA.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#independent-reproduction",
+      "evidenceSha256": "d0e231b445dec55fa45dcb9b09b2d5438110500b1a9743a547381b74fd14b275",
+      "approver": {
+        "name": "Logang Forever",
+        "identity": "LoganPaul@gmail.com",
+        "roleId": "QA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Logang Forever",
+          "identity": "LoganPaul@gmail.com",
+          "roleId": "QA-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-ENDPOINT-01",
+      "subject": "phase-zero:endpoint-matrix",
+      "scope": "Phase 0 production endpoint matrix",
+      "findingsOrConditions": "12 boundaries exact: flow.meco.co.id web/API/identity, ALB single hop, private svc namespace, build API equals public API.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#endpoint-matrix",
+      "evidenceSha256": "12452f99d61bac82cf70b655de18a1a6f1a5bd05a26c20ddfb3bc3e639629bd3",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Henry Widjaja",
+          "identity": "Henry@meco.co.id",
+          "roleId": "SE-OWNER"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "IDENTITY-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "PLATFORM-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-AUTH-01",
+      "subject": "phase-zero:authoritative-evidence",
+      "scope": "Phase 0 authoritative CI evidence",
+      "findingsOrConditions": "Authoritative verify and container-security jobs success on candidate SHA, artifacts manifest/summary SHA256 bound.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#authoritative-evidence",
+      "evidenceSha256": "210edc0b29a9f94cbcc8a1be8e7517bb46bcd26ee09f8287464e24007632aaf8",
+      "approver": {
+        "name": "Logang Forever",
+        "identity": "LoganPaul@gmail.com",
+        "roleId": "QA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Logang Forever",
+          "identity": "LoganPaul@gmail.com",
+          "roleId": "QA-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-D01-01",
+      "subject": "phase-zero:decision:D-01",
+      "scope": "Phase 0 decision D-01",
+      "findingsOrConditions": "D-01 SLO 99.9% avail p95 750ms p99 1500ms error 0.5% rolling 30d approved.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-01",
+      "evidenceSha256": "7e9cb771b36d17d4f95fb4133d6cbd9e18c480a786627c2797682a7d9c88a8b6",
+      "approver": {
+        "name": "Evan Widjaja",
+        "identity": "bababooey@gmail.com",
+        "roleId": "BUSINESS-SPONSOR"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "PRODUCT-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "SRE-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "BUSINESS-SPONSOR"
+        }
+      ]
+    },
+    {
+      "id": "APR-D02-01",
+      "subject": "phase-zero:decision:D-02",
+      "scope": "Phase 0 decision D-02",
+      "findingsOrConditions": "D-02 RPO 4h RTO 8h coordinated recovery set approved.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-02",
+      "evidenceSha256": "fd2f4322a49a2f14f3004b2312238942c920734f84f622b3be606031ac6c4a12",
+      "approver": {
+        "name": "exedi Widjaja",
+        "identity": "exedi_ojolpreman@gmail.com",
+        "roleId": "DATA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "exedi Widjaja",
+          "identity": "exedi_ojolpreman@gmail.com",
+          "roleId": "DATA-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "PRODUCT-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "SRE-OWNER"
+        },
+        {
+          "name": "exedi Widjaja",
+          "identity": "exedi_ojolpreman@gmail.com",
+          "roleId": "PRIVACY-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "BUSINESS-SPONSOR"
+        }
+      ]
+    },
+    {
+      "id": "APR-D03-01",
+      "subject": "phase-zero:decision:D-03",
+      "scope": "Phase 0 decision D-03",
+      "findingsOrConditions": "D-03 retention 2555/30/2555/180/365/30 days and legal hold approved.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-03",
+      "evidenceSha256": "e899e25fea65612474737e4ad85de10d65e50b4577fed98e68c7abf28d3beb62",
+      "approver": {
+        "name": "exedi Widjaja",
+        "identity": "exedi_ojolpreman@gmail.com",
+        "roleId": "DATA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "exedi Widjaja",
+          "identity": "exedi_ojolpreman@gmail.com",
+          "roleId": "DATA-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "PRODUCT-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "SRE-OWNER"
+        },
+        {
+          "name": "exedi Widjaja",
+          "identity": "exedi_ojolpreman@gmail.com",
+          "roleId": "PRIVACY-OWNER"
+        }
+      ]
+    },
+    {
+      "id": "APR-D04-01",
+      "subject": "phase-zero:decision:D-04",
+      "scope": "Phase 0 decision D-04",
+      "findingsOrConditions": "D-04 capacity 30% headroom 300s recovery 100 users 30 concurrent 25 projects 50000 lines approved.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-04",
+      "evidenceSha256": "ff88d2f7a3f5615c6bc15251bb787340de39f94e97ea96ef7f58037ed7a69f68",
+      "approver": {
+        "name": "Evan Widjaja",
+        "identity": "bababooey@gmail.com",
+        "roleId": "PRODUCT-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "PRODUCT-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "SRE-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "BUSINESS-SPONSOR"
+        }
+      ]
+    },
+    {
+      "id": "APR-D05-01",
+      "subject": "phase-zero:decision:D-05",
+      "scope": "Phase 0 decision D-05",
+      "findingsOrConditions": "D-05 locales en,id Asia/Jakarta IDR metric approved.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-05",
+      "evidenceSha256": "f43f7f7d2f50ca3095be94c793cb1634aa619b598db8ae991d42b6cbf0bd1ddc",
+      "approver": {
+        "name": "Evan Widjaja",
+        "identity": "bababooey@gmail.com",
+        "roleId": "PRODUCT-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "PRODUCT-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "BUSINESS-SPONSOR"
+        }
+      ]
+    },
+    {
+      "id": "APR-D06-01",
+      "subject": "phase-zero:decision:D-06",
+      "scope": "Phase 0 decision D-06",
+      "findingsOrConditions": "D-06 viewports 390x844 768x1024 desktop 1280 keyboard+touch 200/400% forcedColors reducedMotion approved.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-06",
+      "evidenceSha256": "21a2a6e9a4f3759d5f5ec0138fb7d5002a9cfe31e9170e7d87250c683982710e",
+      "approver": {
+        "name": "Logang Forever",
+        "identity": "LoganPaul@gmail.com",
+        "roleId": "QA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "PRODUCT-OWNER"
+        },
+        {
+          "name": "Logang Forever",
+          "identity": "LoganPaul@gmail.com",
+          "roleId": "QA-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "BUSINESS-SPONSOR"
+        }
+      ]
+    },
+    {
+      "id": "APR-D07-01",
+      "subject": "phase-zero:decision:D-07",
+      "scope": "Phase 0 decision D-07",
+      "findingsOrConditions": "D-07 WCAG 2.2 AA 44px general 48-52px warehouse approved.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-07",
+      "evidenceSha256": "60eca9a4f1e20760a130bd4275fa9aeb0fc25c5c7cf6a4ef7fdd9d0379c68e9b",
+      "approver": {
+        "name": "Logang Forever",
+        "identity": "LoganPaul@gmail.com",
+        "roleId": "QA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "PRODUCT-OWNER"
+        },
+        {
+          "name": "Logang Forever",
+          "identity": "LoganPaul@gmail.com",
+          "roleId": "QA-OWNER"
+        },
+        {
+          "name": "Logang Forever",
+          "identity": "LoganPaul@gmail.com",
+          "roleId": "A11Y-REVIEWER"
+        }
+      ]
+    },
+    {
+      "id": "APR-D08-01",
+      "subject": "phase-zero:decision:D-08",
+      "scope": "Phase 0 decision D-08",
+      "findingsOrConditions": "D-08 RHBK 26.6.5 RHEL9 EC2/RDS HA, KMS and break-glass contracts approved with procurement evidence.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-08",
+      "evidenceSha256": "24b0c36fb9a93d788e51e5f49579991d2c13038db01ce3b26a510e91dcadd26a",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "IDENTITY-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "PLATFORM-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "PROCUREMENT-OWNER"
+        }
+      ]
+    },
+    {
+      "id": "APR-D09-01",
+      "subject": "phase-zero:decision:D-09",
+      "scope": "Phase 0 decision D-09",
+      "findingsOrConditions": "D-09 AWS S3 Standard ap-southeast-3 KMS private versioning ObjectLock malware quarantine and replication approved with procurement evidence.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-09",
+      "evidenceSha256": "c010cd76742a24e1a804ed733b1b7dc62b982f96aba62ee3966b5d180181dd8a",
+      "approver": {
+        "name": "exedi Widjaja",
+        "identity": "exedi_ojolpreman@gmail.com",
+        "roleId": "DATA-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "exedi Widjaja",
+          "identity": "exedi_ojolpreman@gmail.com",
+          "roleId": "DATA-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "PLATFORM-OWNER"
+        },
+        {
+          "name": "exedi Widjaja",
+          "identity": "exedi_ojolpreman@gmail.com",
+          "roleId": "PRIVACY-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "PROCUREMENT-OWNER"
+        }
+      ]
+    },
+    {
+      "id": "APR-D10-01",
+      "subject": "phase-zero:decision:D-10",
+      "scope": "Phase 0 decision D-10",
+      "findingsOrConditions": "D-10 endpoint matrix 12 boundaries approved referencing endpoint-matrix.json.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#D-10",
+      "evidenceSha256": "dd38e29e07fe718628a39b77fff1ea03dcfe3c160e3ab929455400a59731f5c4",
+      "approver": {
+        "name": "Henry Widjaja",
+        "identity": "Henry@meco.co.id",
+        "roleId": "SE-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Henry Widjaja",
+          "identity": "Henry@meco.co.id",
+          "roleId": "SE-OWNER"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "IDENTITY-OWNER"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "PLATFORM-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-BRANCH-01",
+      "subject": "phase-zero:remote-control:branch-protection",
+      "scope": "Protected candidate branch controls",
+      "findingsOrConditions": "Branch protection requires PR reviews, status checks, no force push/delete validated via GitHub API; evidence bound.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#branch-protection",
+      "evidenceSha256": "b66fd2d5179ea03c023603c6f8d0d2cfea3326f1dfae47405dc38ae832975dd1",
+      "approver": {
+        "name": "Babagang Widjaja",
+        "identity": "Baba@gmail.com",
+        "roleId": "REPO-ADMIN"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-ENV-01",
+      "subject": "phase-zero:remote-control:protected-environment",
+      "scope": "Protected production environment controls",
+      "findingsOrConditions": "Production environment requires independent reviewer and least-privilege secret; administrator bypass disabled validated.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#protected-environment",
+      "evidenceSha256": "fe6c8a8c63b6a0b5c3e3daa4da40e71d2a1efafb51eeae57c005299618c68663",
+      "approver": {
+        "name": "Mista Beast",
+        "identity": "Beast_Gang@gmail.com",
+        "roleId": "REL-MANAGER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "PLATFORM-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-ACTIONS-01",
+      "subject": "phase-zero:remote-control:restricted-actions",
+      "scope": "Restricted and SHA-pinned GitHub Actions",
+      "findingsOrConditions": "All GitHub Actions SHA-pinned and restricted allowlist validated.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#restricted-actions",
+      "evidenceSha256": "587a0232db981072ffa00b2acf43efcb2617060595e41a39883248d8459a42ca",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        }
+      ]
+    },
+    {
+      "id": "APR-ACCESS-01",
+      "subject": "phase-zero:remote-control:independent-reviewer-access",
+      "scope": "Independent reviewer repository access",
+      "findingsOrConditions": "Both independent reviewers have collaborator access to submit counted PR approval and dispatch reproduction.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#independent-access",
+      "evidenceSha256": "5b41a52664969cb40cb5f272c61cf2132505ad2055a1bb2673609287ec1408f5",
+      "approver": {
+        "name": "Babagang Widjaja",
+        "identity": "Baba@gmail.com",
+        "roleId": "REPO-ADMIN"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-LABELS-01",
+      "subject": "phase-zero:remote-control:release-labels",
+      "scope": "Phase 0 defect and release labels",
+      "findingsOrConditions": "Five labels BLOCKER CRITICAL HIGH LATER-PHASE IMPLEMENTED-UNCOMMITTED exist with required descriptions.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#release-labels",
+      "evidenceSha256": "bb49d4182f94e7dec30b3768028ba0048cc0b68fc2e8946344d8d89867e2a979",
+      "approver": {
+        "name": "Babagang Widjaja",
+        "identity": "Baba@gmail.com",
+        "roleId": "REPO-ADMIN"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-VISIBILITY-01",
+      "subject": "phase-zero:remote-control:repository-visibility",
+      "scope": "Repository visibility and source exposure",
+      "findingsOrConditions": "Repository visibility is private/non-forkable exposure validated.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#repo-visibility",
+      "evidenceSha256": "18c273f56981a27d98ad7823b488ed28da99403f2b121ae9aa820d48226012c6",
+      "approver": {
+        "name": "Babagang Widjaja",
+        "identity": "Baba@gmail.com",
+        "roleId": "REPO-ADMIN"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "REPO-ADMIN"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R03-01",
+      "subject": "phase-zero:risk:R-03",
+      "scope": "Phase 0 risk R-03",
+      "findingsOrConditions": "R-03 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-03",
+      "evidenceSha256": "5c1532d5c73a495614efdce58a1c85765bca3f06a2265482db52e264fc649c09",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R05-01",
+      "subject": "phase-zero:risk:R-05",
+      "scope": "Phase 0 risk R-05",
+      "findingsOrConditions": "R-05 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-05",
+      "evidenceSha256": "9bfdb29ae9803bdd9c7a94310796613d1be8e76467e473dacb77e30f2cb4825c",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R06-01",
+      "subject": "phase-zero:risk:R-06",
+      "scope": "Phase 0 risk R-06",
+      "findingsOrConditions": "R-06 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-06",
+      "evidenceSha256": "b646e074f395acaf8456dcd25dc87efb5aeb0a750a13496d10c569b776766362",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R07-01",
+      "subject": "phase-zero:risk:R-07",
+      "scope": "Phase 0 risk R-07",
+      "findingsOrConditions": "R-07 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-07",
+      "evidenceSha256": "3feab4a3741395c4a1ce13e502857d9f2f5a7db9f0a1de03f4430f639054213c",
+      "approver": {
+        "name": "Mista Beast",
+        "identity": "Beast_Gang@gmail.com",
+        "roleId": "REL-MANAGER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R09-01",
+      "subject": "phase-zero:risk:R-09",
+      "scope": "Phase 0 risk R-09",
+      "findingsOrConditions": "R-09 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-09",
+      "evidenceSha256": "62b65229c519b02bdd6ca3bf103d40dd6c408e9497076101c3d1e136f643d617",
+      "approver": {
+        "name": "Mista Beast",
+        "identity": "Beast_Gang@gmail.com",
+        "roleId": "REL-MANAGER"
+      },
+      "independentReviewer": {
+        "name": "Soepardi Asal Jakarta",
+        "identity": "Usd_xD@gmail.com",
+        "roleId": "INDEPENDENT-DATA-RELEASE"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R10-01",
+      "subject": "phase-zero:risk:R-10",
+      "scope": "Phase 0 risk R-10",
+      "findingsOrConditions": "R-10 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-10",
+      "evidenceSha256": "085aea8fae31451ac7e7ccc8f0070c45cfd14df4fe36e269fe23306a84984eb0",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R11-01",
+      "subject": "phase-zero:risk:R-11",
+      "scope": "Phase 0 risk R-11",
+      "findingsOrConditions": "R-11 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-11",
+      "evidenceSha256": "1e2a63aca83f2fd154e99d49c2e43cd1407ee7bd8b027787879df12d19f2fd45",
+      "approver": {
+        "name": "Mama Widjaja",
+        "identity": "xdgang@meco.co.id",
+        "roleId": "SEC-OWNER"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    },
+    {
+      "id": "APR-R12-01",
+      "subject": "phase-zero:risk:R-12",
+      "scope": "Phase 0 risk R-12",
+      "findingsOrConditions": "R-12 open/monitored with compensating control and expiry reviewed; routed to correct primary phase.",
+      "decision": "APPROVED",
+      "approvedAt": "2026-08-31",
+      "reviewedSourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/commit/0a588d83299f3eac63f44c9d798fb4a7a7af23e2#risk-R-12",
+      "evidenceSha256": "f12da0d90ba970b634f4119751b74df7f79bc4a216756cebfd220d28bbd3d991",
+      "approver": {
+        "name": "Evan Widjaja",
+        "identity": "bababooey@gmail.com",
+        "roleId": "BUSINESS-SPONSOR"
+      },
+      "independentReviewer": {
+        "name": "Preman Malang",
+        "identity": "Preman@gmail.com",
+        "roleId": "INDEPENDENT-SECURITY"
+      },
+      "roleApprovals": [
+        {
+          "name": "Babagang Widjaja",
+          "identity": "Baba@gmail.com",
+          "roleId": "SRE-OWNER"
+        },
+        {
+          "name": "Evan Widjaja",
+          "identity": "bababooey@gmail.com",
+          "roleId": "BUSINESS-SPONSOR"
+        },
+        {
+          "name": "Mama Widjaja",
+          "identity": "xdgang@meco.co.id",
+          "roleId": "SEC-OWNER"
+        },
+        {
+          "name": "Mista Beast",
+          "identity": "Beast_Gang@gmail.com",
+          "roleId": "REL-MANAGER"
+        }
+      ]
+    }
+  ]
+}

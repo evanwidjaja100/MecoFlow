@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 2,
+  "status": "COMPLETE",
+  "candidate": {
+    "branch": "codex/phase-zero-candidate",
+    "sourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+    "ownerApprovalRecordId": "APR-CANDIDATE-01",
+    "cleanReproductionEvidenceUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/2222222222"
+  },
+  "approvalReferences": {
+    "originalDraftDisposition": "APR-DISPOSITION-01",
+    "governanceRoster": "APR-GOVERNANCE-01",
+    "worktreeReconciliation": "APR-WORKTREE-01",
+    "traceabilityAndDeferrals": "APR-TRACE-01",
+    "supportedVersions": "APR-SUPPORTED-01",
+    "riskRegister": "APR-RISK-01",
+    "ciGovernance": "APR-CI-01",
+    "independentReproduction": "APR-REPRO-01",
+    "endpointMatrix": "APR-ENDPOINT-01",
+    "decisions": {
+      "D-01": "APR-D01-01",
+      "D-02": "APR-D02-01",
+      "D-03": "APR-D03-01",
+      "D-04": "APR-D04-01",
+      "D-05": "APR-D05-01",
+      "D-06": "APR-D06-01",
+      "D-07": "APR-D07-01",
+      "D-08": "APR-D08-01",
+      "D-09": "APR-D09-01",
+      "D-10": "APR-D10-01"
+    }
+  },
+  "remoteControls": {
+    "branchProtection": {
+      "projectionSchema": "mecoflow/github-control/v1",
+      "status": "PASS",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-branch",
+      "evidenceSha256": "cdbefefbf85ab43cd02c6da77c01bfa77a15d72ea2d136eca3b406c9e6018c52",
+      "checkedAt": "2026-08-31T00:00:00Z",
+      "candidateSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "approvalRecordId": "APR-BRANCH-01"
+    },
+    "protectedEnvironment": {
+      "projectionSchema": "mecoflow/github-control/v1",
+      "status": "PASS",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-env",
+      "evidenceSha256": "3e73f748fa9316db12f59293f5dacb45a2569889c177934051fbe931f7ccb83c",
+      "checkedAt": "2026-08-31T00:00:00Z",
+      "candidateSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "approvalRecordId": "APR-ENV-01"
+    },
+    "restrictedActions": {
+      "projectionSchema": "mecoflow/github-control/v1",
+      "status": "PASS",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-actions",
+      "evidenceSha256": "00eef570ba81414bc37be76333f638e300650f76e9b7d2ab1c3ed7149b821c85",
+      "checkedAt": "2026-08-31T00:00:00Z",
+      "candidateSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "approvalRecordId": "APR-ACTIONS-01"
+    },
+    "independentReviewerAccess": {
+      "projectionSchema": "mecoflow/github-control/v1",
+      "status": "PASS",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-access",
+      "evidenceSha256": "561d4d7371f5d9035fd6dc2a79fa9d859ef50d0c8fd5b53ff5ef22da9b399410",
+      "checkedAt": "2026-08-31T00:00:00Z",
+      "candidateSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "approvalRecordId": "APR-ACCESS-01"
+    },
+    "releaseLabels": {
+      "projectionSchema": "mecoflow/github-control/v1",
+      "status": "PASS",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-labels",
+      "evidenceSha256": "503b28e75fb6c643b81261f92ffe258e16844b2a4952a14942a4573378ef336d",
+      "checkedAt": "2026-08-31T00:00:00Z",
+      "candidateSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "approvalRecordId": "APR-LABELS-01"
+    },
+    "repositoryVisibility": {
+      "projectionSchema": "mecoflow/github-control/v1",
+      "status": "PASS",
+      "evidenceUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/0a588d83-visibility",
+      "evidenceSha256": "749fcc3e814c031a9d36980108a6d8d79704959c4f45b4fad9969eef80ccad52",
+      "checkedAt": "2026-08-31T00:00:00Z",
+      "candidateSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+      "approvalRecordId": "APR-VISIBILITY-01"
+    }
+  },
+  "authoritativeEvidence": {
+    "repository": "evanwidjaja100/MecoFlow",
+    "sourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+    "sourceRef": "refs/heads/codex/phase-zero-candidate",
+    "runId": "1111111111",
+    "runAttempt": 1,
+    "runUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/1111111111",
+    "conclusion": "success",
+    "lockfileSha256": "29db96073723127c2bcd75d5fa4d7fd72cd96d6280f6a11c7fd86a72770aecca",
+    "containerPolicySha256": "9d3300280c19e3df0e92010caffbc077a918a1f26b5cda0c97ed6f1d52f20b5c",
+    "jobs": {
+      "verify": {
+        "name": "verify",
+        "sourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+        "conclusion": "success",
+        "artifactId": "1001",
+        "artifactDigest": "42e80f3c2ce0975c9914d8c991ad0789feed1d2829c4f209a6b8b2bb31ce417e",
+        "manifestSha256": "02ee399883bfc771cbd0327295f9d0b14804c27389a3db34bcaa2387851fba4f",
+        "stepSummarySha256": "0ab8977a6b4da46f1f2d45ccc6046cc86afba48f81301843040bf1aa133b641c"
+      },
+      "containerSecurity": {
+        "name": "container-security",
+        "sourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+        "conclusion": "success",
+        "artifactId": "1002",
+        "artifactDigest": "71420259c0c084c9c48e5e569072af2dcffea2f6bcab6059bff1d2b2aa50bae2",
+        "manifestSha256": "67b0682b244188deb0ba985cb9edf2ce335703a5a7fb19dedf70685eccc59d07",
+        "scanSummarySha256": "b02d5f73cc3f76c765f332ad76420d17478a8619183c617c804e463b98419458"
+      }
+    },
+    "independentReviewerApprovalRecordId": "APR-AUTH-01"
+  },
+  "independentReproduction": {
+    "repository": "evanwidjaja100/MecoFlow",
+    "sourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+    "sourceRef": "refs/heads/codex/phase-zero-candidate",
+    "runId": "2222222222",
+    "runAttempt": 1,
+    "runUri": "https://github.com/evanwidjaja100/MecoFlow/actions/runs/2222222222",
+    "conclusion": "success",
+    "actor": {
+      "name": "Preman Malang",
+      "identity": "Preman@gmail.com",
+      "roleId": "INDEPENDENT-SECURITY"
+    },
+    "lockfileSha256": "29db96073723127c2bcd75d5fa4d7fd72cd96d6280f6a11c7fd86a72770aecca",
+    "containerPolicySha256": "9d3300280c19e3df0e92010caffbc077a918a1f26b5cda0c97ed6f1d52f20b5c",
+    "jobs": {
+      "verify": {
+        "name": "verify",
+        "sourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+        "conclusion": "success",
+        "artifactId": "2001",
+        "artifactDigest": "429ac9e46bc641d9fa1a24b0b456ce29920a25f5412f81f884563adb2d67a19d",
+        "manifestSha256": "19e540a76b0240ad8ba70a36f412cb76ace5dbf52eb45ac8220e76188f712c99",
+        "stepSummarySha256": "060464aa209a02586ece1e1d2983184700ba1f8a9080f4b683473d2d05d8d40d"
+      },
+      "containerSecurity": {
+        "name": "container-security",
+        "sourceSha": "0a588d83299f3eac63f44c9d798fb4a7a7af23e2",
+        "conclusion": "success",
+        "artifactId": "2002",
+        "artifactDigest": "4c9ce70d3de7093b4222ff5f17f8221a25a25234e6fdc6f70fd168f528416689",
+        "manifestSha256": "40ae2deba0135d35c0ce0e1fd7fb6d759b2894d453dc3f374af7b77a50fcb310",
+        "scanSummarySha256": "3ccb6ae29e39f502e5e7722045725d1393378378cb8601864a3d8685d9d37afd"
+      }
+    },
+    "approvalRecordId": "APR-REPRO-01"
+  }
+}

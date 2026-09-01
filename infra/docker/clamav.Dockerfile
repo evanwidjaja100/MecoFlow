@@ -1,4 +1,4 @@
-FROM clamav/clamav:1.4.5
+FROM clamav/clamav:1.4.5@sha256:4de20bd9ab45a4b763c5412b769217ef5082572ebc8a63aff1a77943419e5dd8
 
 ARG APP_VERSION=0.0.0-unknown
 ARG BUILD_DATE=unknown

@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
+import { RedisThrottlerStorage } from "./throttler-redis.storage.js";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import type { ThrottlerModuleOptions } from "@nestjs/throttler";
 import type { ServiceEnvironment } from "@mecoflow/config";
 import { HealthController } from "./health/health.controller.js";
 import { HealthService } from "./health/health.service.js";
@@ -87,8 +89,12 @@ export class AppModule {
       imports: [
         ThrottlerModule.forRoot({
           skipIf: () => environment.APP_ENV === "test",
+          storage:
+            environment.APP_ENV !== "test" && environment.REDIS_URL
+              ? new RedisThrottlerStorage(environment.REDIS_URL)
+              : undefined,
           throttlers: [{ ttl: 60000, limit: 30 }],
-        }),
+        } as ThrottlerModuleOptions),
       ],
       controllers: [
         HealthController,

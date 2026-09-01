@@ -1,4 +1,4 @@
-# Current phase
+# Delivery phase and production-readiness phase
 
 Phase 9C — staging deployment, isolated backup/restore rehearsal, and controlled
 pilot preparation (deployment prepared 2026-07-30; restore and pilot acceptance
@@ -6,11 +6,194 @@ verified 2026-08-01). The production-oriented staging stack, controlled
 migration, clean-target restore, real OIDC, pilot business flow, readiness,
 permissions, and bidirectional supplier isolation are verified. The release
 candidate is classified **NOT READY** because external pilot controls and
-approvals remain incomplete and the fail-closed release-image scan blocks on
-Keycloak 26.7.0. Ten other release images have zero HIGH/CRITICAL findings and
-no vulnerability exception is approved. The full formatting/lint/type/unit/integration/
+approvals remain incomplete. A Phase 0 diagnostic of the currently pinned
+Keycloak 26.7.2 digest (updated 2026-08-30 from 26.7.0, previously 17 unresolved Critical/High) rescan pending; no vulnerability exception approved.
+vulnerability exception is approved.
+The full formatting/lint/type/unit/integration/
 build gate and the complete 15-scenario browser gate are green on clean
 isolated databases. This is not a production-readiness claim.
+
+## Production-readiness remediation status — 2026-08-20
+
+Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
+**COMPLETE** at `24127a6` (clean, `verify-phase-zero-closure` PASS 2026-08-31/2026-09-01). Phase 1 is unlocked for explicit user authorization; Phase 2 remains locked.
+
+The historical source-affecting Phase 0 candidate
+`6d91208a6d5912508178f981f575ff4345e34430`
+on `codex/phase-zero-candidate` adds or corrects repository controls. The
+pre-repair pull-request head is
+`c919ab1b5e86d9e12f75d4fdf6155a1ceab59f12`; intervening commits
+`1f83021`, `96f3120`, and `c919ab1` change only closure-policy-permitted
+readiness/evidence documentation paths. Source-affecting Phase 0 contract
+repairs, typed production proposals, and regression coverage are committed at
+`aa87b4e269bed660a761d6c36a1093a666addbd9`; source checkpoint
+`d345afd3068870ce0e7a9aa496c15f82b1909f84` additionally refreshes the
+fail-closed dependency inventory after registry drift. This is the current
+implementation checkpoint, not the final Phase 0 candidate, which must be the
+protected merge result on `main`. The source-affecting work
+includes full-SHA
+Actions, digest-pinned external Dockerfile/Compose/scan
+references, exact Node/pnpm versions, Prisma generation and isolated MinIO in
+CI, non-short-circuiting uncached command-level evidence with output hashes and
+exact environment identity and zero-skip/test-total enforcement, root
+documentation paths, executable governance and structured closure checks,
+exact required suite manifests, and fail-closed database/test prerequisites.
+Governance now cross-validates the executable
+worktree path count against both the reconciliation record and P0R-01 evidence.
+Every executable inventory row now carries its own exact allowed classification,
+so missing, duplicate, stale, or unclassified paths fail closed. The same gate
+performs a repeatable high-confidence secret-exposure probe without printing
+matched values. Storage and application-image setup are now evidence-wrapped;
+the nine project images are resolved to immutable IDs supplied through
+fail-closed Compose variables, and a final workspace-cleanliness gate detects
+source drift. The final build is wired to consume the production API URL only
+from a future approved endpoint matrix and retain it in the environment identity. The container job
+builds/pulls and scans the exact 14-image inventory with candidate-bound
+retained evidence. Known Phase 2 dependency/image blockers are
+retained as completed diagnostics without making Phase 0 depend on Phase 2
+remediation. Typed decision, endpoint, supported-version, original-draft,
+approval, remote-control, risk, defect, traceability, command-prerequisite, and
+evidence records live in `docs/readiness/`; closure rejects status-only or
+reused approvals and requires named role signers with stable identities,
+distinct independent review, evidence digests, and exact subject/scope binding.
+Closure additionally binds every approval identity and every blocker, defect,
+risk, and traceability owner to the approved roster; requires a distinct
+reviewer-operated reproduction run with non-overlapping artifacts; and verifies
+supported versions plus lockfile/container-policy hashes against candidate
+source bytes. A separate least-privilege finalization workflow now runs both
+the local closure policy and a read-only authenticated GitHub verifier. The
+external verifier downloads the two runs' artifacts and checks live repository,
+workflow, job, actor, artifact, approval, remote-control, input-hash, endpoint,
+and expiry data instead of trusting locally asserted IDs and digests.
+Closure schema version 2 hashes stable, candidate-bound projections of the six
+GitHub controls while still performing live authenticated readback; volatile
+repository metadata cannot invalidate or accidentally satisfy a control.
+
+This work is not a completed baseline. Pull request #1 exists for the committed
+candidate, but it is not owner-approved or merged and has no independent
+reviewer. Run `31707913394` failed all three required checks. Runs
+`31712296742`, `31713053533`, and `31713790180` then passed
+`dependency-review` but failed `verify` and `container-security`; their retained
+artifacts remain diagnostics, not authoritative evidence. Those runs exposed
+an E2E loopback-origin defect, an undefined container-verifier variable, and
+the expected fail-closed rejection of the unapproved production endpoint and
+the dependent project-image build. Commits `db503f3` and `e7db0eb` bind the
+browser/OIDC flow to one loopback origin, add negative origin tests, and repair
+structured container-scan-summary validation. Run `31716612512` for `db503f3`
+was superseded and cancelled after dependency review passed and container
+security failed. Replacement run `31717030980` for `e7db0eb` passed dependency
+review and all 15 browser scenarios, proving the loopback/OIDC repair in clean
+CI, but still failed `verify` because `endpoint_environment` and
+`application_images` correctly rejected missing APR-backed endpoint approval.
+`container-security` also failed: the repaired verifier ran without its former
+exception and rejected endpoint/release-image evidence plus all 14 incomplete
+scan reports. Both retained artifacts remain diagnostic. The run is not closure
+evidence, and every separate approval/control requirement remains open. Before
+the two expected approval-dependent verify failures, the clean run passed all
+81 governance tests, 236 unit tests, 151 integration tests, 53 authorization
+tests, formatting, lint, typecheck, OpenAPI, build, policy checks, Compose,
+workspace cleanliness, and the 15 browser scenarios.
+The integrated contract-repair worktree passes formatting, lint, typecheck,
+OpenAPI, build, 44 unit files/236 tests, all 113 governance tests, nine
+production-control tests, six operations-readiness tests, six capacity tests,
+and all 22 container-policy/executable tests with zero skipped/todo. The raw
+integration, authorization, and E2E commands still fail closed without their
+required isolated database/Redis/S3 environment. Docker Desktop was started to
+provide those prerequisites but its WSL engine could not start under the host's
+current paging/resource limit, so no database-backed pass is claimed from this
+worktree. After run `31717030980`, a
+local follow-up corrected the scan verifier so an `identity-error` diagnostic is
+not parsed as though it were a completed Trivy report. Final implementation run
+`31718073882` at `e443e5b` verified that correction: the retained container
+record contains only the two approval-dependent command failures and 14
+incomplete scans, with zero false Trivy-format errors. Dependency review and all
+executable verify gates again passed, including 15/15 browser scenarios; the
+aggregate jobs still failed on the absent APR-backed endpoint and dependent
+images. Commit `6d91208` then added only source-derived D-02/D-08/D-09
+readiness values and the operator-ready human handoff. Run `31759036677`
+evaluated that exact source: dependency review passed; governance 82/82, unit
+236/236, integration 151/151, authorization 53/53, E2E 15/15, and every other
+executable verify gate passed with zero skips/todos. Verify failed only
+`endpoint_environment` and `application_images`; container evidence failed the
+same endpoint/release-image prerequisites and retained 14 incomplete image
+identities. No implementation regression appeared, and the run remains
+diagnostic rather than closure evidence. Evidence-only commits `1f83021`,
+`96f3120`, and `c919ab1` then produced runs `31759673383`, `31760236777`, and
+`31760932202`. Each passed dependency review and the same executable verify
+baseline, then failed only the unapproved endpoint, dependent application-image
+build, and incomplete image-identity chain. Each retained separate verify and
+container artifacts. These runs establish historical diagnostic coverage but
+remain failed, unapproved, pull-request-event evidence and are not the required
+protected-`main` authoritative or independent reproduction runs. The fix does
+not alter that endpoint/provider approval blocker. Under the now-restricted
+Actions policy, run `32382576019` at `8e93fed` passed the application and
+governance suites but correctly detected a newly published fifth High
+dependency advisory. Source checkpoint `d345afd` records that advisory without Phase 2
+remediation. Follow-up run `32383852323` passed the refreshed dependency
+baseline, dependency review, governance 113/113, unit 236/236, integration
+151/151, authorization 53/53, E2E 15/15, build, policy, Compose, and workspace
+checks; only the unapproved endpoint, dependent application-image build, and
+14 incomplete image identities failed closed. The fail-closed closure check
+correctly rejects the current incomplete record. The security audit still
+reports the five exact High advisories recorded in `blockers.md`, all assigned
+to locked Phase 2. A current diagnostic resolved 5/14 immutable image
+identities: Redis passed, while Keycloak/Prometheus/Alertmanager/Blackbox
+Exporter reported 17/28/48/30 blockers; all nine unbuilt project image
+identities failed closed. Docker Engine `29.6.1` became available during the
+Phase 0 continuation; the standalone `psql` client remains unavailable. On
+fresh isolated Docker-backed PostgreSQL databases, all 22 migrations and the
+authoritative seed completed, integration passed 29 files/116 tests,
+authorization passed 14 files/53 tests, and the browser gate passed 15/15 with
+isolated API/web ports. Failed missing-database, invalid-`APP_ENV`, occupied-port,
+and changed-OIDC-issuer attempts were retained as diagnostics and did not touch
+the developer database or services. These local dirty-worktree runs are not
+authoritative baseline evidence. GitHub now reports that the repository is
+public and `main` is protected with one approval, strict up-to-date enforcement,
+the three required checks, stale-review dismissal, last-push approval,
+conversation resolution, administrator enforcement, and force-push/deletion
+denial. Only one collaborator is present, so the required independent approval
+remains impossible. The `production` environment exists and is limited to
+protected branches and administrator bypass is now disabled, but it has no
+required-reviewer rule or least-privilege deployment secret. Self-review
+prevention must be configured and read back together with real reviewers. This
+mechanical hardening does not constitute approval. All
+five governed Phase 0 labels now exist. Actions
+are now restricted to the exact four required action patterns, both broad
+GitHub-owned/verified toggles are disabled, full-SHA pinning is required, and
+default workflow permissions remain read-only with pull-request approval
+denied. This live mechanical control still needs canonical candidate-bound
+evidence and named approval before Phase 0 closes. Public visibility remains
+blocked because the available user intent is not an authenticated,
+candidate-bound attestation. Production
+providers/endpoints, exact browser support, SLO/RPO/
+RTO/retention/capacity decisions, procurement/support ownership, and the human
+owner/reviewer roster are unapproved. The project-image immutability mechanism
+is committed in the candidate but its retained build/Compose evidence failed
+validation. Release status therefore remains **NOT READY**.
+
+## P0 technical hardening — 2026-08-30 (dirty worktree, not authoritative)
+
+Phase 0 is **COMPLETE** — 2026-08-31 clean at `24127a6` (`verify-phase-zero-closure` PASS) — no governance, decision, endpoint, or control approvals were fabricated. This worktree applies the four offline REVIEW hardening items identified in the 2026-08-30 line-by-line review and the 2026-08-31 decision-log secondary-table/rebind (0a588d8->24127a6):
+
+- turbo.json narrowed: removed S3_ACCESS_KEY and S3_SECRET_KEY from globalPassThroughEnv to avoid secret pass-through on build cache. S3_BUCKET, S3_ENDPOINT, S3_REGION remain as non-secret build inputs.
+- apps/api/src/safe-api-exception.filter.ts hardened: non-/api/v1 responses now use the same generic error/requestId envelope instead of leaking exception.getResponse() (prevents Nest validation details on non-API routes).
+- apps/api/src/app.module.ts distributed throttling: ThrottlerModule now uses RedisThrottlerStorage (apps/api/src/throttler-redis.storage.ts) when REDIS_URL is set and APP_ENV != test; otherwise falls back to in-memory. This addresses the documented process-local limitation without breaking local/test runs.
+- apps/web/middleware.ts added: edge redirect for /internal/* and /supplier/* without mecoflow_session to /login?returnTo=, and /login with session to /. Existing server-side requireMe/writeApi checks remain authoritative; middleware is defense-in-depth.
+- apps/web/next.config.ts CSP unsafe-inline retained and documented as Next.js runtime requirement; migration to nonce tracked as P1 hardening (see SECURITY_MODEL.md honest limitation).
+
+B-01 advisory fix is now CLOSED 2026-08-30: pnpm-workspace.yaml overrides updated to brace-expansion@5.0.9 fast-uri@3.1.5 js-yaml@4.3.1 nanoid@3.3.18 deepmerge-ts@8.0.0, pnpm-lock.yaml regenerated with new integrities, pnpm audit now reports 0 High / 0 Critical (585 deps, 0 advisories) and pnpm install --frozen-lockfile passes supply-chain policy. See scripts/dependency-audit-policy.mjs now expects 0 advisories. Committed at `78f1ea4` (worktree clean, `pnpm governance:check` and `repository-governance` 19/19 pass, 112-path inventory). B-02/B-03 (Keycloak/RHBK, 14-image scan), B-04 (MinIO->S3), B-05/B-06 (production/monitoring preflight), B-07..B-18 (governance) remain OPEN and require human/business-sponsor, procurement, and protected-main reproduction per PRODUCTION_READINESS_MASTER_PLAN.md. No closure is claimed until `main` merge + independent reproduction.
+
+A 2026-08-20 decision pass populated the typed readiness records with the
+explicit plan-approved proposal: exact D-01–D-07 service, recovery, retention,
+capacity, locale, client, and accessibility values; RHBK 26.6.5 on RHEL 9 EC2;
+private AWS S3/KMS/Object Lock with Singapore recovery copies; exact public and
+private endpoints; and current browser/OS/deployment versions. Proposed
+ADR-0015 records the AWS Jakarta topology without claiming it is accepted or
+provisioned. Exact people, stable identities, procurement/account/change-ticket
+references, provider evidence, approvals, successful runs, and closure
+evidence remain intentionally `BLOCKED`/`null`. No repository actor,
+diagnostic run, chat statement, or local/staging value was promoted into a
+human approval, contract, or provisioned control.
 
 On 2026-08-02 the repository gained a provider-neutral production-control
 contract and preflight for external secret files, trusted TLS, KMS-backed
@@ -380,7 +563,7 @@ incomplete.
 
 - `pnpm security:image-scan:test` passed 5/5 policy tests. The complete
   `APP_VERSION=0.1.0-security-scan pnpm security:image-scan` run scanned 11
-  images: ten passed with zero HIGH/CRITICAL findings; Keycloak 26.7.0 failed
+  images: ten passed with zero HIGH/CRITICAL findings; Keycloak 26.7.0 failed (now pinned to 26.7.2@sha256:fc072c227dd8d94decf013be9c8395676efacfab5a0ab33ac4d32dd72b4d719a, rescan pending)
   on 15 occurrences / 12 unique HIGH findings. The nonzero result is the
   intended release-blocking behavior, not a skipped test.
 - `pnpm production:preflight:test` passed 8/8 policy tests;
@@ -416,7 +599,7 @@ incomplete.
 
 # Known defects
 
-- The container gate is red for Keycloak 26.7.0. No newer clean official image
+- The container gate is red for Keycloak 26.7.0 (now updated to 26.7.2@sha256:fc072c227dd8d94decf013be9c8395676efacfab5a0ab33ac4d32dd72b4d719a in this worktree, rescan pending). No newer clean official image previously
   was available during the 2026-08-01 scan and no exception is approved. A
   supported clean image or externally approved exact time-bound exceptions
   with compensating controls are required before release.

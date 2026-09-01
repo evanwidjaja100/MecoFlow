@@ -108,7 +108,7 @@ API documentation files are at `docs/PROJECTS_API.md`, `docs/ITEM_MASTER_API.md`
 
 ## Current status
 
-See `docs/IMPLEMENTATION_STATUS.md`, `docs/SECURITY_REVIEW.md`, and
+See `IMPLEMENTATION_STATUS.md`, `docs/SECURITY_REVIEW.md`, and
 `docs/PERFORMANCE_REVIEW.md`. Phase 9C staging preparation and smoke testing
 are implemented; see `docs/DEPLOYMENT.md`, `docs/BACKUP_RESTORE.md`,
 `docs/ROLLBACK_RUNBOOK.md`, and `docs/RELEASE_CHECKLIST.md`. This is not a

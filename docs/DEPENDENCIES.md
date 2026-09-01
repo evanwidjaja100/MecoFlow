@@ -27,7 +27,7 @@ Overrides are exact, lockfile-enforced, and should be removed when the owning
 packages resolve equal or newer patched versions directly.
 
 Phase 9C adds no npm dependency. Staging pins purpose-specific container
-versions for PostgreSQL 18 Alpine, Redis 8.2 Alpine, Keycloak 26.7.0, ClamAV
+versions for PostgreSQL 18 Alpine, Redis 8.2 Alpine, Keycloak 26.7.2, ClamAV
 1.4.5, and nginx 1.29 Alpine. They supply the documented database,
 cache/coordination, OIDC, malware-scanning, backup, and TLS reverse-proxy
 responsibilities instead of embedding substitutes in application code.

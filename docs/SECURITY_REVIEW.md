@@ -297,7 +297,7 @@ from exact commits with explicit fixed module versions.
 
 After remediation, API, worker, web, migrations, operations, MinIO, ClamAV,
 PostgreSQL, proxy, and Redis each report zero HIGH/CRITICAL findings. Runtime
-identity/content probes also passed. Keycloak 26.7.0 reports 15 occurrences
+identity/content probes also passed. Keycloak 26.7.2 reports 15 occurrences
 across 12 unique HIGH findings in Red Hat OpenJDK, Jackson, Microsoft JDBC,
 Netty, and PostgreSQL JDBC packages. One OpenJDK finding has no vendor fix in
 the scanned image; the others have fixed component versions but no newer

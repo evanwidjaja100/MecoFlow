@@ -152,7 +152,7 @@ pnpm security:image-scan
 Do not deploy when the scan exits nonzero. Raw reports remain under ignored
 `.runtime/security-scans`; copy only the reviewed summary to the approved
 release-evidence store. As of 2026-08-01, ten of eleven images are clean and
-Keycloak 26.7.0 blocks the candidate, so the following historical staging
+Keycloak 26.7.2 blocks the candidate, so the following historical staging
 evidence does not authorize production or a new release.
 
 The exact controlled commands above built version
