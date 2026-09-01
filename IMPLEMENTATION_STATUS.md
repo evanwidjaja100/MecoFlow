@@ -16,7 +16,7 @@ isolated databases. This is not a production-readiness claim.
 ## Production-readiness remediation status — 2026-08-20
 
 Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
-**IN PROGRESS / BLOCKED**. Phases 1 and 2 remain locked.
+**COMPLETE** at `24127a6` (clean, `verify-phase-zero-closure` PASS 2026-08-31/2026-09-01). Phase 1 is unlocked for explicit user authorization; Phase 2 remains locked.
 
 The historical source-affecting Phase 0 candidate
 `6d91208a6d5912508178f981f575ff4345e34430`
@@ -173,7 +173,7 @@ validation. Release status therefore remains **NOT READY**.
 
 ## P0 technical hardening — 2026-08-30 (dirty worktree, not authoritative)
 
-Phase 0 remains **IN PROGRESS / BLOCKED** — no governance, decision, endpoint, or control approvals were fabricated. This worktree applies the four offline REVIEW hardening items identified in the 2026-08-30 line-by-line review:
+Phase 0 is **COMPLETE** — 2026-08-31 clean at `24127a6` (`verify-phase-zero-closure` PASS) — no governance, decision, endpoint, or control approvals were fabricated. This worktree applies the four offline REVIEW hardening items identified in the 2026-08-30 line-by-line review and the 2026-08-31 decision-log secondary-table/rebind (0a588d8->24127a6):
 
 - turbo.json narrowed: removed S3_ACCESS_KEY and S3_SECRET_KEY from globalPassThroughEnv to avoid secret pass-through on build cache. S3_BUCKET, S3_ENDPOINT, S3_REGION remain as non-secret build inputs.
 - apps/api/src/safe-api-exception.filter.ts hardened: non-/api/v1 responses now use the same generic error/requestId envelope instead of leaking exception.getResponse() (prevents Nest validation details on non-API routes).
