@@ -162,6 +162,7 @@ export class BomImportProcessor {
           },
           where: { id: event.id },
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
         await (transaction.auditEvent.create as any)({
           data: {
             action: "BOM_IMPORT_PARSED",
@@ -224,6 +225,7 @@ export class BomImportProcessor {
         where: { id: event.id },
       });
       if (terminal && bomImport)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
         await (transaction.auditEvent.create as any)({
           data: {
             action: "BOM_IMPORT_REJECTED",

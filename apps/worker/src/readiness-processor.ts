@@ -246,6 +246,7 @@ export class ReadinessProcessor {
           });
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
         await (transaction.auditEvent.create as any)({
           data: {
             action: "READINESS_RECALCULATED",

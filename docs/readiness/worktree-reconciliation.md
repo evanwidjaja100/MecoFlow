@@ -48,7 +48,7 @@ Phase 0 edits. All rows are intentional Phase 0 governance/readiness work and
 remain attributable to this Phase 0 candidate even after they are committed.
 Each row below carries its own exact classification from the five Phase 0
 categories; no classification is inherited from prose or inferred from purpose.
-The reconciled current inventory contains 171 paths relative to the entry
+The reconciled current inventory contains 173 paths relative to the entry
 baseline. The historical source-affecting candidate was
 `6d91208a6d5912508178f981f575ff4345e34430`; the Phase 0 contract repair at
 `aa87b4e269bed660a761d6c36a1093a666addbd9` adds the three explicitly
@@ -216,6 +216,7 @@ outstanding.
 | `apps/api/src/purchase-orders/purchase-orders.service.ts`                                    | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: a7f6075                                                                        |
 | `apps/api/src/readiness/readiness.repository.ts`                                             | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: a7f6075                                                                        |
 | `apps/api/src/receiving/receiving-authorization.policy.ts`                                   | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: a7f6075                                                                        |
+| `apps/api/src/receiving/receiving.controller.ts`                                                | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: a7f6075                                                                        |
 | `apps/api/src/receiving/receiving.repository.ts`                                             | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: a7f6075                                                                        |
 | `apps/api/src/receiving/receiving.service.ts`                                                | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: a7f6075                                                                        |
 | `apps/api/src/reports/reports-authorization.policy.ts`                                       | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: a7f6075                                                                        |
@@ -234,6 +235,7 @@ outstanding.
 | `docs/AUTHORIZATION_MATRIX.md`                                                               | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: fb106a5                                                                        |
 | `docs/DOMAIN_MODEL.md`                                                                       | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: fb106a5                                                                        |
 | `docs/ARCHITECTURE.md`                                                                       | `intentional product work` | Phase 1 canonical AuthorizationContext/tuple-OR/atomic revalidation/audit      | Phase 1: f7eaf55                                                                        |
+| `packages/eslint-config/base.mjs`                                                     | `intentional product work` | Phase 1 lint: suppress unused eslint-disable warnings via linterOptions      | Phase 1: a7f6075                                                                        |
 | `docs/readiness/phase-one-defects.md`                                                        | `intentional product work` | Phase 1 defect ledger for canonical attribution gaps                           | Phase 1: 007d953                                                                        |
 
 Any later path appearing in Git status must be added to this table and

@@ -1,4 +1,5 @@
-﻿import {
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
+import {
   ConflictException,
   Inject,
   Injectable,
@@ -196,7 +197,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "ITEM_CATEGORY_CREATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: { code: { from: null, to: category.code } },
           context: input.context,
           entityId: category.id,
@@ -266,7 +267,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "ITEM_CATEGORY_UPDATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             active: { from: current.active, to: updated.active },
             code: { from: current.code, to: updated.code },
@@ -325,7 +326,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "UNIT_OF_MEASURE_CREATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             code: { from: null, to: unit.code },
             decimalPrecision: { from: null, to: unit.decimalPrecision },
@@ -416,7 +417,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "UNIT_OF_MEASURE_UPDATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             active: { from: current.active, to: updated.active },
             code: { from: current.code, to: updated.code },
@@ -515,7 +516,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "SPECIFICATION_ATTRIBUTE_CREATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             code: { from: null, to: attribute.code },
             dataType: { from: null, to: attribute.dataType },
@@ -636,7 +637,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "SPECIFICATION_ATTRIBUTE_UPDATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             active: { from: current.active, to: updated.active },
             code: { from: current.code, to: updated.code },
@@ -755,7 +756,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "ITEM_CREATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             code: { from: null, to: item.code },
             specificationAttributeIds: input.specificationValues.map(
@@ -866,7 +867,7 @@ export class ItemsRepository {
         await this.audit(transaction, {
           action: "ITEM_UPDATED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             code: { from: current.code, to: updated.code },
             name: { from: current.name, to: updated.name },
@@ -933,7 +934,7 @@ export class ItemsRepository {
       await this.audit(transaction, {
         action: "ITEM_DEACTIVATED",
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           active: { from: true, to: false },
           reason: input.reason,

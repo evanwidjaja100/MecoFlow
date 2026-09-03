@@ -46,7 +46,7 @@ export class ReceivingController {
   @ApiOperation({ summary: "List own-organization advance shipment notices" })
   async supplierList(@Req() request: Request) {
     const principal = await this.identity.principal(request);
-    return this.receiving.supplierList(principal);
+    return this.receiving.supplierList(principal, requestContext(request));
   }
 
   @Post("supplier/purchase-orders/:purchaseOrderId/asns")
@@ -73,7 +73,7 @@ export class ReceivingController {
     @Param("asnId", new ParseUUIDPipe()) asnId: string,
   ) {
     const principal = await this.identity.principal(request);
-    return this.receiving.supplierDetail(principal, asnId);
+    return this.receiving.supplierDetail(principal, requestContext(request), asnId);
   }
 
   private async supplierCommand(

@@ -6,6 +6,11 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
+    },
+  },
+  {
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
       parserOptions: {

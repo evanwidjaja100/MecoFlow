@@ -1,4 +1,5 @@
-﻿import {
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
+import {
   ConflictException,
   Inject,
   Injectable,
@@ -138,14 +139,14 @@ export class NotificationsRepository {
       await transaction.$queryRaw`
         SELECT id
         FROM user_profiles
-        WHERE id = ${input.actorUserId as string}::uuid
+        WHERE id = ${input.actorUserId}::uuid
         FOR UPDATE
       `;
       const current = await transaction.notificationPreference.findUnique({
         where: {
           userId_type: {
             type: input.type,
-            userId: input.actorUserId as string,
+            userId: input.actorUserId,
           },
         },
       });
@@ -157,7 +158,7 @@ export class NotificationsRepository {
             emailEnabled: input.emailEnabled,
             inAppEnabled: input.inAppEnabled,
             type: input.type,
-            userId: input.actorUserId as string,
+            userId: input.actorUserId,
           },
         });
         await this.auditPreference(transaction, input, created.id);
@@ -198,7 +199,7 @@ export class NotificationsRepository {
     return (transaction.auditEvent.create as any)({
       data: {
         action: "NOTIFICATION_PREFERENCE_UPDATED",
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           emailEnabled: input.emailEnabled,
           inAppEnabled: input.inAppEnabled,

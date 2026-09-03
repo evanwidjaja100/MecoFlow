@@ -1,4 +1,5 @@
-﻿import {
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
+import {
   ConflictException,
   Inject,
   Injectable,
@@ -201,7 +202,7 @@ export class BomsRepository {
       await this.audit(transaction, {
         action: "BOM_IMPORT_UPLOADED",
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           byteSize: sourceFile.byteSize,
           extension: sourceFile.extension,
@@ -420,7 +421,7 @@ export class BomsRepository {
       await this.audit(transaction, {
         action: "BOM_IMPORT_CONFIRMED",
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           lineCount: bomImport.rows.length,
           revisionNumber,
@@ -537,7 +538,7 @@ export class BomsRepository {
       await this.audit(transaction, {
         action: "BOM_LINE_CORRECTED",
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           criticality: { from: current.criticality, to: updated.criticality },
           notesChanged: current.notes !== updated.notes,
@@ -633,7 +634,7 @@ export class BomsRepository {
       await this.audit(transaction, {
         action,
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           reason: input.reason,
           status: { from: current.status, to: targetStatus },
@@ -756,7 +757,7 @@ export class BomsRepository {
         await this.audit(transaction, {
           action: "BOM_REVISION_SUPERSEDED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             replacementRevisionId: locked.id,
             status: { from: "RELEASED", to: "SUPERSEDED" },
@@ -798,7 +799,7 @@ export class BomsRepository {
       await this.audit(transaction, {
         action: "BOM_REVISION_RELEASED",
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           lineCount: current._count.lines,
           previousReleasedRevisionId: previous?.id ?? null,

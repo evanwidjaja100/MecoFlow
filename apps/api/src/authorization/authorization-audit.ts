@@ -16,7 +16,7 @@ export function toAuditData(
     action: base.action,
     actorMembershipId: ctx.actorMembershipId ?? null,
     actorUserId: ctx.actorUserId ?? null,
-    changes: (base.changes ?? {}) as Prisma.InputJsonValue,
+    changes: base.changes ?? {},
     correlationId: ctx.correlationId,
     entityId: base.entityId,
     entityType: base.entityType,

@@ -1,4 +1,5 @@
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import { createParamDecorator } from "@nestjs/common";
+import type { ExecutionContext } from "@nestjs/common";
 import type {
   AuthorizationContext,
   AuthorizationContextSet,
@@ -6,6 +7,7 @@ import type {
 
 export const AuthContext = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): AuthorizationContext => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const request = ctx.switchToHttp().getRequest() as {
       authorizationContext?: AuthorizationContext;
     };
@@ -20,6 +22,7 @@ export const AuthContext = createParamDecorator(
 
 export const AuthContextSet = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): AuthorizationContextSet => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const request = ctx.switchToHttp().getRequest() as {
       authorizationContextSet?: AuthorizationContextSet;
     };

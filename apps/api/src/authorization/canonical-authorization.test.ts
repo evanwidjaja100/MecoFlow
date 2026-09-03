@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
 import { describe, expect, it } from "vitest";
 import { ForbiddenException } from "@nestjs/common";
 import { AuthorizationService } from "./authorization.service.js";

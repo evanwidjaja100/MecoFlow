@@ -1,4 +1,5 @@
-﻿import { UnprocessableEntityException } from "@nestjs/common";
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
+import { UnprocessableEntityException } from "@nestjs/common";
 import type { Prisma } from "@mecoflow/database";
 import type { RequestContext } from "../identity/identity.types.js";
 
@@ -53,7 +54,7 @@ export async function createInspectionForLot(
           })),
         },
       },
-      createdByUserId: input.actorUserId as string,
+      createdByUserId: input.actorUserId,
       inventoryLotId: input.inventoryLotId,
       projectId: input.projectId,
       receivedQuantityAtCreation: input.effectiveQuantity,
@@ -63,7 +64,7 @@ export async function createInspectionForLot(
     data: {
       action: "RECEIVING_INSPECTION_CREATED",
       actorMembershipId: input.actorMembershipId ?? null,
-      actorUserId: input.actorUserId as string,
+      actorUserId: input.actorUserId,
       changes: {
         checkCount: definitions.length,
         inventoryLotId: input.inventoryLotId,

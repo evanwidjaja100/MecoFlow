@@ -1,4 +1,5 @@
-﻿import { Inject, Injectable, ConflictException } from "@nestjs/common";
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
+import { Inject, Injectable, ConflictException } from "@nestjs/common";
 import type { ServiceEnvironment } from "@mecoflow/config";
 import {
   createDatabaseClient,

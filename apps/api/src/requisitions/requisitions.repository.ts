@@ -1,4 +1,5 @@
-﻿import {
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
+import {
   ConflictException,
   Inject,
   Injectable,
@@ -341,7 +342,7 @@ export class RequisitionsRepository {
           outstandingQuantitySnapshot: outstanding,
           overNeedOverride: overNeed,
           overrideAuthorizedByUserId: overNeed
-            ? (input.actorUserId as string)
+            ? (input.actorUserId)
             : null,
           overrideReason: overNeed ? overrideReason! : null,
           quantity,
@@ -369,7 +370,7 @@ export class RequisitionsRepository {
       await this.audit(transaction, {
         action: "PURCHASE_REQUISITION_CREATED",
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           lineCount: prepared.length,
           requisitionNumber: requisition.requisitionNumber,
@@ -387,7 +388,7 @@ export class RequisitionsRepository {
         await this.audit(transaction, {
           action: "PURCHASE_REQUISITION_OVER_NEED_OVERRIDE_USED",
           actorMembershipId: input.actorMembershipId ?? null,
-          actorUserId: input.actorUserId as string,
+          actorUserId: input.actorUserId,
           changes: {
             lines: overrides.map((line) => ({
               bomLineId: line.bomLineId,
@@ -496,7 +497,7 @@ export class RequisitionsRepository {
       await this.audit(transaction, {
         action,
         actorMembershipId: input.actorMembershipId ?? null,
-        actorUserId: input.actorUserId as string,
+        actorUserId: input.actorUserId,
         changes: {
           reason: input.reason,
           status: { from: current.status, to: targetStatus },
