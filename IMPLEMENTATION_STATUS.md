@@ -18,6 +18,8 @@ isolated databases. This is not a production-readiness claim.
 Master-plan **Phase 0 — Governance, decisions, and immutable baseline** is
 **COMPLETE** at `24127a6` (clean, `verify-phase-zero-closure` PASS 2026-08-31/2026-09-01). Phase 1 is unlocked for explicit user authorization; Phase 2 remains locked.
 
+Phase 1 candidate work is in progress on `codex/phase-one-candidate` (currently `fac0d0a`): canonical AuthorizationContext tuple-OR with exactly-one qualifying membership, system-principal audit, and 14-case coverage, plus lint/governance fixes restoring `turbo lint` 9/9, `turbo typecheck` 9/9, repository-governance PASS, and the 173-path worktree inventory. Working candidate only, not a readiness claim; Phase 2 remains locked.
+
 The historical source-affecting Phase 0 candidate
 `6d91208a6d5912508178f981f575ff4345e34430`
 on `codex/phase-zero-candidate` adds or corrects repository controls. The
