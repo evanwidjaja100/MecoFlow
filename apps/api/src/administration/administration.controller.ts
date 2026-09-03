@@ -67,7 +67,11 @@ export class AdministrationController {
     @Body() input: CreateOrganizationDto,
   ) {
     const principal = await this.identity.principal(request, true);
-    return this.administration.createOrganization(principal, input);
+    return this.administration.createOrganization(
+      principal,
+      requestContext(request),
+      input,
+    );
   }
 
   @Get("roles")

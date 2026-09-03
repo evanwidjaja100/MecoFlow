@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -128,14 +128,26 @@ export class NotificationsRepository {
     type: NotificationType;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw`
         SELECT id
         FROM user_profiles
-        WHERE id = ${input.actorUserId}::uuid
+        WHERE id = ${input.actorUserId as string}::uuid
         FOR UPDATE
       `;
       const current = await transaction.notificationPreference.findUnique({
-        where: { userId_type: { type: input.type, userId: input.actorUserId } },
+        where: {
+          userId_type: {
+            type: input.type,
+            userId: input.actorUserId as string,
+          },
+        },
       });
       if (!current) {
         if (input.expectedVersion !== 1)
@@ -145,7 +157,7 @@ export class NotificationsRepository {
             emailEnabled: input.emailEnabled,
             inAppEnabled: input.inAppEnabled,
             type: input.type,
-            userId: input.actorUserId,
+            userId: input.actorUserId as string,
           },
         });
         await this.auditPreference(transaction, input, created.id);
@@ -183,10 +195,10 @@ export class NotificationsRepository {
     },
     entityId: string,
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: "NOTIFICATION_PREFERENCE_UPDATED",
-        actorUserId: input.actorUserId,
+        actorUserId: input.actorUserId as string,
         changes: {
           emailEnabled: input.emailEnabled,
           inAppEnabled: input.inAppEnabled,

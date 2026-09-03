@@ -1,4 +1,4 @@
-import {
+﻿import {
   Inject,
   Injectable,
   UnprocessableEntityException,
@@ -57,6 +57,7 @@ export class ProjectsService {
   ) {
     const membership = this.policy.requireCategoryWrite(principal);
     return this.repository.createProductCategory({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: input.code.trim().toUpperCase(),
@@ -81,6 +82,7 @@ export class ProjectsService {
     const membership = this.policy.requireCategoryWrite(principal);
     return this.repository.updateProductCategory({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: input.code.trim().toUpperCase(),
@@ -176,9 +178,14 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireProjectWrite(principal, scope);
+    const authContext = await this.policy.requireProjectWriteContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.updateProject({
       ...projectDates(input),
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       code: input.code.trim().toUpperCase(),
       context,
@@ -201,8 +208,13 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireProjectWrite(principal, scope);
+    const authContext = await this.policy.requireProjectWriteContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.transitionProject({
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       context,
       expectedVersion: input.expectedVersion,
@@ -228,8 +240,13 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireMemberManagement(principal, scope);
+    const authContext = await this.policy.requireMemberManagementContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.addProjectMember({
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       context,
       membershipId: input.membershipId,
@@ -250,8 +267,13 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireMemberManagement(principal, scope);
+    const authContext = await this.policy.requireMemberManagementContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.updateProjectMember({
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       context,
       memberId,
@@ -272,8 +294,13 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireProjectWrite(principal, scope);
+    const authContext = await this.policy.requireProjectWriteContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.createMilestone({
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       code: input.code.trim().toUpperCase(),
       context,
@@ -298,8 +325,13 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireProjectWrite(principal, scope);
+    const authContext = await this.policy.requireProjectWriteContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.updateMilestone({
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       code: input.code.trim().toUpperCase(),
       context,
@@ -326,9 +358,14 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireProjectWrite(principal, scope);
+    const authContext = await this.policy.requireProjectWriteContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.createWorkPackage({
       ...projectDates(input),
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       code: input.code.trim().toUpperCase(),
       context,
@@ -355,9 +392,14 @@ export class ProjectsService {
     },
   ) {
     const scope = await this.policy.scope(projectId);
-    await this.policy.requireProjectWrite(principal, scope);
+    const authContext = await this.policy.requireProjectWriteContext(
+      principal,
+      scope,
+      context,
+    );
     return this.repository.updateWorkPackage({
       ...projectDates(input),
+      actorMembershipId: authContext.actorMembershipId,
       actorUserId: principal.user.id,
       code: input.code.trim().toUpperCase(),
       context,

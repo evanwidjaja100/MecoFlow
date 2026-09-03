@@ -57,6 +57,7 @@ export class PurchaseOrdersService {
     return this.policy.requireWrite(principal, projectId).then((membership) =>
       this.repository.create({
         ...input,
+        actorMembershipId: membership.id,
         actorUserId: principal.user.id,
         auditOrganizationId: membership.organization.id,
         canOverride: this.policy.canOverride(principal, membership.id),
@@ -106,6 +107,7 @@ export class PurchaseOrdersService {
     const membership = await this.internalOrderScope(principal, id, "write");
     return this.repository.revise({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       canOverride: this.policy.canOverride(principal, membership.id),
@@ -123,6 +125,7 @@ export class PurchaseOrdersService {
   ) {
     const membership = await this.internalOrderScope(principal, id, kind);
     return this.repository[kind]({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -155,13 +158,17 @@ export class PurchaseOrdersService {
     return { data: await this.repository.exceptions(projectId) };
   }
 
-  supplierList(principal: AuthenticatedPrincipal) {
+  supplierList(
+    principal: AuthenticatedPrincipal,
+    requestContext: RequestContext,
+  ) {
     const scope = this.policy.supplierScope(
       principal,
       "supplier.purchase-order.read",
+      requestContext,
     );
     return this.repository
-      .supplierList(scope.organizationIds, scope.membershipIds)
+      .supplierListFromSet(scope)
       .then((data) => ({ data }));
   }
 
@@ -172,23 +179,31 @@ export class PurchaseOrdersService {
       | "supplier.commitment.write"
       | "supplier.purchase-order.acknowledge"
       | "supplier.purchase-order.read",
+    requestContext: RequestContext,
   ) {
-    const scope = this.policy.supplierScope(principal, permission);
-    if (
-      !(await this.repository.supplierCanAccess(
-        id,
-        scope.organizationIds,
-        scope.membershipIds,
-      ))
-    )
+    const scope = this.policy.supplierScope(
+      principal,
+      permission,
+      requestContext,
+    );
+    if (!(await this.repository.supplierCanAccessFromSet(id, scope)))
       throw new NotFoundException("Resource not found");
     const detail = await this.repository.supplierDetail(id);
     if (!detail) throw new NotFoundException("Resource not found");
     return detail;
   }
 
-  supplierDetail(principal: AuthenticatedPrincipal, id: string) {
-    return this.supplierOrder(principal, id, "supplier.purchase-order.read");
+  supplierDetail(
+    principal: AuthenticatedPrincipal,
+    requestContext: RequestContext,
+    id: string,
+  ) {
+    return this.supplierOrder(
+      principal,
+      id,
+      "supplier.purchase-order.read",
+      requestContext,
+    );
   }
 
   async acknowledge(
@@ -201,8 +216,14 @@ export class PurchaseOrdersService {
       principal,
       id,
       "supplier.purchase-order.acknowledge",
+      context,
     );
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === detail.supplierOrganization.id,
+    );
+    if (!actorMembership) throw new NotFoundException("Resource not found");
     return this.repository.acknowledge({
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: detail.supplierOrganization.id,
       context,
@@ -226,9 +247,15 @@ export class PurchaseOrdersService {
       principal,
       id,
       "supplier.commitment.write",
+      context,
     );
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === detail.supplierOrganization.id,
+    );
+    if (!actorMembership) throw new NotFoundException("Resource not found");
     return this.repository.appendCommitment({
       ...input,
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: detail.supplierOrganization.id,
       context,

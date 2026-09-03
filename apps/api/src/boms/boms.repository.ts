@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -17,7 +17,9 @@ import { canReleaseBom, canTransitionBom } from "./bom-lifecycle.js";
 import type { ValidatedUpload } from "./bom-storage.service.js";
 
 type RevisionCommand = {
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   auditOrganizationId: string;
   context: RequestContext;
   expectedVersion: number;
@@ -79,7 +81,9 @@ export class BomsRepository {
     transaction: Prisma.TransactionClient,
     input: {
       action: string;
-      actorUserId: string;
+      actorUserId: string | null;
+      actorMembershipId?: string | null;
+      systemPrincipal?: string | null;
       changes: Prisma.InputJsonValue;
       context: RequestContext;
       entityId: string;
@@ -87,10 +91,11 @@ export class BomsRepository {
       organizationId: string;
     },
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -98,6 +103,7 @@ export class BomsRepository {
         organizationId: input.organizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -124,7 +130,9 @@ export class BomsRepository {
   }
 
   async createImport(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     context: RequestContext;
     projectId: string;
@@ -132,6 +140,13 @@ export class BomsRepository {
     workPackageId?: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const project = await transaction.project.findUnique({
         where: { id: input.projectId },
       });
@@ -160,7 +175,7 @@ export class BomsRepository {
         data: {
           auditOrganizationId: input.auditOrganizationId,
           projectId: input.projectId,
-          requestedByUserId: input.actorUserId,
+          requestedByUserId: input.actorUserId as string,
           sourceFileId: sourceFile.id,
           workPackageId: input.workPackageId ?? null,
         },
@@ -185,7 +200,8 @@ export class BomsRepository {
       });
       await this.audit(transaction, {
         action: "BOM_IMPORT_UPLOADED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           byteSize: sourceFile.byteSize,
           extension: sourceFile.extension,
@@ -247,7 +263,9 @@ export class BomsRepository {
   }
 
   async confirmImport(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     context: RequestContext;
     expectedVersion: number;
@@ -256,6 +274,13 @@ export class BomsRepository {
     title: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw`SELECT id FROM bom_imports WHERE id = ${input.importId}::uuid FOR UPDATE`;
       const bomImport = await transaction.bomImport.findUnique({
         include: {
@@ -344,7 +369,7 @@ export class BomsRepository {
       const revision = await transaction.bomRevision.create({
         data: {
           bomId: bom.id,
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           notes: input.notes,
           revisionNumber,
           sourceChecksum: bomImport.sourceFile.sha256,
@@ -394,7 +419,8 @@ export class BomsRepository {
       });
       await this.audit(transaction, {
         action: "BOM_IMPORT_CONFIRMED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           lineCount: bomImport.rows.length,
           revisionNumber,
@@ -445,7 +471,9 @@ export class BomsRepository {
   }
 
   async updateLine(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     context: RequestContext;
     criticality: "CRITICAL" | "HIGH" | "NORMAL" | "LOW";
@@ -457,6 +485,13 @@ export class BomsRepository {
     unitOfMeasureId: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const current = await transaction.bomLine.findFirst({
         include: {
           bomRevision: true,
@@ -501,7 +536,8 @@ export class BomsRepository {
       });
       await this.audit(transaction, {
         action: "BOM_LINE_CORRECTED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           criticality: { from: current.criticality, to: updated.criticality },
           notesChanged: current.notes !== updated.notes,
@@ -526,6 +562,13 @@ export class BomsRepository {
     action: string,
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw`SELECT id FROM bom_revisions WHERE id = ${input.revisionId}::uuid FOR UPDATE`;
       const current = await transaction.bomRevision.findUnique({
         include: {
@@ -575,7 +618,8 @@ export class BomsRepository {
         throw new ConflictException("Concurrent modification");
       await transaction.bomRevisionTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           bomRevisionId: current.id,
           reason: input.reason,
           sourceStatus: current.status,
@@ -588,7 +632,8 @@ export class BomsRepository {
       });
       await this.audit(transaction, {
         action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           reason: input.reason,
           status: { from: current.status, to: targetStatus },
@@ -636,6 +681,13 @@ export class BomsRepository {
 
   async release(input: RevisionCommand) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const current = await transaction.bomRevision.findUnique({
         include: {
           _count: { select: { lines: true } },
@@ -693,7 +745,8 @@ export class BomsRepository {
         });
         await transaction.bomRevisionTransition.create({
           data: {
-            actorUserId: input.actorUserId,
+            actorMembershipId: input.actorMembershipId ?? null,
+            actorUserId: input.actorUserId as string,
             bomRevisionId: previous.id,
             reason: `Superseded by revision ${locked.revisionNumber}: ${input.reason}`,
             sourceStatus: "RELEASED",
@@ -702,7 +755,8 @@ export class BomsRepository {
         });
         await this.audit(transaction, {
           action: "BOM_REVISION_SUPERSEDED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             replacementRevisionId: locked.id,
             status: { from: "RELEASED", to: "SUPERSEDED" },
@@ -729,7 +783,8 @@ export class BomsRepository {
         throw new ConflictException("Concurrent modification");
       await transaction.bomRevisionTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           bomRevisionId: locked.id,
           reason: input.reason,
           sourceStatus: "IN_REVIEW",
@@ -742,7 +797,8 @@ export class BomsRepository {
       });
       await this.audit(transaction, {
         action: "BOM_REVISION_RELEASED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           lineCount: current._count.lines,
           previousReleasedRevisionId: previous?.id ?? null,

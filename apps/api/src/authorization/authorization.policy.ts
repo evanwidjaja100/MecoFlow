@@ -15,16 +15,11 @@ export class AuthorizationPolicy {
     permission: string,
     organizationId?: string,
   ): boolean {
-    return principal.memberships.some((membership) => {
-      const systemAdministrator =
-        membership.organization.type === "INTERNAL" &&
-        membership.roles.includes("SYSTEM_ADMIN");
-      const inScope =
-        !organizationId ||
-        membership.organization.id === organizationId ||
-        systemAdministrator;
-      return inScope && membership.permissions.has(permission);
-    });
+    return principal.memberships.some(
+      (membership) =>
+        (!organizationId || membership.organization.id === organizationId) &&
+        membership.permissions.has(permission),
+    );
   }
 
   requirePermission(
@@ -49,10 +44,11 @@ export class AuthorizationPolicy {
     principal: AuthenticatedPrincipal,
     organizationId: string,
   ): PrincipalMembership {
-    const membership = principal.memberships.find(
+    const qualifying = principal.memberships.filter(
       (candidate) => candidate.organization.id === organizationId,
     );
-    if (!membership) throw new NotFoundException("Resource not found");
-    return membership;
+    if (qualifying.length !== 1)
+      throw new NotFoundException("Resource not found");
+    return qualifying[0] as PrincipalMembership;
   }
 }

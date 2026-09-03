@@ -72,6 +72,7 @@ export class BomsService {
         storageKey: upload.storageKey,
       };
       return await this.repository.createImport({
+        actorMembershipId: membership.id,
         actorUserId: principal.user.id,
         auditOrganizationId: membership.organization.id,
         context,
@@ -104,6 +105,7 @@ export class BomsService {
     if (!projectId) throw new NotFoundException("Resource not found");
     const membership = await this.policy.requireImport(principal, projectId);
     return this.repository.confirmImport({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -141,6 +143,7 @@ export class BomsService {
     const membership = await this.policy.requireWrite(principal, projectId);
     return this.repository.updateLine({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -164,6 +167,7 @@ export class BomsService {
         ? await this.policy.requireRelease(principal, projectId)
         : await this.policy.requireReview(principal, projectId);
     return this.repository[kind]({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,

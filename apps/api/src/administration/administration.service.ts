@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import { AuthorizationPolicy } from "../authorization/authorization.policy.js";
 import type {
   AuthenticatedPrincipal,
@@ -45,11 +45,24 @@ export class AdministrationService {
 
   createOrganization(
     principal: AuthenticatedPrincipal,
+    context: RequestContext,
     input: { code: string; name: string; type: "INTERNAL" | "SUPPLIER" },
   ) {
     this.authorization.requireInternalAdministration(principal);
     this.authorization.requirePermission(principal, "organization.write");
-    return this.repository.createOrganization(input);
+    const actorMembership = principal.memberships.find(
+      (m) =>
+        m.organization.type === "INTERNAL" &&
+        m.permissions.has("organization.write"),
+    );
+    if (!actorMembership) throw new ForbiddenException("Access denied");
+    return this.repository.createOrganization({
+      ...input,
+      actorMembershipId: actorMembership.id,
+      actorUserId: principal.user.id,
+      auditOrganizationId: actorMembership.organization.id,
+      context,
+    });
   }
 
   createMembership(
@@ -64,7 +77,12 @@ export class AdministrationService {
       "membership.write",
       organizationId,
     );
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === organizationId,
+    );
+    if (!actorMembership) throw new ForbiddenException("Access denied");
     return this.repository.createMembership({
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       context,
       organizationId,
@@ -85,7 +103,12 @@ export class AdministrationService {
       "membership.write",
       organizationId,
     );
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === organizationId,
+    );
+    if (!actorMembership) throw new ForbiddenException("Access denied");
     return this.repository.updateMembershipStatus({
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       context,
       membershipId,
@@ -107,7 +130,12 @@ export class AdministrationService {
       "role.assign",
       organizationId,
     );
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === organizationId,
+    );
+    if (!actorMembership) throw new ForbiddenException("Access denied");
     return this.repository.assignRoles({
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       context,
       membershipId,

@@ -11,6 +11,7 @@ import { AdministrationController } from "./administration/administration.contro
 import { AdministrationRepository } from "./administration/administration.repository.js";
 import { AdministrationService } from "./administration/administration.service.js";
 import { AuthorizationPolicy } from "./authorization/authorization.policy.js";
+import { AuthorizationService } from "./authorization/authorization.service.js";
 import { AuthController } from "./identity/auth.controller.js";
 import { IdentityRepository } from "./identity/identity.repository.js";
 import { IdentityService } from "./identity/identity.service.js";
@@ -124,6 +125,7 @@ export class AppModule {
         OidcService,
         IdentityService,
         AuthorizationPolicy,
+        AuthorizationService,
         AdministrationRepository,
         AdministrationService,
         ProjectsRepository,

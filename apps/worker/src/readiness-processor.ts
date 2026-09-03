@@ -246,10 +246,12 @@ export class ReadinessProcessor {
           });
         }
 
-        await transaction.auditEvent.create({
+        await (transaction.auditEvent.create as any)({
           data: {
             action: "READINESS_RECALCULATED",
+            actorMembershipId: null,
             actorUserId: null,
+            systemPrincipal: "WORKER_READINESS",
             changes: {
               blockerCount: projectCalculation.blockerCount,
               calculatorVersion: projectCalculation.calculatorVersion,

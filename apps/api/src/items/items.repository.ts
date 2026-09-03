@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -23,7 +23,9 @@ import type {
 
 interface AuditInput {
   action: string;
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   changes: Prisma.InputJsonValue;
   context: RequestContext;
   entityId: string;
@@ -130,10 +132,11 @@ export class ItemsRepository {
   }
 
   private audit(transaction: Prisma.TransactionClient, input: AuditInput) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -141,6 +144,7 @@ export class ItemsRepository {
         organizationId: input.organizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -164,7 +168,9 @@ export class ItemsRepository {
   }
 
   async createItemCategory(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -173,6 +179,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         const category = await transaction.itemCategory.create({
           data: {
             code: input.code,
@@ -182,7 +195,8 @@ export class ItemsRepository {
         });
         await this.audit(transaction, {
           action: "ITEM_CATEGORY_CREATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: { code: { from: null, to: category.code } },
           context: input.context,
           entityId: category.id,
@@ -198,7 +212,9 @@ export class ItemsRepository {
 
   async updateItemCategory(input: {
     active: boolean;
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -209,6 +225,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         await transaction.$queryRaw`SELECT id FROM item_categories WHERE id = ${input.id}::uuid FOR UPDATE`;
         const current = await transaction.itemCategory.findUnique({
           where: { id: input.id },
@@ -242,7 +265,8 @@ export class ItemsRepository {
         });
         await this.audit(transaction, {
           action: "ITEM_CATEGORY_UPDATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             active: { from: current.active, to: updated.active },
             code: { from: current.code, to: updated.code },
@@ -271,7 +295,9 @@ export class ItemsRepository {
   }
 
   async createUnitOfMeasure(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -281,6 +307,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         const unit = await transaction.unitOfMeasure.create({
           data: {
             code: input.code,
@@ -291,7 +324,8 @@ export class ItemsRepository {
         });
         await this.audit(transaction, {
           action: "UNIT_OF_MEASURE_CREATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             code: { from: null, to: unit.code },
             decimalPrecision: { from: null, to: unit.decimalPrecision },
@@ -310,7 +344,9 @@ export class ItemsRepository {
 
   async updateUnitOfMeasure(input: {
     active: boolean;
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -322,6 +358,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         await transaction.$queryRaw`SELECT id FROM units_of_measure WHERE id = ${input.id}::uuid FOR UPDATE`;
         const current = await transaction.unitOfMeasure.findUnique({
           where: { id: input.id },
@@ -372,7 +415,8 @@ export class ItemsRepository {
         });
         await this.audit(transaction, {
           action: "UNIT_OF_MEASURE_UPDATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             active: { from: current.active, to: updated.active },
             code: { from: current.code, to: updated.code },
@@ -402,7 +446,9 @@ export class ItemsRepository {
   }
 
   async createSpecificationAttribute(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -417,6 +463,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         await transaction.$queryRaw`SELECT id FROM item_categories WHERE id = ${input.itemCategoryId}::uuid FOR UPDATE`;
         const category = await transaction.itemCategory.findFirst({
           where: { active: true, id: input.itemCategoryId },
@@ -461,7 +514,8 @@ export class ItemsRepository {
           });
         await this.audit(transaction, {
           action: "SPECIFICATION_ATTRIBUTE_CREATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             code: { from: null, to: attribute.code },
             dataType: { from: null, to: attribute.dataType },
@@ -480,7 +534,9 @@ export class ItemsRepository {
 
   async updateSpecificationAttribute(input: {
     active: boolean;
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     attributeId: string;
     auditOrganizationId: string;
     code: string;
@@ -497,6 +553,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         await transaction.$queryRaw`SELECT id FROM item_categories WHERE id = ${input.itemCategoryId}::uuid FOR UPDATE`;
         await transaction.$queryRaw`SELECT id FROM specification_attribute_definitions WHERE id = ${input.attributeId}::uuid FOR UPDATE`;
         const current =
@@ -572,7 +635,8 @@ export class ItemsRepository {
           });
         await this.audit(transaction, {
           action: "SPECIFICATION_ATTRIBUTE_UPDATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             active: { from: current.active, to: updated.active },
             code: { from: current.code, to: updated.code },
@@ -614,7 +678,9 @@ export class ItemsRepository {
   }
 
   async createItem(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -626,6 +692,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         await transaction.$queryRaw`SELECT id FROM item_categories WHERE id = ${input.itemCategoryId}::uuid FOR SHARE`;
         await transaction.$queryRaw`SELECT id FROM units_of_measure WHERE id = ${input.unitOfMeasureId}::uuid FOR SHARE`;
         await transaction.$queryRaw`SELECT id FROM specification_attribute_definitions WHERE "itemCategoryId" = ${input.itemCategoryId}::uuid FOR SHARE`;
@@ -663,7 +736,7 @@ export class ItemsRepository {
         const item = await transaction.item.create({
           data: {
             code: input.code,
-            createdByUserId: input.actorUserId,
+            createdByUserId: input.actorUserId as string,
             description: input.description,
             itemCategoryId: input.itemCategoryId,
             name: input.name,
@@ -681,7 +754,8 @@ export class ItemsRepository {
         });
         await this.audit(transaction, {
           action: "ITEM_CREATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             code: { from: null, to: item.code },
             specificationAttributeIds: input.specificationValues.map(
@@ -701,7 +775,9 @@ export class ItemsRepository {
   }
 
   async updateItem(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -714,6 +790,13 @@ export class ItemsRepository {
   }) {
     try {
       return await this.database.$transaction(async (transaction) => {
+        if ((input as any).actorMembershipId) {
+          const __actorMembership = await transaction.membership.findFirst({
+            where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+          });
+          if (!__actorMembership)
+            throw new ConflictException("Concurrent modification");
+        }
         const current = await transaction.item.findUnique({
           where: { id: input.id },
         });
@@ -782,7 +865,8 @@ export class ItemsRepository {
         });
         await this.audit(transaction, {
           action: "ITEM_UPDATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             code: { from: current.code, to: updated.code },
             name: { from: current.name, to: updated.name },
@@ -807,7 +891,9 @@ export class ItemsRepository {
   }
 
   async deactivateItem(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     context: RequestContext;
     expectedVersion: number;
@@ -815,6 +901,13 @@ export class ItemsRepository {
     reason: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const current = await transaction.item.findUnique({
         where: { id: input.id },
       });
@@ -839,7 +932,8 @@ export class ItemsRepository {
       });
       await this.audit(transaction, {
         action: "ITEM_DEACTIVATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           active: { from: true, to: false },
           reason: input.reason,
@@ -862,6 +956,13 @@ export class ItemsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const rows = await transaction.item.findMany({
         include: {
           itemCategory: true,

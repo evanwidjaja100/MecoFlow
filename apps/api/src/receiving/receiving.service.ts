@@ -16,10 +16,17 @@ export class ReceivingService {
     private readonly repository: ReceivingRepository,
   ) {}
 
-  supplierList(principal: AuthenticatedPrincipal) {
-    const scope = this.policy.supplierScope(principal, "supplier.asn.read");
+  supplierList(
+    principal: AuthenticatedPrincipal,
+    requestContext: RequestContext,
+  ) {
+    const scope = this.policy.supplierScope(
+      principal,
+      "supplier.asn.read",
+      requestContext,
+    );
     return this.repository
-      .supplierList(scope.organizationIds, scope.membershipIds)
+      .supplierAsnListFromSet(scope)
       .then((data) => ({ data }));
   }
 
@@ -28,23 +35,26 @@ export class ReceivingService {
     id: string,
     permission:
       "supplier.asn.read" | "supplier.asn.transition" | "supplier.asn.write",
+    requestContext: RequestContext,
   ) {
-    const scope = this.policy.supplierScope(principal, permission);
-    if (
-      !(await this.repository.supplierCanAccessAsn(
-        id,
-        scope.organizationIds,
-        scope.membershipIds,
-      ))
-    )
+    const scope = this.policy.supplierScope(
+      principal,
+      permission,
+      requestContext,
+    );
+    if (!(await this.repository.supplierCanAccessAsnFromSet(id, scope)))
       throw new NotFoundException("Resource not found");
     const detail = await this.repository.supplierDetail(id);
     if (!detail) throw new NotFoundException("Resource not found");
     return detail;
   }
 
-  supplierDetail(principal: AuthenticatedPrincipal, id: string) {
-    return this.supplierAsn(principal, id, "supplier.asn.read");
+  supplierDetail(
+    principal: AuthenticatedPrincipal,
+    requestContext: RequestContext,
+    id: string,
+  ) {
+    return this.supplierAsn(principal, id, "supplier.asn.read", requestContext);
   }
 
   async createAsn(
@@ -64,15 +74,23 @@ export class ReceivingService {
       trackingNumber?: string;
     },
   ) {
-    const scope = this.policy.supplierScope(principal, "supplier.asn.write");
-    const order = await this.repository.supplierCanAccessPurchaseOrder(
+    const scope = this.policy.supplierScope(
+      principal,
+      "supplier.asn.write",
+      context,
+    );
+    const order = await this.repository.supplierCanAccessPurchaseOrderFromSet(
       purchaseOrderId,
-      scope.organizationIds,
-      scope.membershipIds,
+      scope,
     );
     if (!order) throw new NotFoundException("Resource not found");
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === order.supplierOrganizationId,
+    );
+    if (!actorMembership) throw new NotFoundException("Resource not found");
     return this.repository.createAsn({
       ...input,
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: order.supplierOrganizationId,
       context,
@@ -92,8 +110,14 @@ export class ReceivingService {
       principal,
       id,
       "supplier.asn.transition",
+      context,
     );
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === detail.supplierOrganization.id,
+    );
+    if (!actorMembership) throw new NotFoundException("Resource not found");
     return this.repository.transitionAsn({
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       advanceShipmentNoticeId: id,
       auditOrganizationId: detail.supplierOrganization.id,
@@ -157,6 +181,7 @@ export class ReceivingService {
     if (!projectId) throw new NotFoundException("Resource not found");
     const membership = await this.policy.requireArrival(principal, projectId);
     return this.repository.transitionAsn({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       advanceShipmentNoticeId: id,
       auditOrganizationId: membership.organization.id,
@@ -197,6 +222,7 @@ export class ReceivingService {
       .then((membership) =>
         this.repository.createReceipt({
           ...input,
+          actorMembershipId: membership.id,
           actorUserId: principal.user.id,
           auditOrganizationId: membership.organization.id,
           context,
@@ -244,6 +270,7 @@ export class ReceivingService {
     );
     return this.repository.createCorrection({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -269,6 +296,7 @@ export class ReceivingService {
       .update(`${id}:${input.expectedVersion}`)
       .digest("hex");
     return this.repository.postReceipt({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,

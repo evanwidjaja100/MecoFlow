@@ -10,13 +10,13 @@ export class ItemAuthorizationPolicy {
     principal: AuthenticatedPrincipal,
     permission: "item.export" | "item.read" | "item.write",
   ): PrincipalMembership {
-    const membership = principal.memberships.find(
+    const qualifying = principal.memberships.filter(
       (candidate) =>
         candidate.organization.type === "INTERNAL" &&
         candidate.permissions.has(permission),
     );
-    if (!membership) throw new ForbiddenException("Access denied");
-    return membership;
+    if (qualifying.length !== 1) throw new ForbiddenException("Access denied");
+    return qualifying[0] as PrincipalMembership;
   }
 
   requireRead(principal: AuthenticatedPrincipal): PrincipalMembership {

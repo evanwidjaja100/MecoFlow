@@ -167,7 +167,7 @@ export class PurchaseOrdersController {
   })
   async supplierList(@Req() request: Request) {
     const principal = await this.identity.principal(request);
-    return this.purchaseOrders.supplierList(principal);
+    return this.purchaseOrders.supplierList(principal, requestContext(request));
   }
 
   @Get("supplier/purchase-orders/:purchaseOrderId")
@@ -179,7 +179,11 @@ export class PurchaseOrdersController {
     @Param("purchaseOrderId", new ParseUUIDPipe()) purchaseOrderId: string,
   ) {
     const principal = await this.identity.principal(request);
-    return this.purchaseOrders.supplierDetail(principal, purchaseOrderId);
+    return this.purchaseOrders.supplierDetail(
+      principal,
+      requestContext(request),
+      purchaseOrderId,
+    );
   }
 
   @Post("supplier/purchase-orders/:purchaseOrderId/acknowledge")

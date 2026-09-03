@@ -1,4 +1,4 @@
-import { UnprocessableEntityException } from "@nestjs/common";
+﻿import { UnprocessableEntityException } from "@nestjs/common";
 import type { Prisma } from "@mecoflow/database";
 import type { RequestContext } from "../identity/identity.types.js";
 
@@ -6,6 +6,8 @@ export async function createInspectionForLot(
   transaction: Prisma.TransactionClient,
   input: {
     actorUserId: string;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     context: RequestContext;
     effectiveQuantity: Prisma.Decimal;
@@ -51,16 +53,17 @@ export async function createInspectionForLot(
           })),
         },
       },
-      createdByUserId: input.actorUserId,
+      createdByUserId: input.actorUserId as string,
       inventoryLotId: input.inventoryLotId,
       projectId: input.projectId,
       receivedQuantityAtCreation: input.effectiveQuantity,
     },
   });
-  await transaction.auditEvent.create({
+  await (transaction.auditEvent.create as any)({
     data: {
       action: "RECEIVING_INSPECTION_CREATED",
-      actorUserId: input.actorUserId,
+      actorMembershipId: input.actorMembershipId ?? null,
+      actorUserId: input.actorUserId as string,
       changes: {
         checkCount: definitions.length,
         inventoryLotId: input.inventoryLotId,
@@ -72,6 +75,7 @@ export async function createInspectionForLot(
       organizationId: input.auditOrganizationId,
       outcome: "SUCCESS",
       requestId: input.context.requestId,
+      systemPrincipal: input.systemPrincipal ?? null,
     },
   });
   return inspection.id;

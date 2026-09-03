@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+﻿import { Inject, Injectable } from "@nestjs/common";
 import type { ServiceEnvironment } from "@mecoflow/config";
 import {
   createDatabaseClient,
@@ -6,6 +6,10 @@ import {
   type PrismaClient,
 } from "@mecoflow/database";
 import type { AuthenticatedPrincipal } from "../identity/identity.types.js";
+import type {
+  AuthorizationContext,
+  AuthorizationContextSet,
+} from "../authorization/authorization-context.js";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
 
 type SnapshotRecord = Prisma.ReadinessSnapshotGetPayload<{
@@ -32,24 +36,50 @@ export class ReadinessRepository {
         membership.permissions.has("project.read") &&
         membership.permissions.has("readiness.read"),
     );
-    const membershipIds = readableMemberships.map(({ id }) => id);
-    const managementOrganizationIds = readableMemberships
-      .filter((membership) => membership.roles.includes("MECO_MANAGEMENT"))
-      .map((membership) => membership.organization.id);
-    const systemAdministrator = readableMemberships.some((membership) =>
-      membership.roles.includes("SYSTEM_ADMIN"),
-    );
-    const OR: Prisma.ProjectWhereInput[] = [];
-    if (systemAdministrator) OR.push({ organization: { type: "INTERNAL" } });
-    if (managementOrganizationIds.length > 0)
-      OR.push({ organizationId: { in: managementOrganizationIds } });
-    if (membershipIds.length > 0)
-      OR.push({
-        members: {
-          some: { membershipId: { in: membershipIds }, status: "ACTIVE" },
+    if (readableMemberships.length === 0) return { id: { in: [] } };
+    return {
+      OR: readableMemberships.map((m) => ({
+        organizationId: m.organization.id,
+        members: { some: { membershipId: m.id, status: "ACTIVE" } },
+      })),
+    };
+  }
+
+  private accessWhereFromContext(
+    context: AuthorizationContext,
+  ): Prisma.ProjectWhereInput {
+    if (context.source === "SYSTEM_PRINCIPAL")
+      return { organizationId: context.organizationId };
+    return {
+      organizationId: context.organizationId,
+      members: {
+        some: {
+          membershipId: context.actorMembershipId as string,
+          status: "ACTIVE",
         },
-      });
-    return OR.length > 0 ? { OR } : { id: { in: [] } };
+      },
+    };
+  }
+
+  private accessWhereFromSet(
+    set: AuthorizationContextSet,
+  ): Prisma.ProjectWhereInput {
+    if (set.contexts.length === 0) return { id: { in: [] } };
+    return {
+      OR: set.contexts.map((c) =>
+        c.source === "SYSTEM_PRINCIPAL"
+          ? { organizationId: c.organizationId }
+          : {
+              organizationId: c.organizationId,
+              members: {
+                some: {
+                  membershipId: c.actorMembershipId as string,
+                  status: "ACTIVE",
+                },
+              },
+            },
+      ),
+    };
   }
 
   async management(

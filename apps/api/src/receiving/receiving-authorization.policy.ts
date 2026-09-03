@@ -1,8 +1,11 @@
-import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+﻿import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import type {
   AuthenticatedPrincipal,
   PrincipalMembership,
+  RequestContext,
 } from "../identity/identity.types.js";
+import { AuthorizationService } from "../authorization/authorization.service.js";
+import type { AuthorizationContextSet } from "../authorization/authorization-context.js";
 import { ProjectAuthorizationPolicy } from "../projects/project-authorization.policy.js";
 
 type InternalPermission =
@@ -18,6 +21,8 @@ type SupplierPermission =
 @Injectable()
 export class ReceivingAuthorizationPolicy {
   constructor(
+    @Inject(AuthorizationService)
+    private readonly authService: AuthorizationService,
     @Inject(ProjectAuthorizationPolicy)
     private readonly projects: ProjectAuthorizationPolicy,
   ) {}
@@ -26,13 +31,13 @@ export class ReceivingAuthorizationPolicy {
     principal: AuthenticatedPrincipal,
     permission: InternalPermission,
   ): PrincipalMembership {
-    const membership = principal.memberships.find(
+    const qualifying = principal.memberships.filter(
       (candidate) =>
         candidate.organization.type === "INTERNAL" &&
         candidate.permissions.has(permission),
     );
-    if (!membership) throw new ForbiddenException("Access denied");
-    return membership;
+    if (qualifying.length !== 1) throw new ForbiddenException("Access denied");
+    return qualifying[0] as PrincipalMembership;
   }
 
   private async requireProject(
@@ -78,16 +83,12 @@ export class ReceivingAuthorizationPolicy {
   supplierScope(
     principal: AuthenticatedPrincipal,
     permission: SupplierPermission,
-  ) {
-    const memberships = principal.memberships.filter(
-      (candidate) =>
-        candidate.organization.type === "SUPPLIER" &&
-        candidate.permissions.has(permission),
-    );
-    if (memberships.length === 0) throw new ForbiddenException("Access denied");
-    return {
-      membershipIds: memberships.map(({ id }) => id),
-      organizationIds: memberships.map(({ organization }) => organization.id),
-    };
+    requestContext: RequestContext,
+  ): AuthorizationContextSet {
+    return this.authService.resolveSupplierSet(principal, {
+      permission,
+      requestContext,
+      resource: { type: "AdvanceShipmentNotice" },
+    });
   }
 }

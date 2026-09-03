@@ -1,3 +1,4 @@
+// Phase 1: system principal audit attribution
 import { createHash } from "node:crypto";
 import { GetObjectCommand, type S3Client } from "@aws-sdk/client-s3";
 import type { PrismaClient } from "@mecoflow/database";
@@ -161,10 +162,12 @@ export class BomImportProcessor {
           },
           where: { id: event.id },
         });
-        await transaction.auditEvent.create({
+        await (transaction.auditEvent.create as any)({
           data: {
             action: "BOM_IMPORT_PARSED",
-            actorUserId: bomImport.requestedByUserId,
+            actorMembershipId: null,
+            actorUserId: null,
+            systemPrincipal: "WORKER_BOM_IMPORT",
             changes: { errorCount, rowCount: rows.length, warningCount },
             correlationId: `worker:${event.id}`,
             entityId: bomImport.id,
@@ -221,10 +224,12 @@ export class BomImportProcessor {
         where: { id: event.id },
       });
       if (terminal && bomImport)
-        await transaction.auditEvent.create({
+        await (transaction.auditEvent.create as any)({
           data: {
             action: "BOM_IMPORT_REJECTED",
-            actorUserId: bomImport.requestedByUserId,
+            actorMembershipId: null,
+            actorUserId: null,
+            systemPrincipal: "WORKER_BOM_IMPORT",
             changes: { failureCode: code },
             correlationId: `worker:${event.id}`,
             entityId: bomImport.id,

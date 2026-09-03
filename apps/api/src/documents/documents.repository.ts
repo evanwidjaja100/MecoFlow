@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -39,7 +39,9 @@ export type UploadMetadata = {
 };
 
 type ActorInput = {
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   auditOrganizationId: string;
   context: RequestContext;
 };
@@ -84,7 +86,6 @@ export class DocumentsRepository {
   constructor(@Inject(SERVICE_ENVIRONMENT) environment: ServiceEnvironment) {
     this.database = createDatabaseClient(environment.DATABASE_URL);
   }
-
   private audit(
     transaction: Prisma.TransactionClient,
     input: ActorInput & {
@@ -94,10 +95,11 @@ export class DocumentsRepository {
       entityType: string;
     },
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -105,6 +107,7 @@ export class DocumentsRepository {
         organizationId: input.auditOrganizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -266,6 +269,13 @@ export class DocumentsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const project = await transaction.project.findUnique({
         where: { id: input.projectId },
       });
@@ -289,7 +299,7 @@ export class DocumentsRepository {
         data: {
           associations: { createMany: { data: associations } },
           category: input.category,
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           description: input.description,
           ownerOrganizationId: input.ownerOrganizationId,
           projectId: input.projectId,
@@ -297,7 +307,7 @@ export class DocumentsRepository {
           versions: {
             create: {
               byteSize: input.upload.byteSize,
-              createdByUserId: input.actorUserId,
+              createdByUserId: input.actorUserId as string,
               declaredMimeType: input.upload.mimeType,
               extension: input.upload.extension,
               originalFileName: input.upload.originalFileName,
@@ -337,6 +347,13 @@ export class DocumentsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM documents WHERE id = ${input.documentId}::uuid FOR UPDATE`,
       );
@@ -362,7 +379,7 @@ export class DocumentsRepository {
       const version = await transaction.documentVersion.create({
         data: {
           byteSize: input.upload.byteSize,
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           declaredMimeType: input.upload.mimeType,
           documentId: current.id,
           extension: input.upload.extension,
@@ -416,6 +433,13 @@ export class DocumentsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM document_versions WHERE id = ${input.versionId}::uuid FOR UPDATE`,
       );
@@ -448,7 +472,7 @@ export class DocumentsRepository {
         throw new ConflictException("Concurrent modification");
       await transaction.documentVersionTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorUserId: input.actorUserId as string,
           documentVersionId: current.id,
           reason: clean
             ? "Upload verified and malware scan passed"
@@ -497,6 +521,13 @@ export class DocumentsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM document_versions WHERE id = ${input.versionId}::uuid FOR UPDATE`,
       );
@@ -535,7 +566,7 @@ export class DocumentsRepository {
           });
           await transaction.documentVersionTransition.create({
             data: {
-              actorUserId: input.actorUserId,
+              actorUserId: input.actorUserId as string,
               documentVersionId: previous.id,
               reason: input.reason,
               sourceStatus: "APPROVED",
@@ -549,7 +580,7 @@ export class DocumentsRepository {
           reviewReason: input.reason,
           ...(input.targetStatus === "APPROVED" ||
           input.targetStatus === "REJECTED"
-            ? { reviewedAt: now, reviewedByUserId: input.actorUserId }
+            ? { reviewedAt: now, reviewedByUserId: input.actorUserId as string }
             : {}),
           status: input.targetStatus,
           version: { increment: 1 },
@@ -564,7 +595,7 @@ export class DocumentsRepository {
         throw new ConflictException("Concurrent modification");
       await transaction.documentVersionTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorUserId: input.actorUserId as string,
           documentVersionId: current.id,
           reason: input.reason,
           sourceStatus,

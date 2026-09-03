@@ -57,6 +57,7 @@ export class NcrsService {
     );
     return this.repository.create({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -88,6 +89,7 @@ export class NcrsService {
     );
     return this.repository.transition({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -149,25 +151,36 @@ export class NcrsService {
     );
   }
 
-  listSupplier(principal: AuthenticatedPrincipal) {
-    const scope = this.policy.supplierScope(principal, "supplier.ncr.read");
+  listSupplier(
+    principal: AuthenticatedPrincipal,
+    requestContext: RequestContext,
+  ) {
+    const scope = this.policy.supplierScope(
+      principal,
+      "supplier.ncr.read",
+      requestContext,
+    );
     return this.repository
-      .listSupplier(scope.organizationIds, scope.membershipIds)
+      .listSupplierFromSet(scope)
       .then((data) => ({ data }));
   }
 
-  async detailSupplier(principal: AuthenticatedPrincipal, id: string) {
-    const scope = this.policy.supplierScope(principal, "supplier.ncr.read");
-    const detail = await this.repository.detailSupplier(
-      id,
-      scope.organizationIds,
-      scope.membershipIds,
+  async detailSupplier(
+    principal: AuthenticatedPrincipal,
+    requestContext: RequestContext,
+    id: string,
+  ) {
+    const scope = this.policy.supplierScope(
+      principal,
+      "supplier.ncr.read",
+      requestContext,
     );
+    const detail = await this.repository.detailSupplierFromSet(id, scope);
     if (!detail) throw new NotFoundException("Resource not found");
     return detail;
   }
 
-  submitSupplierResponse(
+  async submitSupplierResponse(
     principal: AuthenticatedPrincipal,
     context: RequestContext,
     id: string,
@@ -178,14 +191,24 @@ export class NcrsService {
       rootCause?: string;
     },
   ) {
-    const scope = this.policy.supplierScope(principal, "supplier.ncr.respond");
-    return this.repository.submitSupplierResponse({
+    const scope = this.policy.supplierScope(
+      principal,
+      "supplier.ncr.respond",
+      context,
+    );
+    const preview = await this.repository.detailSupplierFromSet(id, scope);
+    if (!preview) throw new NotFoundException("Resource not found");
+    const actorMembership = principal.memberships.find(
+      (m) => m.organization.id === preview.supplierOrganization.id,
+    );
+    if (!actorMembership) throw new NotFoundException("Resource not found");
+    return this.repository.submitSupplierResponseFromSet({
       ...input,
+      actorMembershipId: actorMembership.id,
       actorUserId: principal.user.id,
       context,
       id,
-      membershipIds: scope.membershipIds,
-      organizationIds: scope.organizationIds,
+      set: scope,
     });
   }
 }

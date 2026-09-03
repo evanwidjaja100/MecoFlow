@@ -21,3 +21,7 @@ test-results/
 Thumbs.db
 .DS_Store
 repomix-output.md
+tmp/
+tmp_git/
+tmp_bare/
+tmp_bundle.bundle

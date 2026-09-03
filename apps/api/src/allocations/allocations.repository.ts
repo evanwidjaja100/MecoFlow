@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -19,7 +19,9 @@ import {
 } from "./allocation-lifecycle.js";
 
 type ActorInput = {
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   auditOrganizationId: string;
   context: RequestContext;
 };
@@ -122,10 +124,11 @@ export class AllocationsRepository {
       entityId: string;
     },
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -133,6 +136,7 @@ export class AllocationsRepository {
         organizationId: input.auditOrganizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -248,6 +252,13 @@ export class AllocationsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM inventory_lots WHERE id = ${input.inventoryLotId}::uuid FOR UPDATE`,
       );
@@ -325,12 +336,12 @@ export class AllocationsRepository {
         data: {
           bomLineId: bomLine.id,
           conditionalUseAuthorizedByUserId: conditional
-            ? input.actorUserId
+            ? (input.actorUserId as string)
             : null,
           conditionalUseReason: conditional
             ? input.conditionalUseReason!.trim()
             : null,
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           inventoryLotId: lot.id,
           projectId: input.projectId,
           quantity,
@@ -376,6 +387,13 @@ export class AllocationsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const reference = await transaction.materialAllocation.findUnique({
         select: { inventoryLotId: true },
         where: { id: input.id },
@@ -399,8 +417,11 @@ export class AllocationsRepository {
       await transaction.materialAllocation.update({
         data: {
           ...(input.targetStatus === "RELEASED"
-            ? { releasedAt: now, releasedByUserId: input.actorUserId }
-            : { consumedAt: now, consumedByUserId: input.actorUserId }),
+            ? { releasedAt: now, releasedByUserId: input.actorUserId as string }
+            : {
+                consumedAt: now,
+                consumedByUserId: input.actorUserId as string,
+              }),
           status: input.targetStatus,
           version: { increment: 1 },
         },
@@ -408,7 +429,8 @@ export class AllocationsRepository {
       });
       await transaction.materialAllocationTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           materialAllocationId: allocation.id,
           quantitySnapshot: allocation.quantity,
           reason: input.reason.trim(),

@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -19,7 +19,9 @@ import {
 } from "./requisition-lifecycle.js";
 
 type RequisitionCommand = {
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   auditOrganizationId: string;
   context: RequestContext;
   expectedVersion: number;
@@ -78,7 +80,9 @@ export class RequisitionsRepository {
     transaction: Prisma.TransactionClient,
     input: {
       action: string;
-      actorUserId: string;
+      actorUserId: string | null;
+      actorMembershipId?: string | null;
+      systemPrincipal?: string | null;
       changes: Prisma.InputJsonValue;
       context: RequestContext;
       entityId: string;
@@ -86,10 +90,11 @@ export class RequisitionsRepository {
       organizationId: string;
     },
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -97,6 +102,7 @@ export class RequisitionsRepository {
         organizationId: input.organizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -240,7 +246,9 @@ export class RequisitionsRepository {
   }
 
   async create(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     canOverride: boolean;
     context: RequestContext;
@@ -259,6 +267,13 @@ export class RequisitionsRepository {
         "A BOM line can appear only once per requisition",
       );
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM projects WHERE id = ${input.projectId}::uuid FOR UPDATE`,
       );
@@ -325,7 +340,9 @@ export class RequisitionsRepository {
           lineNumber: index + 1,
           outstandingQuantitySnapshot: outstanding,
           overNeedOverride: overNeed,
-          overrideAuthorizedByUserId: overNeed ? input.actorUserId : null,
+          overrideAuthorizedByUserId: overNeed
+            ? (input.actorUserId as string)
+            : null,
           overrideReason: overNeed ? overrideReason! : null,
           quantity,
           requiredQuantitySnapshot: requirement.quantity,
@@ -344,14 +361,15 @@ export class RequisitionsRepository {
           lines: { create: prepared },
           notes: input.notes,
           projectId: input.projectId,
-          requesterUserId: input.actorUserId,
+          requesterUserId: input.actorUserId as string,
           requisitionNumber: (latest?.requisitionNumber ?? 0) + 1,
           title: input.title,
         },
       });
       await this.audit(transaction, {
         action: "PURCHASE_REQUISITION_CREATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           lineCount: prepared.length,
           requisitionNumber: requisition.requisitionNumber,
@@ -368,7 +386,8 @@ export class RequisitionsRepository {
       if (overrides.length > 0)
         await this.audit(transaction, {
           action: "PURCHASE_REQUISITION_OVER_NEED_OVERRIDE_USED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             lines: overrides.map((line) => ({
               bomLineId: line.bomLineId,
@@ -397,6 +416,13 @@ export class RequisitionsRepository {
     action: string,
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM purchase_requisitions WHERE id = ${input.requisitionId}::uuid FOR UPDATE`,
       );
@@ -439,7 +465,10 @@ export class RequisitionsRepository {
         data: {
           ...(targetStatus === "SUBMITTED" ? { submittedAt: new Date() } : {}),
           ...(targetStatus === "APPROVED"
-            ? { approvedAt: new Date(), approverUserId: input.actorUserId }
+            ? {
+                approvedAt: new Date(),
+                approverUserId: input.actorUserId as string,
+              }
             : {}),
           ...(targetStatus === "REJECTED" ? { rejectedAt: new Date() } : {}),
           ...(targetStatus === "CANCELLED" ? { cancelledAt: new Date() } : {}),
@@ -456,7 +485,8 @@ export class RequisitionsRepository {
         throw new ConflictException("Concurrent modification");
       await transaction.purchaseRequisitionTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           purchaseRequisitionId: current.id,
           reason: input.reason,
           sourceStatus: current.status,
@@ -465,7 +495,8 @@ export class RequisitionsRepository {
       });
       await this.audit(transaction, {
         action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           reason: input.reason,
           status: { from: current.status, to: targetStatus },

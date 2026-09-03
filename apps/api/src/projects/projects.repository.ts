@@ -17,6 +17,10 @@ import type {
   RequestContext,
 } from "../identity/identity.types.js";
 import type {
+  AuthorizationContext,
+  AuthorizationContextSet,
+} from "../authorization/authorization-context.js";
+import type {
   ProjectScopeResolver,
   ProjectScope,
 } from "../authorization/project-scope.policy.js";
@@ -27,7 +31,9 @@ type ProjectMemberRole =
 
 interface AuditInput {
   action: string;
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   changes: Prisma.InputJsonValue;
   context: RequestContext;
   entityId: string;
@@ -49,37 +55,59 @@ export class ProjectsRepository implements ProjectScopeResolver {
     const readableMemberships = principal.memberships.filter((membership) =>
       membership.permissions.has("project.read"),
     );
-    const membershipIds = readableMemberships.map(({ id }) => id);
-    const managementOrganizationIds = readableMemberships
-      .filter(
-        (membership) =>
-          membership.organization.type === "INTERNAL" &&
-          membership.roles.includes("MECO_MANAGEMENT"),
-      )
-      .map((membership) => membership.organization.id);
-    const systemAdministrator = readableMemberships.some(
-      (membership) =>
-        membership.organization.type === "INTERNAL" &&
-        membership.roles.includes("SYSTEM_ADMIN"),
-    );
-    const OR: Prisma.ProjectWhereInput[] = [];
-    if (systemAdministrator) OR.push({ organization: { type: "INTERNAL" } });
-    if (managementOrganizationIds.length > 0)
-      OR.push({ organizationId: { in: managementOrganizationIds } });
-    if (membershipIds.length > 0)
-      OR.push({
-        members: {
-          some: { membershipId: { in: membershipIds }, status: "ACTIVE" },
+    if (readableMemberships.length === 0) return { id: { in: [] } };
+    return {
+      OR: readableMemberships.map((m) => ({
+        organizationId: m.organization.id,
+        members: { some: { membershipId: m.id, status: "ACTIVE" } },
+      })),
+    };
+  }
+
+  private accessWhereFromContext(
+    context: AuthorizationContext,
+  ): Prisma.ProjectWhereInput {
+    if (context.source === "SYSTEM_PRINCIPAL") {
+      return { organizationId: context.organizationId };
+    }
+    return {
+      organizationId: context.organizationId,
+      members: {
+        some: {
+          membershipId: context.actorMembershipId as string,
+          status: "ACTIVE",
         },
-      });
-    return OR.length > 0 ? { OR } : { id: { in: [] } };
+      },
+    };
+  }
+
+  private accessWhereFromSet(
+    set: AuthorizationContextSet,
+  ): Prisma.ProjectWhereInput {
+    if (set.contexts.length === 0) return { id: { in: [] } };
+    return {
+      OR: set.contexts.map((c) =>
+        c.source === "SYSTEM_PRINCIPAL"
+          ? { organizationId: c.organizationId }
+          : {
+              organizationId: c.organizationId,
+              members: {
+                some: {
+                  membershipId: c.actorMembershipId as string,
+                  status: "ACTIVE",
+                },
+              },
+            },
+      ),
+    };
   }
 
   private audit(transaction: Prisma.TransactionClient, input: AuditInput) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -87,6 +115,35 @@ export class ProjectsRepository implements ProjectScopeResolver {
         organizationId: input.organizationId ?? null,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
+      },
+    });
+  }
+
+  private auditFromContext(
+    transaction: Prisma.TransactionClient,
+    context: AuthorizationContext,
+    input: {
+      action: string;
+      entityType: string;
+      entityId: string;
+      organizationId?: string;
+      changes?: Prisma.InputJsonValue;
+    },
+  ) {
+    return (transaction.auditEvent.create as any)({
+      data: {
+        action: input.action,
+        actorMembershipId: context.actorMembershipId,
+        actorUserId: context.actorUserId,
+        changes: (input.changes ?? {}) as Prisma.InputJsonValue,
+        correlationId: context.correlationId,
+        entityId: input.entityId,
+        entityType: input.entityType,
+        organizationId: input.organizationId ?? context.organizationId,
+        outcome: "SUCCESS",
+        requestId: context.requestId,
+        systemPrincipal: context.systemPrincipal ?? null,
       },
     });
   }
@@ -124,37 +181,116 @@ export class ProjectsRepository implements ProjectScopeResolver {
     principal: AuthenticatedPrincipal,
     scope: ProjectScope,
   ): Promise<boolean> {
-    const writableMembershipIds = principal.memberships
-      .filter((membership) => membership.permissions.has("project.write"))
-      .map(({ id }) => id);
-    const systemAdministrator = principal.memberships.some(
-      (membership) =>
-        membership.organization.type === "INTERNAL" &&
-        membership.roles.includes("SYSTEM_ADMIN") &&
-        membership.permissions.has("project.write"),
+    const writableMemberships = principal.memberships.filter((membership) =>
+      membership.permissions.has("project.write"),
     );
+    if (writableMemberships.length === 0) return false;
     return Boolean(
       await this.database.project.findFirst({
         select: { id: true },
         where: {
           id: scope.projectId,
           organizationId: scope.organizationId,
-          OR: [
-            ...(systemAdministrator
-              ? [{ organization: { type: "INTERNAL" as const } }]
-              : []),
-            {
-              members: {
-                some: {
-                  membershipId: { in: writableMembershipIds },
-                  status: "ACTIVE",
-                },
-              },
+          OR: writableMemberships.map((m) => ({
+            organizationId: m.organization.id,
+            members: {
+              some: { membershipId: m.id, status: "ACTIVE" },
             },
-          ],
+          })),
         },
       }),
     );
+  }
+
+  async canAccessProjectFromContext(
+    context: AuthorizationContext,
+    scope: ProjectScope,
+  ): Promise<boolean> {
+    return Boolean(
+      await this.database.project.findFirst({
+        select: { id: true },
+        where: {
+          ...this.accessWhereFromContext(context),
+          id: scope.projectId,
+          organizationId: scope.organizationId,
+        },
+      }),
+    );
+  }
+
+  async canWriteProjectFromContext(
+    context: AuthorizationContext,
+    scope: ProjectScope,
+  ): Promise<boolean> {
+    if (context.source === "SYSTEM_PRINCIPAL") return true;
+    return Boolean(
+      await this.database.project.findFirst({
+        select: { id: true },
+        where: {
+          id: scope.projectId,
+          organizationId: scope.organizationId,
+          members: {
+            some: {
+              membershipId: context.actorMembershipId as string,
+              status: "ACTIVE",
+            },
+          },
+        },
+      }),
+    );
+  }
+
+  async listWithContext(
+    context: AuthorizationContext,
+    input: {
+      q?: string;
+      state?: string;
+      categoryId?: string;
+      page: number;
+      pageSize: number;
+    },
+  ) {
+    return this.listWithSet({ contexts: [context] }, input);
+  }
+
+  async listWithSet(
+    set: AuthorizationContextSet,
+    input: {
+      q?: string;
+      state?: string;
+      categoryId?: string;
+      page: number;
+      pageSize: number;
+    },
+  ) {
+    const where: Prisma.ProjectWhereInput = {
+      AND: [
+        this.accessWhereFromSet(set),
+        {
+          ...(input.categoryId ? { productCategoryId: input.categoryId } : {}),
+          ...(input.state ? { state: input.state as any } : {}),
+          ...(input.q
+            ? {
+                OR: [
+                  { code: { contains: input.q, mode: "insensitive" } },
+                  { name: { contains: input.q, mode: "insensitive" } },
+                ],
+              }
+            : {}),
+        },
+      ],
+    };
+    const [data, total] = await this.database.$transaction([
+      this.database.project.findMany({
+        include: { productCategory: true },
+        orderBy: { createdAt: "desc" },
+        skip: (input.page - 1) * input.pageSize,
+        take: input.pageSize,
+        where,
+      }),
+      this.database.project.count({ where }),
+    ]);
+    return { data, total };
   }
 
   listProductCategories(activeOnly = false) {
@@ -166,6 +302,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
 
   async createProductCategory(input: {
     actorUserId: string;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -187,7 +325,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       }
       await this.audit(transaction, {
         action: "PRODUCT_CATEGORY_CREATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: { code: { from: null, to: category.code } },
         context: input.context,
         entityId: category.id,
@@ -201,6 +340,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
   async updateProductCategory(input: {
     active: boolean;
     actorUserId: string;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     auditOrganizationId: string;
     code: string;
     context: RequestContext;
@@ -238,7 +379,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       });
       await this.audit(transaction, {
         action: "PRODUCT_CATEGORY_UPDATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           active: { from: current.active, to: updated.active },
           code: { from: current.code, to: updated.code },
@@ -270,7 +412,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
         this.accessWhere(principal),
         {
           ...(input.categoryId ? { productCategoryId: input.categoryId } : {}),
-          ...(input.state ? { state: input.state } : {}),
+          ...(input.state ? { state: input.state as any } : {}),
           ...(input.q
             ? {
                 OR: [
@@ -330,7 +472,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
             id: input.actorMembershipId,
             organizationId: input.organizationId,
             status: "ACTIVE",
-            userId: input.actorUserId,
+            userId: input.actorUserId as string,
           },
         }),
       ]);
@@ -341,7 +483,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
         project = await transaction.project.create({
           data: {
             code: input.code,
-            createdByUserId: input.actorUserId,
+            createdByUserId: input.actorUserId as string,
             description: input.description,
             name: input.name,
             organizationId: input.organizationId,
@@ -355,7 +497,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
       }
       await transaction.projectMember.create({
         data: {
-          addedByUserId: input.actorUserId,
+          addedByUserId: input.actorUserId as string,
           membershipId: input.actorMembershipId,
           projectId: project.id,
           role: "PROJECT_MANAGER",
@@ -363,7 +505,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       });
       await this.audit(transaction, {
         action: "PROJECT_CREATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           code: { from: null, to: project.code },
           state: { from: null, to: "DRAFT" },
@@ -409,6 +552,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async updateProject(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     code: string;
     context: RequestContext;
@@ -421,6 +565,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     projectId: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const [current, category] = await Promise.all([
         transaction.project.findUnique({ where: { id: input.projectId } }),
         transaction.productCategory.findFirst({
@@ -485,7 +636,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       });
       await this.audit(transaction, {
         action: "PROJECT_UPDATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           code: { from: current.code, to: updated.code },
           name: { from: current.name, to: updated.name },
@@ -508,6 +660,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async transitionProject(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     context: RequestContext;
     expectedVersion: number;
@@ -516,6 +669,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     targetState: ProjectState;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const current = await transaction.project.findUnique({
         where: { id: input.projectId },
       });
@@ -532,7 +692,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
         throw new ConflictException("Concurrent modification");
       const transition = await transaction.projectTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorUserId: input.actorUserId as string,
           projectId: input.projectId,
           reason: input.reason,
           sourceState: current.state,
@@ -541,7 +701,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       });
       await this.audit(transaction, {
         action: "PROJECT_STATE_TRANSITIONED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           reason: input.reason,
           sourceState: current.state,
@@ -586,6 +747,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async addProjectMember(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     context: RequestContext;
     membershipId: string;
@@ -593,6 +755,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     role: ProjectMemberRole;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const [project, membership] = await Promise.all([
         transaction.project.findUnique({ where: { id: input.projectId } }),
         transaction.membership.findFirst({
@@ -619,7 +788,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
       try {
         member = await transaction.projectMember.create({
           data: {
-            addedByUserId: input.actorUserId,
+            addedByUserId: input.actorUserId as string,
             membershipId: input.membershipId,
             projectId: input.projectId,
             role: input.role,
@@ -630,7 +799,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       }
       await this.audit(transaction, {
         action: "PROJECT_MEMBER_ADDED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           membershipId: input.membershipId,
           role: { from: null, to: input.role },
@@ -646,6 +816,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async updateProjectMember(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     context: RequestContext;
     expectedVersion: number;
@@ -655,6 +826,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     status: "ACTIVE" | "INACTIVE";
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const current = await transaction.projectMember.findFirst({
         include: {
           membership: { include: { organization: true } },
@@ -715,7 +893,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       });
       await this.audit(transaction, {
         action: "PROJECT_MEMBER_UPDATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           role: { from: current.role, to: updated.role },
           status: { from: current.status, to: updated.status },
@@ -730,6 +909,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async createMilestone(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     code: string;
     context: RequestContext;
@@ -739,6 +919,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     targetDate: Date;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const project = await transaction.project.findUnique({
         where: { id: input.projectId },
       });
@@ -770,7 +957,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       }
       await this.audit(transaction, {
         action: "MILESTONE_CREATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           code: { from: null, to: milestone.code },
           targetDate: milestone.targetDate.toISOString(),
@@ -785,6 +973,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async updateMilestone(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     code: string;
     context: RequestContext;
@@ -796,6 +985,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     targetDate: Date;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const [project, current] = await Promise.all([
         transaction.project.findUnique({ where: { id: input.projectId } }),
         transaction.milestone.findFirst({
@@ -843,7 +1039,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       });
       await this.audit(transaction, {
         action: "MILESTONE_UPDATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           targetDate: {
             from: current.targetDate.toISOString(),
@@ -860,6 +1057,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async createWorkPackage(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     code: string;
     context: RequestContext;
@@ -871,6 +1069,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     projectId: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const [project, milestone] = await Promise.all([
         transaction.project.findUnique({ where: { id: input.projectId } }),
         input.milestoneId
@@ -910,7 +1115,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       }
       await this.audit(transaction, {
         action: "WORK_PACKAGE_CREATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           code: { from: null, to: workPackage.code },
           milestoneId: input.milestoneId ?? null,
@@ -925,6 +1131,7 @@ export class ProjectsRepository implements ProjectScopeResolver {
   }
 
   async updateWorkPackage(input: {
+    actorMembershipId?: string | null;
     actorUserId: string;
     code: string;
     context: RequestContext;
@@ -938,6 +1145,13 @@ export class ProjectsRepository implements ProjectScopeResolver {
     workPackageId: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if (input.actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: input.actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const [project, current, milestone] = await Promise.all([
         transaction.project.findUnique({ where: { id: input.projectId } }),
         transaction.workPackage.findFirst({
@@ -992,7 +1206,8 @@ export class ProjectsRepository implements ProjectScopeResolver {
       });
       await this.audit(transaction, {
         action: "WORK_PACKAGE_UPDATED",
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: {
           milestoneId: { from: current.milestoneId, to: updated.milestoneId },
           plannedEndDate: {

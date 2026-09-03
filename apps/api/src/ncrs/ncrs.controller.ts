@@ -120,7 +120,7 @@ export class NcrsController {
   @ApiOperation({ summary: "List issued NCRs for the supplier organization" })
   async listSupplier(@Req() request: Request) {
     const principal = await this.identity.principal(request);
-    return this.ncrs.listSupplier(principal);
+    return this.ncrs.listSupplier(principal, requestContext(request));
   }
 
   @Get("supplier/ncrs/:ncrId")
@@ -130,7 +130,7 @@ export class NcrsController {
     @Param("ncrId", new ParseUUIDPipe()) ncrId: string,
   ) {
     const principal = await this.identity.principal(request);
-    return this.ncrs.detailSupplier(principal, ncrId);
+    return this.ncrs.detailSupplier(principal, requestContext(request), ncrId);
   }
 
   @Post("supplier/ncrs/:ncrId/responses")

@@ -48,6 +48,7 @@ export class ItemsService {
   ) {
     const membership = this.policy.requireWrite(principal);
     return this.repository.createItemCategory({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: code(input.code),
@@ -72,6 +73,7 @@ export class ItemsService {
     const membership = this.policy.requireWrite(principal);
     return this.repository.updateItemCategory({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: code(input.code),
@@ -101,6 +103,7 @@ export class ItemsService {
     if (!isDecimalPrecision(input.decimalPrecision))
       throw new UnprocessableEntityException("Invalid decimal precision");
     return this.repository.createUnitOfMeasure({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: code(input.code),
@@ -129,6 +132,7 @@ export class ItemsService {
       throw new UnprocessableEntityException("Invalid decimal precision");
     return this.repository.updateUnitOfMeasure({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: code(input.code),
@@ -180,6 +184,7 @@ export class ItemsService {
     await this.validatedDefinition(input);
     return this.repository.createSpecificationAttribute({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: code(input.code),
@@ -212,6 +217,7 @@ export class ItemsService {
     await this.validatedDefinition(input);
     return this.repository.updateSpecificationAttribute({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       attributeId,
       auditOrganizationId: membership.organization.id,
@@ -313,6 +319,7 @@ export class ItemsService {
       input.specificationValues,
     );
     return this.repository.createItem({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: code(input.code),
@@ -347,6 +354,7 @@ export class ItemsService {
       input.specificationValues,
     );
     return this.repository.updateItem({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       code: code(input.code),
@@ -368,6 +376,7 @@ export class ItemsService {
   ) {
     const membership = this.policy.requireWrite(principal);
     return this.repository.deactivateItem({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,

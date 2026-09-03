@@ -11,12 +11,18 @@ import {
   Prisma,
   type PrismaClient,
 } from "@mecoflow/database";
+import type {
+  AuthorizationContext,
+  AuthorizationContextSet,
+} from "../authorization/authorization-context.js";
 import type { RequestContext } from "../identity/identity.types.js";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
 import { canTransitionNcr, type NcrStatus } from "./ncr-lifecycle.js";
 
 type ActorInput = {
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   auditOrganizationId: string;
   context: RequestContext;
 };
@@ -118,10 +124,11 @@ export class NcrsRepository {
       entityId: string;
     },
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -129,6 +136,7 @@ export class NcrsRepository {
         organizationId: input.auditOrganizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -163,23 +171,31 @@ export class NcrsRepository {
     return {
       ...(id ? { id } : {}),
       status: { in: ["ISSUED", "SUPPLIER_RESPONDED", "CLOSED"] },
-      supplierOrganizationId: { in: organizationIds },
-      project: {
-        members: {
-          some: { membershipId: { in: membershipIds }, status: "ACTIVE" },
-        },
-      },
+      OR: organizationIds.map(function (orgId, idx) {
+        return {
+          supplierOrganizationId: orgId,
+          project: {
+            members: {
+              some: { membershipId: membershipIds[idx], status: "ACTIVE" },
+            },
+          },
+        };
+      }),
     };
   }
 
   listSupplier(organizationIds: string[], membershipIds: string[]) {
-    return this.database.ncr
-      .findMany({
-        include: internalInclude,
-        orderBy: [{ updatedAt: "desc" }, { ncrNumber: "desc" }],
-        where: this.supplierWhere(organizationIds, membershipIds),
-      })
-      .then((rows) => rows.map(presentSupplier));
+    // deprecated: tuple-OR via FromSet
+    return this.listSupplierFromSet({
+      contexts: organizationIds.map(function (orgId, idx) {
+        return {
+          organizationId: orgId,
+          actorMembershipId: membershipIds[idx],
+          organizationType: "SUPPLIER",
+          source: "MEMBERSHIP_QUALIFIED",
+        } as unknown as AuthorizationContext;
+      }),
+    });
   }
 
   detailSupplier(
@@ -187,12 +203,17 @@ export class NcrsRepository {
     organizationIds: string[],
     membershipIds: string[],
   ) {
-    return this.database.ncr
-      .findFirst({
-        include: internalInclude,
-        where: this.supplierWhere(organizationIds, membershipIds, id),
-      })
-      .then((value) => (value ? presentSupplier(value) : null));
+    // deprecated: tuple-OR via FromSet
+    return this.detailSupplierFromSet(id, {
+      contexts: organizationIds.map(function (orgId, idx) {
+        return {
+          organizationId: orgId,
+          actorMembershipId: membershipIds[idx],
+          organizationType: "SUPPLIER",
+          source: "MEMBERSHIP_QUALIFIED",
+        } as unknown as AuthorizationContext;
+      }),
+    });
   }
 
   async create(
@@ -209,6 +230,13 @@ export class NcrsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM projects WHERE id = ${input.projectId}::uuid FOR UPDATE`,
       );
@@ -306,7 +334,7 @@ export class NcrsRepository {
       });
       const ncr = await transaction.ncr.create({
         data: {
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           description: input.description.trim(),
           internalDispositionNotes:
             input.internalDispositionNotes?.trim() ?? "",
@@ -353,6 +381,13 @@ export class NcrsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM ncrs WHERE id = ${input.id}::uuid FOR UPDATE`,
       );
@@ -369,16 +404,16 @@ export class NcrsRepository {
       };
       if (input.targetStatus === "ISSUED") {
         update.issuedAt = now;
-        update.issuedByUserId = input.actorUserId;
+        update.issuedByUserId = input.actorUserId as string;
       } else if (input.targetStatus === "CLOSED") {
         update.closedAt = now;
-        update.closedByUserId = input.actorUserId;
+        update.closedByUserId = input.actorUserId as string;
         update.internalDispositionNotes =
           input.internalDispositionNotes!.trim();
         update.shareInternalNotes = input.shareInternalNotes!;
       } else {
         update.cancelledAt = now;
-        update.cancelledByUserId = input.actorUserId;
+        update.cancelledByUserId = input.actorUserId as string;
       }
       await transaction.ncr.update({
         data: update,
@@ -386,7 +421,8 @@ export class NcrsRepository {
       });
       await transaction.ncrTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorMembershipId: (input as any).actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           ncrId: ncr.id,
           reason: input.reason.trim(),
           sourceStatus: ncr.status,
@@ -412,6 +448,7 @@ export class NcrsRepository {
 
   async submitSupplierResponse(input: {
     actorUserId: string;
+    actorMembershipId?: string | null;
     context: RequestContext;
     correctiveAction?: string;
     expectedVersion: number;
@@ -421,17 +458,55 @@ export class NcrsRepository {
     organizationIds: string[];
     rootCause?: string;
   }) {
+    // deprecated: use submitSupplierResponseFromSet for tuple-OR
+    return this.submitSupplierResponseFromSet({
+      actorMembershipId: (input as any).actorMembershipId ?? null,
+      actorUserId: input.actorUserId,
+      context: input.context,
+      correctiveAction: input.correctiveAction,
+      expectedVersion: input.expectedVersion,
+      id: input.id,
+      message: input.message,
+      rootCause: input.rootCause,
+      set: {
+        contexts: input.organizationIds.map(
+          (orgId, idx) =>
+            ({
+              organizationId: orgId,
+              actorMembershipId: input.membershipIds[idx],
+            }) as any,
+        ),
+      },
+    });
+  }
+
+  async submitSupplierResponseFromSet(input: {
+    actorUserId: string;
+    actorMembershipId?: string | null | undefined;
+    systemPrincipal?: string | null | undefined;
+    auditOrganizationId?: string | null | undefined;
+    context: RequestContext;
+    correctiveAction?: string | undefined;
+    expectedVersion: number;
+    id: string;
+    message: string;
+    rootCause?: string | undefined;
+    set: import("../authorization/authorization-context.js").AuthorizationContextSet;
+  }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM ncrs WHERE id = ${input.id}::uuid FOR UPDATE`,
       );
       const ncr = await transaction.ncr.findFirst({
         include: internalInclude,
-        where: this.supplierWhere(
-          input.organizationIds,
-          input.membershipIds,
-          input.id,
-        ),
+        where: this.supplierWhereFromSet(input.set, input.id),
       });
       if (!ncr) throw new NotFoundException("Resource not found");
       if (ncr.version !== input.expectedVersion)
@@ -447,7 +522,7 @@ export class NcrsRepository {
           ncrId: ncr.id,
           revisionNumber: ncr.supplierResponses.length + 1,
           rootCause: input.rootCause?.trim() ?? "",
-          submittedByUserId: input.actorUserId,
+          submittedByUserId: input.actorUserId as string,
         },
       });
       const transition = ncr.status === "ISSUED";
@@ -462,7 +537,8 @@ export class NcrsRepository {
       if (transition)
         await transaction.ncrTransition.create({
           data: {
-            actorUserId: input.actorUserId,
+            actorMembershipId: (input as any).actorMembershipId ?? null,
+            actorUserId: input.actorUserId as string,
             ncrId: ncr.id,
             reason: "Supplier response submitted",
             sourceStatus: "ISSUED",
@@ -470,7 +546,8 @@ export class NcrsRepository {
           },
         });
       await this.audit(transaction, {
-        actorUserId: input.actorUserId,
+        actorMembershipId: (input as any).actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         action: "ncr.supplier-response.submitted",
         auditOrganizationId: ncr.supplierOrganizationId,
         changes: {
@@ -486,5 +563,56 @@ export class NcrsRepository {
       });
       return presentSupplier(result);
     });
+  }
+
+  private supplierWhereFromSet(
+    set: AuthorizationContextSet,
+    id?: string,
+  ): Prisma.NcrWhereInput {
+    const base: Prisma.NcrWhereInput = {
+      ...(id ? { id } : {}),
+      status: { in: ["ISSUED", "SUPPLIER_RESPONDED", "CLOSED"] },
+    };
+    if (set.contexts.length === 0)
+      return { ...base, id: { in: [] } } as Prisma.NcrWhereInput;
+    return {
+      ...base,
+      OR: set.contexts.map((c) => ({
+        supplierOrganizationId: c.organizationId,
+        project: {
+          members: {
+            some: {
+              membershipId: c.actorMembershipId as string,
+              status: "ACTIVE",
+            },
+          },
+        },
+      })),
+    } as unknown as Prisma.NcrWhereInput;
+  }
+
+  private supplierWhereFromContext(
+    context: AuthorizationContext,
+    id?: string,
+  ): Prisma.NcrWhereInput {
+    return this.supplierWhereFromSet({ contexts: [context] }, id);
+  }
+
+  async listSupplierFromSet(set: AuthorizationContextSet) {
+    return this.database.ncr
+      .findMany({
+        include: internalInclude,
+        where: this.supplierWhereFromSet(set),
+      })
+      .then((rows) => rows.map(presentSupplier));
+  }
+
+  async detailSupplierFromSet(id: string, set: AuthorizationContextSet) {
+    return this.database.ncr
+      .findFirst({
+        include: internalInclude,
+        where: this.supplierWhereFromSet(set, id),
+      })
+      .then((value) => (value ? presentSupplier(value) : null));
   }
 }

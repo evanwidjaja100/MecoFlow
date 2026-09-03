@@ -46,6 +46,7 @@ export class RequisitionsService {
   ) {
     return this.policy.requireWrite(principal, projectId).then((membership) =>
       this.repository.create({
+        actorMembershipId: membership.id,
         actorUserId: principal.user.id,
         auditOrganizationId: membership.organization.id,
         canOverride: this.policy.canOverride(principal, membership.id),
@@ -92,6 +93,7 @@ export class RequisitionsService {
           ? await this.policy.requireCancel(principal, projectId)
           : await this.policy.requireSubmit(principal, projectId);
     return this.repository[kind]({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,

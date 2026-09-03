@@ -87,6 +87,7 @@ export class AllocationsService {
       );
     return this.repository.create({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       conditionalAuthorized: conditional,
@@ -114,6 +115,7 @@ export class AllocationsService {
     );
     return this.repository.transition({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,

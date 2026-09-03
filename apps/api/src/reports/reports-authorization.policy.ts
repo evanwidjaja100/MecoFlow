@@ -10,7 +10,7 @@ export class ReportsAuthorizationPolicy {
     principal: AuthenticatedPrincipal,
     permission: "report.export" | "report.read" | "scorecard.read",
   ): PrincipalMembership {
-    const membership = principal.memberships.find(
+    const qualifying = principal.memberships.filter(
       (candidate) =>
         candidate.organization.type === "INTERNAL" &&
         candidate.permissions.has(permission) &&
@@ -18,8 +18,8 @@ export class ReportsAuthorizationPolicy {
         candidate.permissions.has("readiness.read") &&
         candidate.permissions.has("bom.read"),
     );
-    if (!membership) throw new ForbiddenException("Access denied");
-    return membership;
+    if (qualifying.length !== 1) throw new ForbiddenException("Access denied");
+    return qualifying[0] as PrincipalMembership;
   }
 
   requireInternalReportRead(
@@ -67,14 +67,14 @@ export class ReportsAuthorizationPolicy {
     principal: AuthenticatedPrincipal,
     permission: "supplier.scorecard.export" | "supplier.scorecard.read",
   ): PrincipalMembership {
-    const membership = principal.memberships.find(
+    const qualifying = principal.memberships.filter(
       (candidate) =>
         candidate.organization.type === "SUPPLIER" &&
         candidate.permissions.has(permission) &&
         candidate.permissions.has("project.read"),
     );
-    if (!membership) throw new ForbiddenException("Access denied");
-    return membership;
+    if (qualifying.length !== 1) throw new ForbiddenException("Access denied");
+    return qualifying[0] as PrincipalMembership;
   }
 
   requireSupplierScorecard(

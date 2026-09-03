@@ -114,3 +114,7 @@ An inspection is `OPEN` or `FINALIZED` and carries an optimistic version. Finali
 The Phase 7A projection is not a new aggregate. It is a pure live read over released `BomLine` roots and retained trace records. Active requisition lines aggregate by exact BOM-line identity. Current sent/acknowledged PO revisions aggregate through explicit requirement allocations. Physical ASN, corrected lot, inspection, and material-allocation history follows retained identities even after a PO revision changes.
 
 When a PO line supplies several requirements, all of its allocation capacities are grouped by BOM line and consumed in earliest-required-date order with UUID tie-breaking. Receipt lots use creation/UUID order and partition accepted, rejected, quarantined, and unresolved quantities without exceeding their effective corrected receipt. Required accepted certificate checks define certificate completeness; no required certificate check is vacuously complete for accepted quantity. Full definitions are in `MATERIAL_REQUIREMENT_STATUS_API.md`.
+
+## Phase 1 — Audit attribution
+
+AuditEvent adds nullable `actorMembershipId UUID FK → memberships` and `systemPrincipal VARCHAR(50)` with constraints: `actorUserId IS NOT NULL XOR systemPrincipal IS NOT NULL` and `systemPrincipal IS NOT NULL ⇒ actorMembershipId IS NULL`. Membership gains `auditEvents` relation and index on `actorMembershipId`. Migration `20260901000000_phase_1_audit_attribution` backfills historic system rows with `MIGRATION_SEED`.

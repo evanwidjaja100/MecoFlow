@@ -99,6 +99,7 @@ export class DocumentsService {
     const membership = await this.policy.requireUpload(principal, projectId);
     const upload = this.preparedUpload(input);
     const document = await this.repository.create({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       associations: input.associations ?? [],
       auditOrganizationId: membership.organization.id,
@@ -142,6 +143,7 @@ export class DocumentsService {
     const membership = await this.policy.requireUpload(principal, projectId);
     const upload = this.preparedUpload(input);
     const version = await this.repository.supersede({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -201,6 +203,7 @@ export class DocumentsService {
       scanResult = { code: "SCANNER_ERROR", status: "ERROR" };
     }
     return this.repository.complete({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -242,6 +245,7 @@ export class DocumentsService {
           : command === "reject"
             ? "DOCUMENT_REJECTED"
             : "DOCUMENT_REVIEW_SUBMITTED",
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -308,6 +312,7 @@ export class DocumentsService {
       throw new UnprocessableEntityException("Document is not downloadable");
     const signed = await this.storage.downloadUrl(version);
     await this.repository.auditDownload({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,

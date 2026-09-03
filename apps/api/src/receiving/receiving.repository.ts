@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -11,6 +11,10 @@ import {
   Prisma,
   type PrismaClient,
 } from "@mecoflow/database";
+import type {
+  AuthorizationContext,
+  AuthorizationContextSet,
+} from "../authorization/authorization-context.js";
 import type { RequestContext } from "../identity/identity.types.js";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
 import { createInspectionForLot } from "../inspections/inspection-creation.js";
@@ -20,7 +24,9 @@ import {
 } from "./shipment-lifecycle.js";
 
 type ActorInput = {
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   auditOrganizationId: string;
   context: RequestContext;
 };
@@ -146,10 +152,11 @@ export class ReceivingRepository {
       entityType: string;
     },
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -157,6 +164,7 @@ export class ReceivingRepository {
         organizationId: input.auditOrganizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -178,6 +186,42 @@ export class ReceivingRepository {
     organizationIds: string[],
     membershipIds: string[],
   ) {
+    // deprecated: tuple-OR via FromSet
+    return this.supplierCanAccessPurchaseOrderFromSet(id, {
+      contexts: organizationIds.map(function (orgId, idx) {
+        return {
+          organizationId: orgId,
+          actorMembershipId: membershipIds[idx],
+          organizationType: "SUPPLIER",
+          source: "MEMBERSHIP_QUALIFIED",
+        } as unknown as AuthorizationContext;
+      }),
+    });
+  }
+
+  async supplierCanAccessAsn(
+    id: string,
+    organizationIds: string[],
+    membershipIds: string[],
+  ) {
+    // deprecated: tuple-OR via FromSet
+    return this.supplierCanAccessAsnFromSet(id, {
+      contexts: organizationIds.map(function (orgId, idx) {
+        return {
+          organizationId: orgId,
+          actorMembershipId: membershipIds[idx],
+          organizationType: "SUPPLIER",
+          source: "MEMBERSHIP_QUALIFIED",
+        } as unknown as AuthorizationContext;
+      }),
+    });
+  }
+
+  async supplierCanAccessPurchaseOrderFromSet(
+    id: string,
+    set: AuthorizationContextSet,
+  ) {
+    if (set.contexts.length === 0) return null;
     return this.database.purchaseOrder.findFirst({
       include: {
         revisions: {
@@ -204,32 +248,42 @@ export class ReceivingRepository {
       where: {
         id,
         status: "ACKNOWLEDGED",
-        supplierOrganizationId: { in: organizationIds },
-        project: {
-          members: {
-            some: { membershipId: { in: membershipIds }, status: "ACTIVE" },
+        OR: set.contexts.map((c) => ({
+          supplierOrganizationId: c.organizationId,
+          project: {
+            members: {
+              some: {
+                membershipId: c.actorMembershipId as string,
+                status: "ACTIVE",
+              },
+            },
           },
-        },
+        })),
       },
     });
   }
 
-  async supplierCanAccessAsn(
+  async supplierCanAccessAsnFromSet(
     id: string,
-    organizationIds: string[],
-    membershipIds: string[],
-  ) {
+    set: AuthorizationContextSet,
+  ): Promise<boolean> {
+    if (set.contexts.length === 0) return false;
     return Boolean(
       await this.database.advanceShipmentNotice.findFirst({
         select: { id: true },
         where: {
           id,
-          supplierOrganizationId: { in: organizationIds },
-          project: {
-            members: {
-              some: { membershipId: { in: membershipIds }, status: "ACTIVE" },
+          OR: set.contexts.map((c) => ({
+            supplierOrganizationId: c.organizationId,
+            project: {
+              members: {
+                some: {
+                  membershipId: c.actorMembershipId as string,
+                  status: "ACTIVE",
+                },
+              },
             },
-          },
+          })),
         },
       }),
     );
@@ -342,19 +396,17 @@ export class ReceivingRepository {
   }
 
   async supplierList(organizationIds: string[], membershipIds: string[]) {
-    const rows = await this.database.advanceShipmentNotice.findMany({
-      include: asnInclude,
-      orderBy: { updatedAt: "desc" },
-      where: {
-        supplierOrganizationId: { in: organizationIds },
-        project: {
-          members: {
-            some: { membershipId: { in: membershipIds }, status: "ACTIVE" },
-          },
-        },
-      },
+    // deprecated: tuple-OR via FromSet
+    return this.supplierAsnListFromSet({
+      contexts: organizationIds.map(function (orgId, idx) {
+        return {
+          organizationId: orgId,
+          actorMembershipId: membershipIds[idx],
+          organizationType: "SUPPLIER",
+          source: "MEMBERSHIP_QUALIFIED",
+        } as unknown as AuthorizationContext;
+      }),
     });
-    return rows.map((row) => this.presentSupplierAsn(row));
   }
 
   async supplierDetail(id: string) {
@@ -412,6 +464,13 @@ export class ReceivingRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM purchase_orders WHERE id = ${input.purchaseOrderId}::uuid FOR UPDATE`,
       );
@@ -488,7 +547,7 @@ export class ReceivingRepository {
       const created = await transaction.advanceShipmentNotice.create({
         data: {
           carrier: trim(input.carrier),
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           estimatedArrivalDate: input.estimatedArrivalDate
             ? new Date(`${input.estimatedArrivalDate}T00:00:00.000Z`)
             : null,
@@ -527,6 +586,13 @@ export class ReceivingRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM advance_shipment_notices WHERE id = ${input.advanceShipmentNoticeId}::uuid FOR UPDATE`,
       );
@@ -558,7 +624,8 @@ export class ReceivingRepository {
         throw new ConflictException("Concurrent modification");
       await transaction.advanceShipmentNoticeTransition.create({
         data: {
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           advanceShipmentNoticeId: current.id,
           reason: input.reason.trim(),
           sourceStatus: current.status,
@@ -664,6 +731,13 @@ export class ReceivingRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const asn = await transaction.advanceShipmentNotice.findFirst({
         include: {
           lines: {
@@ -739,7 +813,7 @@ export class ReceivingRepository {
       const created = await transaction.goodsReceipt.create({
         data: {
           advanceShipmentNoticeId: asn.id,
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           lines: { createMany: { data: prepared } },
           notes: trim(input.notes),
           projectId: input.projectId,
@@ -779,6 +853,13 @@ export class ReceivingRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM goods_receipts WHERE id = ${input.correctsReceiptId}::uuid FOR UPDATE`,
       );
@@ -875,7 +956,7 @@ export class ReceivingRepository {
           advanceShipmentNoticeId: original.advanceShipmentNoticeId,
           correctionReason: input.reason.trim(),
           correctsReceiptId: original.id,
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           kind: "CORRECTION",
           lines: { createMany: { data: prepared } },
           notes: trim(input.notes),
@@ -910,6 +991,13 @@ export class ReceivingRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM goods_receipts WHERE id = ${input.goodsReceiptId}::uuid FOR UPDATE`,
       );
@@ -980,7 +1068,7 @@ export class ReceivingRepository {
       const changed = await transaction.goodsReceipt.updateMany({
         data: {
           postedAt: now,
-          postedByUserId: input.actorUserId,
+          postedByUserId: input.actorUserId as string,
           postingIdempotencyKey: input.idempotencyKey,
           postingRequestHash: input.requestHash,
           status: "POSTED",
@@ -1022,7 +1110,8 @@ export class ReceivingRepository {
             },
           });
           await createInspectionForLot(transaction, {
-            actorUserId: input.actorUserId,
+            actorMembershipId: input.actorMembershipId ?? null,
+            actorUserId: input.actorUserId as string,
             auditOrganizationId: input.auditOrganizationId,
             context: input.context,
             effectiveQuantity: line.quantityDelta,
@@ -1090,6 +1179,50 @@ export class ReceivingRepository {
         entityType: "GoodsReceipt",
       });
       return this.receiptDetailInTransaction(transaction, current.id);
+    });
+  }
+
+  async supplierAsnListFromSet(set: AuthorizationContextSet) {
+    if (set.contexts.length === 0) return [];
+    return this.database.advanceShipmentNotice.findMany({
+      include: asnInclude,
+      orderBy: { createdAt: "desc" },
+      where: {
+        OR: set.contexts.map((c) => ({
+          supplierOrganizationId: c.organizationId,
+          project: {
+            members: {
+              some: {
+                membershipId: c.actorMembershipId as string,
+                status: "ACTIVE",
+              },
+            },
+          },
+        })),
+      },
+    });
+  }
+
+  async supplierReceiptListFromSet(set: AuthorizationContextSet) {
+    if (set.contexts.length === 0) return [];
+    return this.database.goodsReceipt.findMany({
+      include: receiptInclude,
+      orderBy: { createdAt: "desc" },
+      where: {
+        advanceShipmentNotice: {
+          OR: set.contexts.map((c) => ({
+            supplierOrganizationId: c.organizationId,
+            project: {
+              members: {
+                some: {
+                  membershipId: c.actorMembershipId as string,
+                  status: "ACTIVE",
+                },
+              },
+            },
+          })),
+        },
+      },
     });
   }
 }

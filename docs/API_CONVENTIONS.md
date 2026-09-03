@@ -33,3 +33,7 @@ Phase 7B uses read-only management, project overview, material board, and histor
 Phase 8A uses an authenticated own-user inbox, an explicit mark-read command, and versioned own-user preferences. Client input cannot select recipients, source events, project scope, email addresses, or delivery state. See `NOTIFICATIONS_API.md` and `generated/openapi.json`.
 
 Phase 8B uses read-only report/scorecard routes with required inclusive date filters and explicit `csv` or `xlsx` export suffixes. Responses and exports include a single UTC generation timestamp and normalized applied filters. Supplier routes derive organization scope from the principal and reject a supplied supplier identifier. See `REPORTS_SCORECARDS_API.md` and `generated/openapi.json`.
+
+## Phase 1 — AuthorizationContext header
+
+Client-supplied `x-organization-id` is treated as UI hint only. Authority derives solely from `AuthorizationContext` resolved server-side from the authenticated principal’s qualifying membership. OpenAPI operations document `x-authorizationContext` via `requiredPermission` and `resource` (type/id) — see ADR-0016. System principals are used only by workers and never exposed to clients.

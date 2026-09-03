@@ -50,21 +50,66 @@ export class AdministrationRepository {
     code: string;
     name: string;
     type: "INTERNAL" | "SUPPLIER";
+    actorUserId?: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
+    auditOrganizationId?: string | null;
+    context?: RequestContext;
   }) {
-    try {
-      return await this.database.organization.create({ data: input });
-    } catch {
-      throw new ConflictException("Organization code already exists");
-    }
+    return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
+      let organization;
+      try {
+        organization = await transaction.organization.create({
+          data: { code: input.code, name: input.name, type: input.type },
+        });
+      } catch {
+        throw new ConflictException("Organization code already exists");
+      }
+      if (input.context) {
+        await (transaction.auditEvent.create as any)({
+          data: {
+            action: "ORGANIZATION_CREATED",
+            actorMembershipId: input.actorMembershipId ?? null,
+            actorUserId: (input.actorUserId as string) ?? null,
+            changes: { code: organization.code, type: organization.type },
+            correlationId: input.context.correlationId,
+            entityId: organization.id,
+            entityType: "Organization",
+            organizationId: organization.id,
+            outcome: "SUCCESS",
+            requestId: input.context.requestId,
+            systemPrincipal: input.systemPrincipal ?? null,
+          },
+        });
+      }
+      return organization;
+    });
   }
 
   async createMembership(input: {
     actorUserId: string;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
+    auditOrganizationId?: string | null;
     context: RequestContext;
     organizationId: string;
     userId: string;
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const [organization, user] = await Promise.all([
         transaction.organization.findUnique({
           where: { id: input.organizationId },
@@ -81,10 +126,12 @@ export class AdministrationRepository {
       } catch {
         throw new ConflictException("Membership already exists");
       }
-      await transaction.auditEvent.create({
+      await (transaction.auditEvent.create as any)({
         data: {
           action: "MEMBERSHIP_CREATED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: (input as any).actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
+          systemPrincipal: (input as any).systemPrincipal ?? null,
           changes: {
             status: { from: null, to: "ACTIVE" },
             userId: input.userId,
@@ -103,6 +150,9 @@ export class AdministrationRepository {
 
   async updateMembershipStatus(input: {
     actorUserId: string;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
+    auditOrganizationId?: string | null;
     context: RequestContext;
     expectedVersion: number;
     membershipId: string;
@@ -110,6 +160,13 @@ export class AdministrationRepository {
     status: "ACTIVE" | "INACTIVE";
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const current = await transaction.membership.findFirst({
         where: { id: input.membershipId, organizationId: input.organizationId },
       });
@@ -121,10 +178,12 @@ export class AdministrationRepository {
         data: { status: input.status, version: { increment: 1 } },
         where: { id: current.id },
       });
-      await transaction.auditEvent.create({
+      await (transaction.auditEvent.create as any)({
         data: {
           action: "MEMBERSHIP_STATUS_CHANGED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: (input as any).actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
+          systemPrincipal: (input as any).systemPrincipal ?? null,
           changes: { status: { from: current.status, to: updated.status } },
           correlationId: input.context.correlationId,
           entityId: current.id,
@@ -140,6 +199,9 @@ export class AdministrationRepository {
 
   async assignRoles(input: {
     actorUserId: string;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
+    auditOrganizationId?: string | null;
     context: RequestContext;
     expectedVersion: number;
     membershipId: string;
@@ -147,6 +209,13 @@ export class AdministrationRepository {
     roleCodes: readonly string[];
   }) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const membership = await transaction.membership.findFirst({
         include: { organization: true, roles: true },
         where: { id: input.membershipId, organizationId: input.organizationId },
@@ -184,15 +253,17 @@ export class AdministrationRepository {
       if (added.length > 0)
         await transaction.membershipRole.createMany({
           data: added.map((roleCode) => ({
-            assignedByUserId: input.actorUserId,
+            assignedByUserId: input.actorUserId as string,
             membershipId: membership.id,
             roleCode,
           })),
         });
-      await transaction.auditEvent.create({
+      await (transaction.auditEvent.create as any)({
         data: {
           action: "MEMBERSHIP_ROLES_CHANGED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: (input as any).actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
+          systemPrincipal: (input as any).systemPrincipal ?? null,
           changes: { added, removed },
           correlationId: input.context.correlationId,
           entityId: membership.id,

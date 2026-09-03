@@ -134,3 +134,7 @@ Email delivery is a separately retained state machine with deterministic message
 Report controllers call the report application service, which validates the period and composes dedicated report/export/scorecard permissions with existing project and source-read policy. The report repository applies project and supplier predicates before loading readiness, PO, ASN, inspection, or NCR rows. A pure versioned supplier-scorecard calculator receives only scoped retained facts and returns exact KPI numerators, denominators, percentages, and monthly buckets.
 
 CSV and XLSX serializers are pure and formula-safe. XLSX is generated as a minimal macro-free OOXML package without formulas or external relationships. The service records redacted `REPORT_EXPORTED` audit evidence before returning bytes. No report worker, persisted aggregate, denormalized score table, or Phase 9 cache/performance path is introduced.
+
+## Phase 1 — Canonical AuthorizationContext
+
+All protected operations now resolve one exact AuthorizationContext via AuthorizationService (exactly-1 qualifying membership, otherwise 403). Supplier collections use AuthorizationContextSet with tuple-OR predicates, never independent IN arrays. Every mutation revalidates membership ACTIVE inside the same transaction as the versioned update and outbox. Workers construct SYSTEM_PRINCIPAL contexts (WORKER_BOM_IMPORT, WORKER_READINESS) and audit events store actorMembershipId/systemPrincipal with xor CHECK. See ADR-0016.

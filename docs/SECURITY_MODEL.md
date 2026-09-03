@@ -210,3 +210,7 @@ query keys, and emits no body/header content. Nonlocal configuration/evidence
 must stay outside the repository. Production approval requires witnessed
 firing/resolved notification and escalation evidence; the staging observation
 receiver fails that gate by design.
+
+## Phase 1 — Canonical AuthorizationContext (2026-09-02)
+
+All resource-specific decisions now require one exact server-derived AuthorizationContext via AuthorizationService.resolve (exactly-1 qualifying membership, otherwise 403). Supplier collections use AuthorizationContextSet with tuple-OR predicates `OR: contexts.map(c=>({organizationId:c.organizationId, members.some.membershipId:c.actorMembershipId}))` — never independent IN arrays — preventing cross-leakage. Client hint `x-organization-id` is navigation-only, never authority. Every mutation revalidates `membership.status ACTIVE` inside the same $transaction as versioned update and outbox, preventing TOCTOU revoke-vs-write. Workers use SYSTEM_PRINCIPAL contexts (WORKER_BOM_IMPORT, WORKER_READINESS) with `actorUserId:null, actorMembershipId:null, systemPrincipal`. AuditEvent now stores `actorMembershipId` (FK) and `systemPrincipal` with xor CHECK, written via canonical context.

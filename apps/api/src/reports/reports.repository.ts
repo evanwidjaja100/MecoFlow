@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+﻿import { Inject, Injectable, ConflictException } from "@nestjs/common";
 import type { ServiceEnvironment } from "@mecoflow/config";
 import {
   createDatabaseClient,
@@ -11,6 +11,10 @@ import type {
   RequestContext,
 } from "../identity/identity.types.js";
 import { SERVICE_ENVIRONMENT } from "../tokens.js";
+import type {
+  AuthorizationContext,
+  AuthorizationContextSet,
+} from "../authorization/authorization-context.js";
 
 export interface ReportPeriodFilters {
   from: string;
@@ -63,24 +67,51 @@ export class ReportsRepository {
         membership.permissions.has("readiness.read") &&
         membership.permissions.has("bom.read"),
     );
-    const OR: Prisma.ProjectWhereInput[] = [];
-    const systemAdministrator = memberships.some((membership) =>
-      membership.roles.includes("SYSTEM_ADMIN"),
-    );
-    if (systemAdministrator) OR.push({ organization: { type: "INTERNAL" } });
-    const managementOrganizationIds = memberships
-      .filter((membership) => membership.roles.includes("MECO_MANAGEMENT"))
-      .map((membership) => membership.organization.id);
-    if (managementOrganizationIds.length)
-      OR.push({ organizationId: { in: managementOrganizationIds } });
-    const membershipIds = memberships.map(({ id }) => id);
-    if (membershipIds.length)
-      OR.push({
-        members: {
-          some: { membershipId: { in: membershipIds }, status: "ACTIVE" },
+    if (memberships.length === 0) return { id: { in: [] } };
+    return {
+      OR: memberships.map((m) => ({
+        organizationId: m.organization.id,
+        members: { some: { membershipId: m.id, status: "ACTIVE" } },
+      })),
+    };
+  }
+
+  private internalProjectWhereFromContext(
+    context: AuthorizationContext,
+  ): Prisma.ProjectWhereInput {
+    if (context.source === "SYSTEM_PRINCIPAL") {
+      return { organizationId: context.organizationId };
+    }
+    return {
+      organizationId: context.organizationId,
+      members: {
+        some: {
+          membershipId: context.actorMembershipId as string,
+          status: "ACTIVE",
         },
-      });
-    return OR.length ? { OR } : { id: { in: [] } };
+      },
+    };
+  }
+
+  private internalProjectWhereFromSet(
+    set: AuthorizationContextSet,
+  ): Prisma.ProjectWhereInput {
+    if (set.contexts.length === 0) return { id: { in: [] } };
+    return {
+      OR: set.contexts.map((c) =>
+        c.source === "SYSTEM_PRINCIPAL"
+          ? { organizationId: c.organizationId }
+          : {
+              organizationId: c.organizationId,
+              members: {
+                some: {
+                  membershipId: c.actorMembershipId as string,
+                  status: "ACTIVE",
+                },
+              },
+            },
+      ),
+    };
   }
 
   private supplierProjectWhere(
@@ -90,6 +121,44 @@ export class ReportsRepository {
       members: {
         some: { membershipId: membership.id, status: "ACTIVE" },
       },
+    };
+  }
+
+  private supplierProjectWhereFromContext(
+    context: AuthorizationContext,
+  ): Prisma.ProjectWhereInput {
+    if (context.source === "SYSTEM_PRINCIPAL") {
+      return { organizationId: context.organizationId };
+    }
+    return {
+      organizationId: context.organizationId,
+      members: {
+        some: {
+          membershipId: context.actorMembershipId as string,
+          status: "ACTIVE",
+        },
+      },
+    };
+  }
+
+  private supplierProjectWhereFromSet(
+    set: AuthorizationContextSet,
+  ): Prisma.ProjectWhereInput {
+    if (set.contexts.length === 0) return { id: { in: [] } };
+    return {
+      OR: set.contexts.map((c) =>
+        c.source === "SYSTEM_PRINCIPAL"
+          ? { organizationId: c.organizationId }
+          : {
+              organizationId: c.organizationId,
+              members: {
+                some: {
+                  membershipId: c.actorMembershipId as string,
+                  status: "ACTIVE",
+                },
+              },
+            },
+      ),
     };
   }
 
@@ -381,7 +450,9 @@ export class ReportsRepository {
   }
 
   async auditExport(input: {
-    actorUserId: string;
+    actorUserId: string | null;
+    actorMembershipId?: string | null;
+    systemPrincipal?: string | null;
     context: RequestContext;
     filters: Record<string, string>;
     format: string;
@@ -391,10 +462,18 @@ export class ReportsRepository {
     rowCount: number;
   }): Promise<void> {
     await this.database.$transaction(async (transaction) => {
-      await transaction.auditEvent.create({
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
+      await (transaction.auditEvent.create as any)({
         data: {
           action: "REPORT_EXPORTED",
-          actorUserId: input.actorUserId,
+          actorMembershipId: input.actorMembershipId ?? null,
+          actorUserId: input.actorUserId as string,
           changes: {
             filters: input.filters,
             format: input.format,
@@ -408,8 +487,35 @@ export class ReportsRepository {
           organizationId: input.organizationId,
           outcome: "SUCCESS",
           requestId: input.context.requestId,
+          systemPrincipal: input.systemPrincipal ?? null,
         },
       });
+    });
+  }
+  async auditExportFromContext(
+    context: AuthorizationContext,
+    input: {
+      filters: Record<string, string>;
+      format: string;
+      generatedAt: string;
+      reportKey: string;
+      rowCount: number;
+    },
+  ): Promise<void> {
+    return this.auditExport({
+      actorMembershipId: context.actorMembershipId,
+      actorUserId: context.actorUserId,
+      context: {
+        correlationId: context.correlationId,
+        requestId: context.requestId,
+      },
+      filters: input.filters,
+      format: input.format,
+      generatedAt: input.generatedAt,
+      organizationId: context.organizationId,
+      reportKey: input.reportKey,
+      rowCount: input.rowCount,
+      systemPrincipal: context.systemPrincipal ?? null,
     });
   }
 }

@@ -40,6 +40,7 @@ export class InspectionsService {
     const membership = this.policy.requireConfiguration(principal);
     return this.repository.createDefinition({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -68,6 +69,7 @@ export class InspectionsService {
     const membership = this.policy.requireConfiguration(principal);
     return this.repository.updateDefinition({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -119,6 +121,7 @@ export class InspectionsService {
       true,
     );
     return this.repository.createExplicit({
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -155,6 +158,7 @@ export class InspectionsService {
     );
     return this.repository.saveResults({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       context,
@@ -195,6 +199,7 @@ export class InspectionsService {
       );
     return this.repository.finalize({
       ...input,
+      actorMembershipId: membership.id,
       actorUserId: principal.user.id,
       auditOrganizationId: membership.organization.id,
       conditionalAuthorized: input.disposition === "CONDITIONALLY_ACCEPTED",

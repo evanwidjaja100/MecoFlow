@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+﻿import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import type {
   AuthenticatedPrincipal,
   PrincipalMembership,
@@ -17,7 +17,7 @@ export class DocumentAuthorizationPolicy {
     internalPermission: string,
     supplierPermission?: string,
   ): PrincipalMembership {
-    const membership = principal.memberships.find(
+    const qualifying = principal.memberships.filter(
       (candidate) =>
         (candidate.organization.type === "INTERNAL" &&
           candidate.permissions.has(internalPermission)) ||
@@ -25,8 +25,8 @@ export class DocumentAuthorizationPolicy {
           supplierPermission &&
           candidate.permissions.has(supplierPermission)),
     );
-    if (!membership) throw new ForbiddenException("Access denied");
-    return membership;
+    if (qualifying.length !== 1) throw new ForbiddenException("Access denied");
+    return qualifying[0] as PrincipalMembership;
   }
 
   preflightRead(principal: AuthenticatedPrincipal) {

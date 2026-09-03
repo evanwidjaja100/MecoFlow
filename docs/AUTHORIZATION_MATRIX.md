@@ -336,3 +336,7 @@ Report permissions never create project or source-object scope. Internal routes 
 | Own Supplier Scorecard CSV/XLSX export | Own-scorecard policy + `supplier.scorecard.export` + bounded rows + formula sanitization + immutable export audit        |
 
 Supplier requests cannot provide `supplierOrganizationId`; it is derived from the authenticated membership. Supplier A cannot access Supplier B scorecards, rows, filters, trends, or underlying objects. Supplier real-foreign and nonexistent identifiers are equivalent because no supplier identifier lookup surface exists. Browser route visibility is presentation only.
+
+## Phase 1 — Tuple-OR and exactly-1
+
+Policy changes: `authorization.policy.ts` no longer has SYSTEM_ADMIN union bypass; `requireOrganizationScope` requires exactly 1 membership or 404. Project, BOM, item, NCR, PO, and receiving policies no longer use `find` first-match; they filter for exactly one Internal membership with the required permission. Supplier scopes return `AuthorizationContextSet` and repositories generate tuple-OR predicates. List operations for suppliers use `resolveSupplierSet` / `resolveSet` and `accessWhereFromSet` / `supplierWhereFromSet`. Examples: 2-membership union (project.write vs SYSTEM_ADMIN) now denies; supplier 4-row matrix (2 orgs × 2 memberships) yields exactly 2 rows.

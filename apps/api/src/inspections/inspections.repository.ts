@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Inject,
   Injectable,
@@ -20,7 +20,9 @@ import {
 } from "./inspection-quantity.js";
 
 type ActorInput = {
-  actorUserId: string;
+  actorUserId: string | null;
+  actorMembershipId?: string | null;
+  systemPrincipal?: string | null;
   auditOrganizationId: string;
   context: RequestContext;
 };
@@ -182,10 +184,11 @@ export class InspectionsRepository {
       entityType: string;
     },
   ) {
-    return transaction.auditEvent.create({
+    return (transaction.auditEvent.create as any)({
       data: {
         action: input.action,
-        actorUserId: input.actorUserId,
+        actorMembershipId: input.actorMembershipId ?? null,
+        actorUserId: input.actorUserId as string,
         changes: input.changes,
         correlationId: input.context.correlationId,
         entityId: input.entityId,
@@ -193,6 +196,7 @@ export class InspectionsRepository {
         organizationId: input.auditOrganizationId,
         outcome: "SUCCESS",
         requestId: input.context.requestId,
+        systemPrincipal: input.systemPrincipal ?? null,
       },
     });
   }
@@ -296,6 +300,13 @@ export class InspectionsRepository {
     input: ActorInput & DefinitionInput & { itemId: string },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       const prepared = await this.prepareDefinition(
         transaction,
         input,
@@ -304,7 +315,7 @@ export class InspectionsRepository {
       const created = await transaction.inspectionCheckDefinition.create({
         data: {
           ...prepared,
-          createdByUserId: input.actorUserId,
+          createdByUserId: input.actorUserId as string,
           itemId: input.itemId,
         },
         include: definitionInclude,
@@ -334,6 +345,13 @@ export class InspectionsRepository {
       },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM inspection_check_definitions WHERE id = ${input.definitionId}::uuid FOR UPDATE`,
       );
@@ -452,6 +470,13 @@ export class InspectionsRepository {
     input: ActorInput & { inventoryLotId: string; projectId: string },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM inventory_lots WHERE id = ${input.inventoryLotId}::uuid FOR UPDATE`,
       );
@@ -472,6 +497,7 @@ export class InspectionsRepository {
       );
       const id = await createInspectionForLot(transaction, {
         ...input,
+        actorUserId: input.actorUserId as string,
         effectiveQuantity,
         itemId: lot.itemId,
         requireDefinitions: true,
@@ -524,6 +550,13 @@ export class InspectionsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM receiving_inspections WHERE id = ${input.inspectionId}::uuid FOR UPDATE`,
       );
@@ -655,6 +688,13 @@ export class InspectionsRepository {
     },
   ) {
     return this.database.$transaction(async (transaction) => {
+      if ((input as any).actorMembershipId) {
+        const __actorMembership = await transaction.membership.findFirst({
+          where: { id: (input as any).actorMembershipId, status: "ACTIVE" },
+        });
+        if (!__actorMembership)
+          throw new ConflictException("Concurrent modification");
+      }
       await transaction.$queryRaw(
         Prisma.sql`SELECT id FROM receiving_inspections WHERE id = ${input.inspectionId}::uuid FOR UPDATE`,
       );
@@ -732,11 +772,11 @@ export class InspectionsRepository {
           acceptedQuantity: quantities.accepted,
           conditionalAcceptanceAuthorizedByUserId:
             input.disposition === "CONDITIONALLY_ACCEPTED"
-              ? input.actorUserId
+              ? (input.actorUserId as string)
               : null,
           disposition: input.disposition,
           finalizedAt: now,
-          finalizedByUserId: input.actorUserId,
+          finalizedByUserId: input.actorUserId as string,
           finalizedReceivedQuantity: received,
           quarantinedQuantity: quantities.quarantined,
           reason: input.reason.trim(),
